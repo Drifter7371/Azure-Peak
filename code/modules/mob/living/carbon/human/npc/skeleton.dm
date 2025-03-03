@@ -16,7 +16,7 @@
 	possible_rmb_intents = list(/datum/rmb_intent/feint, /datum/rmb_intent/aimed, /datum/rmb_intent/strong, /datum/rmb_intent/weak)
 	possible_rmb_intents = list()
 	stand_attempts = 4
-	cmode_music = 'sound/music/combat_weird.ogg'
+	cmode_music = FALSE
 
 /mob/living/carbon/human/species/skeleton/npc
 	aggressive = 1
@@ -101,10 +101,7 @@
 		head = /obj/item/clothing/head/roguetown/helmet/leather
 	if(prob(10))
 		head = /obj/item/clothing/head/roguetown/roguehood
-	if(H.gender == FEMALE)
-		H.STASTR = rand(9,12)
-	else
-		H.STASTR = rand(14,16)
+	H.STASTR = rand(14,16)
 	H.STASPD = 8
 	H.STACON = 4
 	H.STAEND = 15

@@ -54,7 +54,7 @@
 /datum/emote/proc/adjacentaction(mob/user, mob/target)
 	return
 
-/datum/emote/proc/run_emote(mob/user, params, type_override, intentional = FALSE, targetted = FALSE)
+/datum/emote/proc/run_emote(mob/user, params, type_override, intentional = FALSE, targetted = FALSE, animal = TRUE)
 	. = TRUE
 	if(!can_run_emote(user, TRUE, intentional))
 		return FALSE
@@ -96,7 +96,7 @@
 		tmp_sound = sound(get_sfx(tmp_sound))
 	tmp_sound.frequency = pitch
 	if(tmp_sound && (!only_forced_audio || !intentional))
-		playsound(user, tmp_sound, snd_vol, FALSE, snd_range, soundping = soundping)
+		playsound(user, tmp_sound, snd_vol, FALSE, snd_range, soundping = soundping, animal_pref = animal)
 	if(!nomsg)
 		for(var/mob/M in GLOB.dead_mob_list)
 			if(!M.client || isnewplayer(M))

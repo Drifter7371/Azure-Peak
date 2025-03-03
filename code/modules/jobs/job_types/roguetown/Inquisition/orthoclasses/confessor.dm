@@ -36,7 +36,7 @@
 	shoes = /obj/item/clothing/shoes/roguetown/boots
 	mask = /obj/item/clothing/mask/rogue/facemask/psydonmask
 	head = /obj/item/clothing/head/roguetown/roguehood/psydon
-	backpack_contents = list(/obj/item/roguekey/inquisition = 1, /obj/item/lockpickring/mundane = 1, /obj/item/rogueweapon/mace/cudgel)
+	backpack_contents = list(/obj/item/roguekey/inquisition = 1, /obj/item/lockpickring/mundane = 1, /obj/item/rogueweapon/mace/cudgel, /obj/item/grapplinghook = 1)
 	H.change_stat("strength", -1) // weasel
 	H.change_stat("endurance", 3)
 	H.change_stat("perception", 2)
@@ -44,3 +44,4 @@
 	ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_STEELHEARTED, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_INQUISITION, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_PERFECT_TRACKER, TRAIT_GENERIC)

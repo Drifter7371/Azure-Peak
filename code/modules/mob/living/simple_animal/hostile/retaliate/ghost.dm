@@ -72,6 +72,7 @@
 	turns_per_move = 5
 	response_help_continuous = "passes through"
 	response_help_simple = "pass through"
+	base_intents = list(/datum/intent/simple/claw)
 	a_intent = INTENT_HARM
 	healable = 0
 	speed = 0
@@ -91,6 +92,7 @@
 	minbodytemp = 0
 	maxbodytemp = 1500
 	movement_type = FLYING
+	rot_type = null
 	gold_core_spawnable = NO_SPAWN //too spooky for science
 	var/random = TRUE //if you want random names for ghosts or not
 

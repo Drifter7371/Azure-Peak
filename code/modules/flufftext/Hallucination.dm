@@ -3,7 +3,6 @@
 items
 items_other
 hudscrew
-fake_alert
 Chat and dangerflash could use polishing*/
 GLOBAL_LIST_INIT(hallucination_list, list(
 	/datum/hallucination/chat = 100,
@@ -11,11 +10,11 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	/datum/hallucination/sounds = 50,
 	/datum/hallucination/battle = 20,
 	/datum/hallucination/dangerflash = 15,
-	/datum/hallucination/hudscrew = 12,
+//	/datum/hallucination/hudscrew = 12,
 	/datum/hallucination/fake_alert = 12,
 	/datum/hallucination/weird_sounds = 8,
-	/datum/hallucination/stationmessage = 7,
-	/datum/hallucination/items_other = 7,
+	/datum/hallucination/townannouncement = 7,
+//	/datum/hallucination/items_other = 7,
 	/datum/hallucination/husks = 7,
 	/datum/hallucination/items = 4,
 	/datum/hallucination/fire = 3,
@@ -230,7 +229,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 
 	qdel(src)
 
-/datum/hallucination/items_other
+/*/datum/hallucination/items_other
 
 /datum/hallucination/items_other/New(mob/living/carbon/C, forced = TRUE, item_type)
 	set waitfor = FALSE
@@ -326,7 +325,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				target.playsound_local(H, 'sound/blank.ogg',30,1)
 			target.client.images.Remove(A)
 	qdel(src)
-
+*/
 /datum/hallucination/delusion
 	var/list/image/delusions = list()
 
@@ -348,8 +347,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			if("shadow")
 				A = image('icons/roguetown/maniac/dreamer_mobs.dmi',H,"M3")
 				A.name = "???"
-				target.playsound_local(target, pick('sound/misc/heroin_rush.ogg'), 60, 1)
-				target.playsound_local(H, pick('sound/vo/mobs/ghost/whisper (1).ogg','sound/vo/mobs/ghost/whisper (2).ogg','sound/vo/mobs/ghost/whisper (3).ogg'), 80, 1)
+				target.playsound_local(target, pick('sound/misc/heroin_rush.ogg'), 80, 1)
+				target.playsound_local(H, pick('sound/vo/mobs/ghost/whisper (1).ogg','sound/vo/mobs/ghost/whisper (2).ogg','sound/vo/mobs/ghost/whisper (3).ogg'), 100, 1)
 			if("monster")//Horror
 				A = image('icons/roguetown/mob/monster/horrors.dmi',H,"horror1")
 				A.name = "ZIZOZIZOZIZO"
@@ -374,7 +373,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				target.playsound_local(H, pick('sound/vo/mobs/plant/attack (1).ogg','sound/vo/mobs/plant/attack (2).ogg','sound/vo/mobs/plant/attack (3).ogg','sound/vo/mobs/plant/attack (4).ogg'), 80, 1)
 			if("demon")//Demon
 				A = image('icons/roguetown/mob/monster/hellkeeper.dmi',H,"hellkeeper")
-				A.name = ""
+				A.name = "RUN"
 				target.playsound_local(H, pick('sound/combat/caught.ogg','sound/misc/astratascream.ogg'), 80, 1)
 				target.playsound_local(target, 'sound/misc/carriage1.ogg', 80, 1)
 			/*if("custom")
@@ -659,26 +658,30 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	..()
 	var/turf/source = random_far_turf()
 	if(!sound_type)
-		sound_type = pick("bleed","help","hello","zizo","evil","drill","laughter","creepy")
+		sound_type = pick("bleed","whispers","whispers2","zizo","evil","drill","laughter","creepy")
 	feedback_details += "Type: [sound_type]"
 	//Strange audio
 	switch(sound_type)
 		if("bleed")
-			target.playsound_local(target, 'sound/misc/bleed (1).ogg', 85)
+			target.playsound_local(target, 'sound/misc/bleed (1).ogg', 80)
 			sleep(25)
-			target.playsound_local(target, 'sound/misc/bleed (2).ogg', 75)
+			target.playsound_local(target, 'sound/misc/bleed (2).ogg', 85)
 			sleep(25)
-			target.playsound_local(target, 'sound/misc/bleed (3).ogg', 75)
+			target.playsound_local(target, 'sound/misc/bleed (3).ogg', 90)
 			sleep(25)
-			target.playsound_local(target, 'sound/misc/bleed (1).ogg', 85)
-		if("help")
-			target.playsound_local(target, 'sound/items/carvhelp.ogg', 50)
-		if("hello")
-			target.playsound_local(target, 'sound/items/carvhello.ogg', 50)
+			target.playsound_local(target, 'sound/misc/bleed (1).ogg', 100)
+		if("whispers")
+			target.playsound_local(target, 'sound/misc/carriage1.ogg', 90)
+			sleep(25)
+			target.playsound_local(target, 'sound/misc/carriage3.ogg', 100)
+		if("whispers2")
+			target.playsound_local(target, 'sound/misc/carriage2.ogg', 90)
+			sleep(25)
+			target.playsound_local(target, 'sound/misc/carriage4.ogg', 100)
 		if("zizo")
-			target.playsound_local(target, 'sound/misc/zizo.ogg', 50)
+			target.playsound_local(target, 'sound/misc/zizo.ogg', 70)
 		if("evil")
-			target.playsound_local(target, 'sound/misc/evilevent.ogg', 50)
+			target.playsound_local(target, 'sound/misc/evilevent.ogg', 70)
 		if("drill")
 			target.playsound_local(source, 'sound/misc/TheDrill.ogg', 90)
 		if("laughter")
@@ -695,9 +698,9 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 
 	qdel(src)
 
-/datum/hallucination/stationmessage
+/datum/hallucination/townannouncement
 
-/datum/hallucination/stationmessage/New(mob/living/carbon/C, forced = TRUE, message)
+/datum/hallucination/townannouncement/New(mob/living/carbon/C, forced = TRUE, message)
 	set waitfor = FALSE
 	..()
 	if(!message)
@@ -731,7 +734,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			SEND_SOUND(target, 'sound/misc/royal_decree.ogg')
 			SEND_SOUND(target, 'sound/vo/mobs/wwolf/howldist (1).ogg')
 
-/datum/hallucination/hudscrew
+/*/datum/hallucination/hudscrew
 
 /datum/hallucination/hudscrew/New(mob/living/carbon/C, forced = TRUE, screwyhud_type)
 	set waitfor = FALSE
@@ -745,41 +748,49 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	sleep(rand(100,250))
 	target.set_screwyhud(SCREWYHUD_NONE)
 	qdel(src)
-
+*/
 /datum/hallucination/fake_alert
 
 /datum/hallucination/fake_alert/New(mob/living/carbon/C, forced = TRUE, specific, duration = 150)
 	set waitfor = FALSE
 	..()
-	var/alert_type = pick("not_enough_oxy","too_much_tox","nutrition","charge","gravity","fire","locked","hacked","temphot","tempcold","pressure")
+	var/alert_type = pick("bleed","netted","surrender","nutrition","thirsty","fire")
 	if(specific)
 		alert_type = specific
 	feedback_details += "Type: [alert_type]"
 	switch(alert_type)
-		if("not_enough_oxy")
-			target.throw_alert(alert_type, /atom/movable/screen/alert/not_enough_oxy, override = TRUE)
-		if("too_much_tox")
-			target.throw_alert(alert_type, /atom/movable/screen/alert/too_much_tox, override = TRUE)
+		if("bleed")
+			/*target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/bleedingt1, override = TRUE)
+			sleep(50)
+			target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/bleedingt2, override = TRUE)
+			sleep(50)*/
+			target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/bleedingt3, override = TRUE)
+			target.playsound_local(target, 'sound/misc/bleed (1).ogg', 80)
+			sleep(5)
+			target.playsound_local(target, 'sound/misc/bleed (2).ogg', 85)
+			sleep(5)
+			target.playsound_local(target, 'sound/misc/bleed (3).ogg', 90)
+			sleep(5)
+			target.playsound_local(target, 'sound/misc/bleed (1).ogg', 100)
+		if("netted")
+			target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/netted, override = TRUE)
+		if("surrender")
+		//	target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/breedable, override = TRUE)
+			target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/submissive, override = TRUE)
 		if("nutrition")
-			if(prob(50))
-				target.throw_alert(alert_type, /atom/movable/screen/alert/fat, override = TRUE)
-			else
-				target.throw_alert(alert_type, /atom/movable/screen/alert/starving, override = TRUE)
-		if("gravity")
-			target.throw_alert(alert_type, /atom/movable/screen/alert/weightless, override = TRUE)
+			/*target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/hungryt1, override = TRUE)
+			sleep(50)
+			target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/hungryt2, override = TRUE)
+			sleep(50)*/
+			target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/hungryt3, override = TRUE)
+		if("thirsty")
+			/*target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/thirstyt1, override = TRUE)
+			sleep(50)
+			target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/thirstyt2, override = TRUE)
+			sleep(50)*/
+			target.throw_alert(alert_type, /atom/movable/screen/alert/status_effect/debuff/thirstyt3, override = TRUE)
 		if("fire")
 			target.throw_alert(alert_type, /atom/movable/screen/alert/fire, override = TRUE)
-		if("temphot")
-			alert_type = "temp"
-			target.throw_alert(alert_type, /atom/movable/screen/alert/hot, 3, override = TRUE)
-		if("tempcold")
-			alert_type = "temp"
-			target.throw_alert(alert_type, /atom/movable/screen/alert/cold, 3, override = TRUE)
-		if("pressure")
-			if(prob(50))
-				target.throw_alert(alert_type, /atom/movable/screen/alert/highpressure, 2, override = TRUE)
-			else
-				target.throw_alert(alert_type, /atom/movable/screen/alert/lowpressure, 2, override = TRUE)
 	sleep(duration)
 	target.clear_alert(alert_type, clear_override = TRUE)
 	qdel(src)
@@ -794,8 +805,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		target.halitem = new
 		var/obj/item/l_hand = target.get_item_for_held_index(1)
 		var/obj/item/r_hand = target.get_item_for_held_index(2)
-		var/l = ui_hand_position(target.get_held_index_of_item(l_hand))
-		var/r = ui_hand_position(target.get_held_index_of_item(r_hand))
+		var/l = rogueui_righthand
+		var/r = rogueui_lefthand
 		var/list/slots_free = list(l,r)
 		if(l_hand)
 			slots_free -= l
@@ -804,42 +815,36 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		if(ishuman(target))
 			var/mob/living/carbon/human/H = target
 			if(!H.belt)
-				slots_free += ui_belt
+				slots_free += rogueui_backl
 			if(!H.l_store)
-				slots_free += ui_storage1
+				slots_free += rogueui_beltl
 			if(!H.r_store)
-				slots_free += ui_storage2
+				slots_free += rogueui_beltr
 		if(slots_free.len)
 			target.halitem.screen_loc = pick(slots_free)
 			target.halitem.layer = ABOVE_HUD_LAYER
 			target.halitem.plane = ABOVE_HUD_PLANE
-			switch(rand(1,6))
-				if(1) //revolver
-					target.halitem.icon = 'icons/obj/guns/projectile.dmi'
-					target.halitem.icon_state = "revolver"
-					target.halitem.name = "Revolver"
-				if(2) //c4
-					target.halitem.icon = 'icons/obj/grenade.dmi'
-					target.halitem.icon_state = "plastic-explosive0"
-					target.halitem.name = "C4"
-					if(prob(25))
-						target.halitem.icon_state = "plasticx40"
-				if(3) //sword
-					target.halitem.icon = 'icons/obj/transforming_energy.dmi'
-					target.halitem.icon_state = "sword0"
-					target.halitem.name = "Energy Sword"
-				if(4) //stun baton
-					target.halitem.icon = 'icons/obj/items_and_weapons.dmi'
-					target.halitem.icon_state = "stunbaton"
-					target.halitem.name = "Stun Baton"
-				if(5) //emag
-					target.halitem.icon = 'icons/obj/card.dmi'
-					target.halitem.icon_state = "emag"
-					target.halitem.name = "Cryptographic Sequencer"
-				if(6) //flashbang
-					target.halitem.icon = 'icons/obj/grenade.dmi'
-					target.halitem.icon_state = "flashbang1"
-					target.halitem.name = "Flashbang"
+			switch(rand(1,5))
+				if(1) //bottlebomb
+					target.halitem.icon = 'icons/roguetown/items/misc.dmi'
+					target.halitem.icon_state = "bbomb-lit"
+					target.halitem.name = "bottle bomb"
+				if(2) //skull
+					target.halitem.icon = 'icons/roguetown/items/valuable.dmi'
+					target.halitem.icon_state = "uw1"
+					target.halitem.name = "!!!"
+				if(3) //crown
+					target.halitem.icon = 'icons/roguetown/clothing/head.dmi'
+					target.halitem.icon_state = "serpcrown"
+					target.halitem.name = "Crown of Azure Peak"
+				if(4) //clawl
+					target.halitem.icon = 'icons/roguetown/weapons/32.dmi'
+					target.halitem.icon_state = "claw_l"
+					target.halitem.name = "ravager claws"
+				if(5) //clawr
+					target.halitem.icon = 'icons/roguetown/weapons/32.dmi'
+					target.halitem.icon_state = "claw_r"
+					target.halitem.name = "ravager claws"
 			feedback_details += "Type: [target.halitem.name]"
 			if(target.client)
 				target.client.screen += target.halitem
@@ -893,7 +898,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	name = "lava"
 
 /obj/effect/hallucination/danger/lava/show_icon()
-	image = image('icons/turf/floors/lava.dmi',src,"smooth",TURF_LAYER)
+	image = image('icons/turf/floors/lava.dmi',src,"unsmooth",TURF_LAYER)
 	if(target.client)
 		target.client.images += image
 
@@ -920,7 +925,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		QDEL_IN(src, 30)
 
 /obj/effect/hallucination/danger/anomaly
-	name = "flux wave anomaly"
+	name = "him."
 
 /obj/effect/hallucination/danger/anomaly/Initialize()
 	. = ..()
@@ -1068,7 +1073,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			possible_points += F
 		if(possible_points.len)
 			var/turf/open/floor/husk_point = pick(possible_points)
-			switch(rand(1,4))
+			switch(rand(1,12))
 				if(1)
 					var/image/body = image('icons/mob/human.dmi',husk_point,"husk",TURF_LAYER)
 					var/matrix/M = matrix()
@@ -1080,11 +1085,27 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				if(3)
 					target.halbody = image('icons/roguetown/mob/monster/horrors.dmi',husk_point,"headcrab",TURF_LAYER)
 				if(4)
+					target.halbody = image('icons/roguetown/mob/monster/horrors.dmi',husk_point,"horror4",TURF_LAYER)
+				if(5)
+					target.halbody = image('icons/roguetown/maniac/dreamer_mobs.dmi',husk_point,"mom",TURF_LAYER)
+				if(6)
 					target.halbody = image('icons/roguetown/maniac/dreamer_mobs.dmi',husk_point,"M3",TURF_LAYER)
+				if(7)
+					target.halbody = image('icons/roguetown/maniac/creations.dmi',husk_point,"creation1",TURF_LAYER)
+				if(8)
+					target.halbody = image('icons/mob/human.dmi',husk_point,"husk",TURF_LAYER)
+				if(9)
+					target.halbody = image('icons/mob/human.dmi',husk_point,"ghost",TURF_LAYER)
+				if(10)
+					target.halbody = image('icons/mob/human.dmi',husk_point,"body_cloaked",TURF_LAYER)
+				if(11)
+					target.halbody = image('icons/mob/mob.dmi',husk_point,"mist",TURF_LAYER)
+				if(12)
+					target.halbody = image('icons/mob/mob.dmi',husk_point,"revenant_idle",TURF_LAYER)
 
 			if(target.client)
 				target.client.images += target.halbody
-			sleep(rand(30,50)) //Only seen for a brief moment.
+			sleep(rand(20,40)) //Only seen for a brief moment.
 			if(target.client)
 				target.client.images -= target.halbody
 			QDEL_NULL(target.halbody)

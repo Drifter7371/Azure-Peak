@@ -435,12 +435,13 @@
 	skillcraft = /datum/skill/craft/masonry
 	wallcraft = TRUE
 
-/datum/crafting_recipe/roguetown/structure/dryingrack
+/datum/crafting_recipe/roguetown/structure/tanningrack
 	name = "drying rack"
-	result = /obj/structure/fluff/dryingrack
+	result = /obj/machinery/tanningrack
 	reqs = list(/obj/item/grown/log/tree/stick = 3)
 	verbage_simple = "construct"
 	verbage = "constructs"
+	craftdiff = 0
 
 /datum/crafting_recipe/roguetown/structure/bed
 	name = "bed"
@@ -449,6 +450,7 @@
 				/obj/item/natural/fibers = 1)
 	verbage_simple = "construct"
 	verbage = "constructs"
+	craftdiff = 0
 
 /datum/crafting_recipe/roguetown/structure/nicebed
 	name = "nice bed"
@@ -468,6 +470,15 @@
 	verbage_simple = "construct"
 	verbage = "constructs"
 	skillcraft = /datum/skill/craft/carpentry
+
+/datum/crafting_recipe/roguetown/structure/coolingtable
+	name = "Cooling Table"
+	result = /obj/structure/table/cooling
+	reqs = list(/obj/item/grown/log/tree/small , /obj/item/ingot/iron , /obj/item/roguegear)
+	verbage_simple = "engineer"
+	verbage = "engineers"
+	skillcraft = /datum/skill/craft/engineering
+	craftdiff = 4
 
 /datum/crafting_recipe/roguetown/structure/operatingtable
 	name = "operating table"
@@ -574,6 +585,15 @@
 	if(istype(T,/turf/open/water))
 		return FALSE
 	return ..()
+
+/datum/crafting_recipe/roguetown/structure/freedomchair
+	name = "LIBERTAS"
+	result = /obj/structure/chair/freedomchair/crafted
+	reqs = list(/obj/item/ingot/blacksteel = 1, /obj/item/roguegear = 3)
+	verbage_simple = "engineer"
+	verbage = "engineers"
+	skillcraft = /datum/skill/craft/engineering
+	craftdiff = 5
 
 /datum/crafting_recipe/roguetown/structure/wallladder
 	name = "wall ladder"

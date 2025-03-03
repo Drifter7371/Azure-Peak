@@ -13,7 +13,7 @@
 	name = "leather gloves"
 	desc = ""
 	icon_state = "leather_gloves"
-	armor = list("blunt" = 30, "slash" = 10, "stab" = 20, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 30, "slash" = 10, "stab" = 20, "piercing" = 0, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_BLUNT)
 	resistance_flags = FIRE_PROOF
 	blocksound = SOFTHIT
@@ -22,6 +22,7 @@
 	drop_sound = 'sound/foley/dropsound/cloth_drop.ogg'
 	anvilrepair = null
 	sewrepair = TRUE
+	salvage_result = /obj/item/natural/hide/cured
 
 /obj/item/clothing/gloves/roguetown/leather/black
 	color = CLOTHING_BLACK
@@ -48,7 +49,7 @@
 	name = "heavy leather gloves"
 	desc = ""
 	icon_state = "angle"
-	armor = list("blunt" = 50, "slash" = 25, "stab" = 40, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 50, "slash" = 25, "stab" = 40, "piercing" = 10, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_BLUNT)
 	resistance_flags = FIRE_PROOF
 	blocksound = SOFTHIT
@@ -58,13 +59,14 @@
 	drop_sound = 'sound/foley/dropsound/cloth_drop.ogg'
 	anvilrepair = null
 	sewrepair = TRUE
+	salvage_result = /obj/item/natural/fur
 
 /obj/item/clothing/gloves/roguetown/fingerless_leather
 	name = "fingerless leather gloves"
 	desc = "A pair of protective gloves favored by lockshimmers, laborers, and smokers for maintaining \
 	manual dexterity over regular gloves."
 	icon_state = "roguegloves"
-	armor = list("blunt" = 50, "slash" = 25, "stab" = 40, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 50, "slash" = 25, "stab" = 40, "piercing" = 10, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_BLUNT)
 	resistance_flags = FIRE_PROOF
 	blocksound = SOFTHIT
@@ -74,12 +76,13 @@
 	drop_sound = 'sound/foley/dropsound/cloth_drop.ogg'
 	anvilrepair = null
 	sewrepair = TRUE
+	salvage_result = /obj/item/natural/hide/cured
 
 /obj/item/clothing/gloves/roguetown/chain
 	name = "chain gauntlets"
 	desc = ""
 	icon_state = "cgloves"
-	armor = list("blunt" = 60, "slash" = 100, "stab" = 80, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 60, "slash" = 100, "stab" = 80, "piercing" = 20, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_BLUNT)
 	resistance_flags = FIRE_PROOF
 	blocksound = CHAINHIT
@@ -107,7 +110,7 @@
 	desc = "A pair of heavy Otavan leather gloves, commonly used by fencers, renowned for their quality."
 	icon_state = "fencergloves"
 	item_state = "fencergloves"
-	armor = list("blunt" = 60, "slash" = 100, "stab" = 80, "piercing" = 20, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 60, "slash" = 100, "stab" = 80, "piercing" = 10, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_CHOP, BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST)
 	resistance_flags = FIRE_PROOF
 	blocksound = SOFTHIT
@@ -124,13 +127,14 @@
 	desc = "Masterfully crafted leather gloves, psycross included."
 	icon_state = "inqgloves"
 	item_state = "inqgloves"
+	salvage_result = /obj/item/natural/hide/cured
 
 //rogtodo sprites for this
 /obj/item/clothing/gloves/roguetown/plate
 	name = "plate gauntlets"
 	desc = ""
 	icon_state = "gauntlets"
-	armor = list("blunt" = 90, "slash" = 100, "stab" = 80, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 90, "slash" = 100, "stab" = 80, "piercing" = 40, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_CHOP, BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST)
 	resistance_flags = FIRE_PROOF
 	blocksound = PLATEHIT
@@ -144,13 +148,30 @@
 	grid_width = 64
 	grid_height = 32
 
+/obj/item/clothing/gloves/roguetown/plate/zizo
+	name = "darksteel gauntlets"
+	desc = "darksteel plate gauntlets. Called forth from the edge of what should be known. In Her name."
+	icon_state = "zizogauntlets"
+	max_integrity = 500
+
+/obj/item/clothing/gloves/roguetown/plate/zizo/Initialize()
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, CURSED_ITEM_TRAIT)
+
+/obj/item/clothing/gloves/roguetown/plate/zizo/dropped(mob/living/carbon/human/user)
+	. = ..()
+	if(QDELETED(src))
+		return
+	qdel(src)
+
+
 /obj/item/clothing/gloves/roguetown/grenzelgloves
 	name = "grenzelhoft gloves"
 	desc = ""
 	icon_state = "grenzelgloves"
 	item_state = "grenzelgloves"
 	sleeved = 'icons/roguetown/clothing/onmob/helpers/stonekeep_merc.dmi'
-	armor = list("blunt" = 15, "slash" = 15, "stab" = 15, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 15, "slash" = 15, "stab" = 15, "piercing" = 0, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT)
 	resistance_flags = FIRE_PROOF
 	blocksound = SOFTHIT
@@ -172,7 +193,7 @@
 	mob_overlay_icon = 'icons/roguetown/clothing/special/onmob/blkknight.dmi'
 	icon_state = "bkgloves"
 	item_state = "bkgloves"
-	armor = list("blunt" = 90, "slash" = 100, "stab" = 80, "fire" = 0, "acid" = 0)
+	armor = list("blunt" = 90, "slash" = 100, "stab" = 80, "piercing" = 50, "fire" = 0, "acid" = 0)
 	prevent_crits = list(BCLASS_CHOP, BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST)
 	resistance_flags = FIRE_PROOF
 	blocksound = PLATEHIT

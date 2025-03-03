@@ -49,7 +49,7 @@
 	beltl = /obj/item/storage/keyring/merchant
 	beltr = /obj/item/storage/belt/rogue/pouch/coins/rich
 	id = /obj/item/clothing/ring/gold
-	if(H.gender == MALE)
+	if(H.pronouns == HE_HIM || H.pronouns == THEY_THEM || H.pronouns == IT_ITS)
 		shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 		H.dna.species.soundpack_m = new /datum/voicepack/male/wizard()
 	else

@@ -2,6 +2,11 @@
 	if (!istype(target, /mob/living/carbon/human) || QDELETED(target))
 		return FALSE
 
+	//Special check preventing skeletons being cautery burned to regrow flesh
+	if(istype(target, /mob/living/carbon/human/species/skeleton) && method == "surgery")
+		to_chat(user, span_warning("It's going to take a miracle to put flesh back on these bones."))
+		return FALSE
+
 	// Check if the target has rot
 	var/has_rot = FALSE
 	var/datum/antagonist/zombie/was_zombie = target.mind?.has_antag_datum(/datum/antagonist/zombie)

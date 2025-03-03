@@ -386,6 +386,12 @@
 		else
 			return ..()
 
+/obj/structure/mineral_door/attacked_by(obj/item/I, mob/living/user)
+	..()
+	if(obj_broken || obj_destroyed)
+		var/obj/effect/track/structure/new_track = new(get_turf(src))
+		new_track.handle_creation(user)
+
 /obj/structure/mineral_door/proc/repairdoor(obj/item/I, mob/user)
 	if(brokenstate)				
 		switch(repair_state)
@@ -541,6 +547,8 @@
 						var/mob/living/carbon/human/H = user
 						message_admins("[H.real_name]([key_name(user)]) successfully lockpicked [src.name]. [ADMIN_JMP(src)]")
 						log_admin("[H.real_name]([key_name(user)]) successfully lockpicked [src.name].")
+						var/obj/effect/track/structure/new_track = new(get_turf(src))
+						new_track.handle_creation(user)
 					lock_toggle(user)
 					break
 				else
@@ -930,3 +938,15 @@
 /obj/structure/mineral_door/wood/towner/woodcutter
 	resident_advclass = /datum/advclass/woodcutter
 	lockid = "towner_woodcutter"
+
+/obj/structure/mineral_door/wood/towner/fisher
+	resident_advclass = /datum/advclass/fisher
+	lockid = "towner_fisher"
+
+/obj/structure/mineral_door/wood/towner/hunter
+	resident_advclass = /datum/advclass/hunter
+	lockid = "towner_hunter"
+
+/obj/structure/mineral_door/wood/towner/witch
+	resident_advclass = /datum/advclass/witch
+	lockid = "towner_witch"

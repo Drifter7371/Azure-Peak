@@ -270,6 +270,7 @@
 
 	var/setparrytime = 12
 	var/dodgetime = 12
+	var/magearmor = 0
 
 	var/last_dodge = 0
 	var/last_parry = 0
@@ -289,3 +290,4 @@
 	var/music_playing = FALSE
 	/// Tracker for amount of turfs we sprinted over, for things like bumping and charging
 	var/sprinted_tiles = 0
+	var/sprint_dir = 1

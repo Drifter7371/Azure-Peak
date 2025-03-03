@@ -104,15 +104,28 @@
 	importexport_amt = 10
 	passive_generation = 4
 
+//natural/hide/cured must be defined/populated in sstreasury before natural/hide, for istype stockpile check to work
+/datum/roguestock/stockpile/cured
+	name = "Cured Leather"
+	desc = "Cured Leather ready to be worked."
+	item_type = /obj/item/natural/hide/cured
+	held_items = list(2, 0)
+	payout_price = 3
+	withdraw_price = 7
+	transport_fee = 3
+	export_price = 7
+	importexport_amt = 10
+	passive_generation = 3
+
 /datum/roguestock/stockpile/hide
 	name = "Hide"
 	desc = "Stripped hide from animals."
 	item_type = /obj/item/natural/hide
 	held_items = list(0, 0)
-	payout_price = 5
-	withdraw_price = 15
+	payout_price = 8
+	withdraw_price = 12
 	transport_fee = 2
-	export_price = 8
+	export_price = 12
 	importexport_amt = 5
 	passive_generation = 2
 
@@ -122,7 +135,7 @@
 	item_type = /obj/item/natural/fur
 	held_items = list(0, 0)
 	payout_price = 10
-	withdraw_price = 20
+	withdraw_price = 15
 	transport_fee = 4
 	export_price = 15
 	importexport_amt = 5
@@ -155,6 +168,18 @@
 	name = "Oats"
 	desc = "A cereal grain."
 	item_type = /obj/item/reagent_containers/food/snacks/grown/oat
+	held_items = list(0, 4)
+	payout_price = 2
+	withdraw_price = 3
+	transport_fee = 1
+	export_price = 3
+	importexport_amt = 10
+	passive_generation = 3
+
+/datum/roguestock/stockpile/garlick
+	name = "Garlick"
+	desc = "A pungent root vegetable."
+	item_type = /obj/item/reagent_containers/food/snacks/grown/garlick/rogue
 	held_items = list(0, 4)
 	payout_price = 2
 	withdraw_price = 3

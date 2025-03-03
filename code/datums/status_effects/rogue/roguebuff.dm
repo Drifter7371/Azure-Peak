@@ -13,7 +13,6 @@
 	desc = ""
 	icon_state = "drunk"
 
-
 /datum/status_effect/buff/foodbuff
 	id = "foodbuff"
 	alert_type = /atom/movable/screen/alert/status_effect/buff/foodbuff
@@ -231,6 +230,25 @@
 	to_chat(owner, span_warning("The rough floors slow my travels once again."))
 	REMOVE_TRAIT(owner, TRAIT_LONGSTRIDER, MAGIC_TRAIT)
 
+/atom/movable/screen/alert/status_effect/buff/magearmor
+	name = "Weakened Barrier"
+	desc = "My magical barrier is weakened."
+	icon_state = "stressvg"
+
+/datum/status_effect/buff/magearmor
+	id = "magearmor"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/magearmor
+
+/datum/status_effect/buff/magearmor/on_apply()
+	. = ..()
+	playsound(owner, 'sound/magic/magearmordown.ogg', 75, FALSE)
+	duration = (7-owner.mind.get_skill_level(/datum/skill/magic/arcane)) MINUTES
+
+/datum/status_effect/buff/magearmor/on_remove()
+	. = ..()
+	to_chat(owner, span_warning("My magical barrier reforms."))
+	playsound(owner, 'sound/magic/magearmorup.ogg', 75, FALSE)
+	owner.magearmor = 0
 
 /atom/movable/screen/alert/status_effect/buff/guardbuffone
 	name = "Vigilant Guardsman"
@@ -361,25 +379,33 @@
 	to_chat(owner, span_warning("The weight of the world rests upon my shoulders once more."))
 	REMOVE_TRAIT(owner, TRAIT_FORTITUDE, MAGIC_TRAIT)
 
+#define GUIDANCE_FILTER "guidance_glow"
 /atom/movable/screen/alert/status_effect/buff/guidance
 	name = "Guidance"
 	desc = "Arcyne assistance guides my hands."
 	icon_state = "buff"
 
 /datum/status_effect/buff/guidance
+	var/outline_colour ="#f58e2d"
 	id = "guidance"
 	alert_type = /atom/movable/screen/alert/status_effect/buff/guidance
 	duration = 1 MINUTES
 
 /datum/status_effect/buff/guidance/on_apply()
 	. = ..()
+	var/filter = owner.get_filter(GUIDANCE_FILTER)
+	if (!filter)
+		owner.add_filter(GUIDANCE_FILTER, 2, list("type" = "outline", "color" = outline_colour, "alpha" = 200, "size" = 1))
 	to_chat(owner, span_warning("The arcyne aides me in battle."))
 	ADD_TRAIT(owner, TRAIT_GUIDANCE, MAGIC_TRAIT)
 
 /datum/status_effect/buff/guidance/on_remove()
 	. = ..()
 	to_chat(owner, span_warning("My feeble mind muddies my warcraft once more."))
+	owner.remove_filter(GUIDANCE_FILTER)
 	REMOVE_TRAIT(owner, TRAIT_GUIDANCE, MAGIC_TRAIT)
+
+#undef GUIDANCE_FILTER
 
 #define CRANKBOX_FILTER "crankboxbuff_glow"
 /atom/movable/screen/alert/status_effect/buff/churnerprotection

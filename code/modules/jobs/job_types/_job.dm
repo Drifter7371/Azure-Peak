@@ -172,7 +172,7 @@
 		for(var/S in spells)
 			H.mind.AddSpell(new S)
 
-	if(H.gender == FEMALE)
+	if(H.pronouns == SHE_HER || H.pronouns == THEY_THEM_F)
 		if(jobstats_f)
 			for(var/S in jobstats_f)
 				H.change_stat(S, jobstats_f[S])
@@ -219,6 +219,7 @@
 /client/verb/set_mugshot()
 	set category = "OOC"
 	set name = "Set Credits Mugshot"
+	set hidden = FALSE
 	if(mob && ishuman(mob) && mob.mind)
 		var/mob/living/carbon/human/H = mob
 		if(!H.mind.mugshot_set)
@@ -287,7 +288,7 @@
 	H.dna.species.before_equip_job(src, H, visualsOnly)
 	if(!outfit_override && visualsOnly && visuals_only_outfit)
 		outfit_override = visuals_only_outfit
-	if(H.gender == FEMALE)
+	if(H.pronouns == SHE_HER || H.pronouns == THEY_THEM_F)
 		if(outfit_override || outfit_female)
 			H.equipOutfit(outfit_override ? outfit_override : outfit_female, visualsOnly)
 		else
