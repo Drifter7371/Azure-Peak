@@ -43,4 +43,4 @@
 		H.change_stat("speed", 3)
 		H.change_stat("intelligence", 1)
 
-	ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
