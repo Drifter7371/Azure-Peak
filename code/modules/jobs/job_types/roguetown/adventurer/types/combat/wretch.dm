@@ -11,13 +11,14 @@
 					"Outlaw" = "You're a seasoned criminal known for your heinous acts, your face plastered on wanted posters across the region. A life of theft, robbery, and ill-gotten-gains comes naturally to you.",
 					"Poacher" = "You have rejected society and its laws, choosing life in the wilderness instead. Simple thieving highwayman or freedom fighter, you take from those who have and give to the have-nots. Fancy, how the latter includes yourself!",
 					"Heretic" = "You are a heretic, spurned by the church, cast out from society - frowned upon by Psydon and his children for your faith.",
-					"Necromancer" = "You have been ostracized and hunted by society for your dark magics and perversion of life.")
+					"Necromancer" = "You have been ostracized and hunted by society for your dark magics and perversion of life.",
+					"Raider" = "You are a savage beyond savages - even the barbarians fear your brutality. You live only to pillage, destroy and revel in bloodshed.")
 
 
 /datum/outfit/job/roguetown/adventurer/wretch/pre_equip(mob/living/carbon/human/H)
 	..()
 	H.adjust_blindness(-3)
-	var/classes = list("Deserter","Outlaw","Poacher","Heretic","Necromancer")
+	var/classes = list("Deserter","Outlaw","Poacher","Heretic","Necromancer","Raider")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
 	switch(classchoice)
@@ -31,9 +32,9 @@
 			H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/shields, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/whipsflails, 3, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 4, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/swimming, 4, TRUE)
-			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 4, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 4, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 4, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/reading, 3, TRUE)
@@ -75,28 +76,33 @@
 			wrists = /obj/item/clothing/wrists/roguetown/bracers
 			shoes = /obj/item/clothing/shoes/roguetown/boots/armor
 			belt = /obj/item/storage/belt/rogue/leather/steel
-			backl = /obj/item/storage/backpack/rogue/satchel
 			beltl = /obj/item/storage/belt/rogue/pouch/coins/poor
 			backpack_contents = list(/obj/item/flashlight/flare/torch = 1, /obj/item/rogueweapon/huntingknife = 1)
 			GLOB.outlawed_players += H.real_name
+			var/my_crime = input(H, "What is your crime?", "Crime") as text|null
+			if (!my_crime)
+				my_crime = "crimes against the Crown"
 			var/bounty_total
 			bounty_total = rand(151, 250)
-			add_bounty(H.real_name, bounty_total, FALSE, "Desertion", "The Justiciary of Azuria")
+			add_bounty(H.real_name, bounty_total, FALSE, my_crime, "The Justiciary of Azuria")
 
 		if("Outlaw")
 			to_chat(H, span_warning("You're a seasoned criminal known for your heinous acts, your face plastered on wanted posters across the region. A life of theft, robbery, and ill-gotten-gains comes naturally to you."))
-			pants = /obj/item/clothing/under/roguetown/trou/leather
+			head = /obj/item/clothing/head/roguetown/helmet/kettle
+			pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
 			armor = /obj/item/clothing/suit/roguetown/armor/leather/heavy/coat
 			cloak = /obj/item/clothing/cloak/raincloak/mortus
 			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
+			backr = /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow
 			backl = /obj/item/storage/backpack/rogue/satchel
 			belt = /obj/item/storage/belt/rogue/leather
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			shoes = /obj/item/clothing/shoes/roguetown/boots
-			neck = /obj/item/storage/belt/rogue/pouch/coins/poor
-			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
-			beltl = /obj/item/lockpickring/mundane
-			backpack_contents = list(/obj/item/flashlight/flare/torch = 1)
+			neck = /obj/item/clothing/neck/roguetown/gorget
+			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather/heavy
+			mask = /obj/item/clothing/mask/rogue/ragmask/black
+			beltr = /obj/item/quiver/bolts
+			backpack_contents = list(/obj/item/flashlight/flare/torch = 1, /obj/item/storage/belt/rogue/pouch/coins/poor = 1, /obj/item/lockpickring/mundane = 1)
 			H.mind.adjust_skillrank(/datum/skill/misc/tracking, 5, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/crossbows, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
@@ -122,13 +128,13 @@
 			switch(weapon_choice)
 				if("Rapier")
 					H.mind.adjust_skillrank(/datum/skill/combat/swords, 1, TRUE)
-					beltr = /obj/item/rogueweapon/sword/rapier
+					beltl = /obj/item/rogueweapon/sword/rapier
 				if("Dagger")
 					H.mind.adjust_skillrank(/datum/skill/combat/knives, 1, TRUE)
-					beltr = /obj/item/rogueweapon/huntingknife/idagger/silver/elvish
+					beltl = /obj/item/rogueweapon/huntingknife/idagger/silver/elvish
 				if ("Whip")
 					H.mind.adjust_skillrank(/datum/skill/combat/whipsflails, 1, TRUE)
-					beltr = /obj/item/rogueweapon/whip
+					beltl = /obj/item/rogueweapon/whip
 			H.change_stat("strength", -1)
 			H.change_stat("constitution", 1)
 			H.change_stat("endurance", 2)
@@ -146,18 +152,20 @@
 		if("Poacher")
 			to_chat(H, span_warning("You have rejected society and its laws, choosing life in the wilderness instead. Simple thieving highwayman or freedom fighter, you take from those who have and give to the have-nots. Fancy, how the latter includes yourself!"))
 			head = /obj/item/clothing/head/roguetown/roguehood/darkgreen
-			pants = /obj/item/clothing/under/roguetown/trou/leather
+			mask = /obj/item/clothing/mask/rogue/wildguard
+			pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
 			armor = /obj/item/clothing/suit/roguetown/armor/leather/heavy/coat
 			cloak = /obj/item/clothing/cloak/raincloak/furcloak/darkgreen
 			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
 			backl = /obj/item/storage/backpack/rogue/satchel
 			belt = /obj/item/storage/belt/rogue/leather
+			neck = /obj/item/clothing/neck/roguetown/gorget
 			gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
 			shoes = /obj/item/clothing/shoes/roguetown/boots
-			beltl = /obj/item/storage/belt/rogue/pouch/coins/poor
 			backr = /obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve
 			beltl = /obj/item/quiver/arrows
-			backpack_contents = list(/obj/item/flashlight/flare/torch = 1, /obj/item/bait = 1, /obj/item/rogueweapon/huntingknife = 1)
+			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather/heavy
+			backpack_contents = list(/obj/item/flashlight/flare/torch = 1, /obj/item/bait = 1, /obj/item/rogueweapon/huntingknife = 1, /obj/item/storage/belt/rogue/pouch/coins/poor = 1)
 			H.mind.adjust_skillrank(/datum/skill/misc/tracking, 4, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/bows, 4, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
@@ -201,9 +209,12 @@
 			H.change_stat("perception", 2)
 			H.change_stat("speed", 2)
 			GLOB.outlawed_players += H.real_name
+			var/my_crime = input(H, "What is your crime?", "Crime") as text|null
+			if (!my_crime)
+				my_crime = "crimes against the Crown"
 			var/bounty_total
 			bounty_total = rand(151, 250)
-			add_bounty(H.real_name, bounty_total, FALSE, "Poaching", "The Justiciary of Azuria")
+			add_bounty(H.real_name, bounty_total, FALSE, my_crime, "The Justiciary of Azuria")
 
 		if("Heretic")
 			to_chat(H, span_warning("You are a heretic, spurned by the church, cast out from society - frowned upon by Psydon and his children for your faith."))
@@ -260,6 +271,12 @@
 			C.grant_spells(H)
 			START_PROCESSING(SSobj, C)
 			GLOB.excommunicated_players += H.real_name
+			var/my_crime = input(H, "What is your crime?", "Crime") as text|null
+			if (!my_crime)
+				my_crime = "crimes against the Crown"
+			var/bounty_total
+			bounty_total = rand(151, 250)
+			add_bounty(H.real_name, bounty_total, FALSE, my_crime, "the Holy See")
 			H.cmode_music = 'sound/music/combat_cult.ogg'
 			H.verbs += list(/mob/living/carbon/human/proc/devotionreport, /mob/living/carbon/human/proc/clericpray)
 
@@ -268,17 +285,17 @@
 			to_chat(H, span_warning("You have been ostracized and hunted by society for your dark magics and perversion of life."))
 			head = /obj/item/clothing/head/roguetown/roguehood/black
 			shoes = /obj/item/clothing/shoes/roguetown/boots
-			pants = /obj/item/clothing/under/roguetown/trou/leather
-			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
-			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
+			pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
+			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather/heavy
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
 			armor = /obj/item/clothing/suit/roguetown/shirt/robe/black
 			belt = /obj/item/storage/belt/rogue/leather
 			beltr = /obj/item/reagent_containers/glass/bottle/rogue/manapot
-			neck = /obj/item/storage/belt/rogue/pouch/coins/poor
+			neck = /obj/item/clothing/neck/roguetown/gorget
 			beltl = /obj/item/rogueweapon/huntingknife
 			backl = /obj/item/storage/backpack/rogue/satchel
 			backr = /obj/item/rogueweapon/woodstaff
-			backpack_contents = list(/obj/item/spellbook_unfinished/pre_arcyne = 1, /obj/item/roguegem/amethyst = 1, /obj/item/roguekey/inhumen = 1, /obj/item/flashlight/flare/torch = 1)
+			backpack_contents = list(/obj/item/spellbook_unfinished/pre_arcyne = 1, /obj/item/roguegem/amethyst = 1, /obj/item/roguekey/inhumen = 1, /obj/item/flashlight/flare/torch = 1, /obj/item/storage/belt/rogue/pouch/coins/poor = 1)
 			H.mind.adjust_skillrank(/datum/skill/combat/polearms, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
@@ -306,6 +323,12 @@
 			H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/raise_lesser_undead/necromancer)
 			H.mind.adjust_spellpoints(1)
 			GLOB.excommunicated_players += H.real_name
+			var/my_crime = input(H, "What is your crime?", "Crime") as text|null
+			if (!my_crime)
+				my_crime = "crimes against the Crown"
+			var/bounty_total
+			bounty_total = rand(151, 250)
+			add_bounty(H.real_name, bounty_total, FALSE, my_crime, "the Holy See")
 
 /obj/item/clothing/gloves/roguetown/chain/blk
 		color = CLOTHING_GREY

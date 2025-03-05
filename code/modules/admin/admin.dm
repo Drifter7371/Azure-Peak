@@ -840,6 +840,26 @@
 	set name = "Return to Lobby"
 
 	var/mob/living/carbon/human/H = mob
+	var/datum/job/mob_job
+	var/target_job = SSrole_class_handler.get_advclass_by_name(H.advjob)
+
+	if(H.mind)
+		mob_job = SSjob.GetJob(H.mind.assigned_role)
+		if(mob_job)
+			mob_job.current_positions = max(0, mob_job.current_positions - 1)
+		if(target_job)
+			SSrole_class_handler.adjust_class_amount(target_job, -1)
+		H.mind.unknow_all_people()
+		for(var/datum/mind/MF in get_minds())
+			H.mind.become_unknown_to(MF)
+		for(var/datum/bounty/removing_bounty in GLOB.head_bounties)
+			if(removing_bounty.target == H.real_name)
+				GLOB.head_bounties -= removing_bounty
+	else
+		alert(usr, "Target has no mind!") // Optional Error check that may or may not be neccessary
+	GLOB.chosen_names -= H.real_name
+	LAZYREMOVE(GLOB.actors_list, H.mobid)
+	LAZYREMOVE(GLOB.roleplay_ads, H.mobid)
 	H.returntolobby()
 
 

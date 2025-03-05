@@ -44,6 +44,7 @@
 	body_parts_covered = null
 	icon_state = ""
 	item_state = ""
+	experimental_inhand = FALSE
 
 	grid_width = 64
 	grid_height = 32

@@ -109,6 +109,12 @@
 		if(name in GLOB.outlawed_players)
 			. += span_userdanger("OUTLAW!")
 
+		if(HAS_TRAIT(user, TRAIT_JUSTICARSIGHT) && !HAS_TRAIT(src, TRAIT_DECEIVING_MEEKNESS))
+			for(var/datum/bounty/b in GLOB.head_bounties) //I hate this.
+				if(b.target == real_name)
+					. += span_syndradio("[m3] a bounty on [m2] head of [b.amount] mammon for [b.reason], issued by [b.employer].")
+					break
+
 		if(name in GLOB.court_agents)
 			var/datum/job/J = SSjob.GetJob(user.mind?.assigned_role)
 			if(J?.department_flag & GARRISON || J?.department_flag & NOBLEMEN)
@@ -131,9 +137,9 @@
 				if(ishuman(user))
 					var/mob/living/carbon/human/H = user
 					if(dna.species.name == H.dna.species.name)
-						. += span_nicegreen("[m1] privy to the dangers of all these strangers around us. He is just as afraid as I am.")
+						. += span_nicegreen("[m1] privy to the dangers of all these strangers around us. [m1] just as afraid as I am.")
 					else
-						. += span_nicegreen("[m1] one of the good ones. He is just as afraid as I am.")
+						. += span_nicegreen("[m1] one of the good ones. [m1] just as afraid as I am.")
 			if(has_flaw(/datum/charflaw/masochist) && user.has_flaw(/datum/charflaw/addiction/sadist))
 				. += span_secradio("[m1] marked by scars inflicted for pleasure. A delectable target for my urges.")
 			if(has_flaw(/datum/charflaw/addiction/sadist) && user.has_flaw(/datum/charflaw/masochist))

@@ -8,6 +8,7 @@
 	bloody_icon_state = "bloodyhands"
 	sleevetype = "shirt"
 	max_heat_protection_temperature = 361
+	experimental_inhand = FALSE
 
 /obj/item/clothing/gloves/roguetown/leather
 	name = "leather gloves"

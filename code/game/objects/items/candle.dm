@@ -6,6 +6,7 @@
 	icon_state = "candle1"
 	item_state = "candle1"
 	w_class = WEIGHT_CLASS_TINY
+	experimental_inhand = FALSE
 	light_color = LIGHT_COLOR_FIRE
 	heat = 1000
 	var/wax = 1000

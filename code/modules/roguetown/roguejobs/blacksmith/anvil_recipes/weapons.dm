@@ -461,12 +461,21 @@
 	createditem_num = 10
 	i_type = "Ammo"
 
-/// RANGED
+/// BOWS
 /datum/anvil_recipe/weapons/iron/arrows
 	name = "Arrows 10x (+2 Stick)"
 	req_bar = /obj/item/ingot/iron
 	additional_items = list(/obj/item/grown/log/tree/stick, /obj/item/grown/log/tree/stick)
 	created_item = /obj/item/ammo_casing/caseless/rogue/arrow/iron
+	createditem_num = 10
+	i_type = "Ammo"
+	craftdiff = 0
+
+/// SLINGS
+/datum/anvil_recipe/weapons/iron/slingbullets
+	name = "Iron Sling Bullets 10x"
+	req_bar = /obj/item/ingot/iron
+	created_item = /obj/item/ammo_casing/caseless/rogue/sling_bullet/iron
 	createditem_num = 10
 	i_type = "Ammo"
 	craftdiff = 0

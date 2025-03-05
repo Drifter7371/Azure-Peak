@@ -1,4 +1,4 @@
-#define DEAD_TO_ZOMBIE_TIME 3 MINUTES ///Time before death -> raised as zombie (when outside of the city)
+#define DEAD_TO_ZOMBIE_TIME 5 MINUTES ///Time before death -> raised as zombie (when outside of the city)
 
 /datum/component/rot
 	var/amount = 0

@@ -881,7 +881,24 @@
 		if(!M.client)
 			to_chat(usr, span_warning("[M] doesn't seem to have an active client."))
 			return
+		var/datum/job/mob_job = SSjob.GetJob(M.mind.assigned_role)
+		var/target_job = SSrole_class_handler.get_advclass_by_name(M.advjob)
+		if(M.mind)
+			mob_job = SSjob.GetJob(M.mind.assigned_role)
+			if(mob_job)
+				mob_job.current_positions = max(0, mob_job.current_positions - 1)
+			if(target_job)
+				SSrole_class_handler.adjust_class_amount(target_job, -1)
+			M.mind.unknow_all_people()
+			for(var/datum/mind/MF in get_minds())
+				M.mind.become_unknown_to(MF)
+			for(var/datum/bounty/removing_bounty in GLOB.head_bounties)
+				if(removing_bounty.target == M.real_name)
+					GLOB.head_bounties -= removing_bounty
 		log_admin("[key_name(usr)] has sent [key_name(M)] back to the Lobby.")
+		GLOB.chosen_names -= M.real_name
+		LAZYREMOVE(GLOB.actors_list, M.mobid)
+		LAZYREMOVE(GLOB.roleplay_ads, M.mobid)
 
 		var/mob/dead/new_player/NP = new()
 		NP.ckey = M.ckey

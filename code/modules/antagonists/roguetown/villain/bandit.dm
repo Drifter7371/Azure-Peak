@@ -69,9 +69,16 @@
 
 	return TRUE
 
-/datum/antagonist/bandit/after_name_change()
+// commenting this stuff out since bandits weren't intended to have roundstart bounties and this is actual holdover code from before we even had the bounty system
+/*	
+	/datum/antagonist/bandit/after_name_change() 
+	//var/my_crime = input(owner.current, "What is your crime?", "Crime") as text|null
+	//if (!my_crime)
+		my_crime = "crimes against the Crown"
+	var/bounty_total
+	bounty_total = rand(251, 400)
 	if(owner && owner.current)
-		add_bounty(owner.current.real_name, 80, TRUE, "bandit activity", "The [SSticker.rulertype]")
+		add_bounty(owner.current.real_name, bounty_total, TRUE, my_crime, "The [SSticker.rulertype]")*/
 
 /datum/antagonist/bandit/roundend_report()
 	if(owner?.current)

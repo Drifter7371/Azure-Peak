@@ -22,6 +22,7 @@
 	break_sound = 'sound/foley/breaksound.ogg'
 	drop_sound = 'sound/foley/dropsound/armor_drop.ogg'
 	experimental_onhip = TRUE
+	experimental_inhand = FALSE
 	nodismemsleeves = TRUE
 	flags_inv = HIDEBOOB|HIDECROTCH
 	grid_width = 64

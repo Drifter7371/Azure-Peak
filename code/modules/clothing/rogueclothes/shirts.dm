@@ -14,6 +14,7 @@
 	boobed = TRUE
 	sewrepair = TRUE
 	flags_inv = HIDEBOOB
+	experimental_inhand = FALSE
 	
 	grid_width = 64
 	grid_height = 64
@@ -497,3 +498,10 @@
 	desc = "A billowing tunic made of the finest silks and softest fabrics. Inlaid with golden thread, this is the height of fashion for the wealthiest of wearers."
 	icon_state = "stewardtunic"
 	item_state = "stewardtunic"
+
+//WEDDING CLOTHES
+/obj/item/clothing/suit/roguetown/shirt/dress/silkdress/weddingdress
+	name = "wedding silk dress"
+	desc = "A dress woven from fine silks, with golden threads inlaid in it. Made for that special day."
+	icon_state = "weddingdress"
+	item_state = "weddingdress"

@@ -9,6 +9,7 @@
 	possible_transfer_amounts = list(6)
 	dropshrink = 0.8
 	w_class = WEIGHT_CLASS_NORMAL
+	experimental_inhand = FALSE
 	volume = 24
 	obj_flags = CAN_BE_HIT
 	sellprice = 1

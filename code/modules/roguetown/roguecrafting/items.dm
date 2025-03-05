@@ -845,3 +845,57 @@
 	reqs = list(/obj/item/reagent_containers/food/snacks/tallow = 1,
 				/obj/item/alch/rosa = 1,
 				/datum/reagent/water/blessed = 25)
+
+/datum/crafting_recipe/roguetown/slingcraft
+	name = "sling"
+	result = /obj/item/gun/ballistic/revolver/grenadelauncher/sling
+	reqs = list(/obj/item/natural/fibers = 6)
+	verbage_simple = "twist"
+	verbage = "twists"
+	craftdiff = 1 //you should make some ammo first!
+	
+/datum/crafting_recipe/roguetown/slingpouchcraft
+	name = "sling bullet pouch"
+	result = /obj/item/quiver/sling/
+	reqs = list(/obj/item/natural/fibers = 1, /obj/item/natural/cloth = 1)
+	verbage_simple = "craft"
+	verbage = "crafts"
+	craftdiff = 0
+
+/datum/crafting_recipe/roguetown/stonebullets
+	name = "stone sling bullets (x2)"
+	result = list(
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				)
+	reqs = list(/obj/item/natural/stone = 1)
+	verbage_simple = "smooth"
+	verbage = "smooths"
+	craftdiff = 0
+	
+/datum/crafting_recipe/roguetown/stonebullets10x
+	name = "stone sling bullets (x10)"
+	result = list(
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				)
+	reqs = list(/obj/item/natural/stone = 5)
+	verbage_simple = "smooth"
+	verbage = "smooths"
+	craftdiff = 0
+
+/datum/crafting_recipe/hair_dye
+    name = "Hair Dye Cream"
+    result = /obj/item/hair_dye_cream
+    reqs = list(
+        /obj/item/reagent_containers/glass/bowl = 1,
+        /obj/item/reagent_containers/food/snacks/grown/berries/rogue = 3
+    )

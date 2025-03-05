@@ -125,3 +125,11 @@
 	"...a terrible lizard unleashes a torrent of fire upon you. Yet, you stand firm, a living bastion, unyielding and stalwart...",
 	"...the half-moon crest upon your shield shines even in the bright of Astrata's day. You catch a gleam on it, and reflexively pull it upwards. An arrow bounces off..."
 	)
+
+/datum/skill/combat/slings
+	name = "Slings"
+	dreams = list(
+	"...you recall an old maxim you read in a dusty tome within the archives: if you can throw, you can sling...",
+	"...the perched archers ruthlessly repel the peasant rebellion. Hope for fairness is almost forlorn, until with a soft crack, a hailing of iron bullets clatter against the foe's helmets...",
+	"...your arm tires from the toils of practice. Swinging rapidly has left your arm numb. With weary eyes, you glance aside to witness a hunter practice their craft with a brief overhand toss. Absorbing the technique, you mimic it, and effortlessly cast a powerful stone square onto the target..."
+	)

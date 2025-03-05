@@ -16,6 +16,12 @@
 	else if (istype(target, /mob/living/carbon))
 		has_rot = check_bodyparts_for_rot(target)
 
+	// Remove rot component
+	remove_rot_component(target)
+
+	// Clean body parts
+	clean_body_parts(target)
+
 	// Handle failure case
 	if (!has_rot)
 		to_chat(user, span_warning(fail_message))
@@ -23,12 +29,6 @@
 
 	if (was_zombie)
 		remove_zombie_antag(target, user, method)
-
-	// Remove rot component
-	remove_rot_component(target)
-
-	// Clean body parts
-	clean_body_parts(target)
 
 	//Doing it out of this proc for now
 	//to_chat(user, span_notice(success_message))

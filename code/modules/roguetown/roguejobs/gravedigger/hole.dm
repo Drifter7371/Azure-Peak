@@ -58,7 +58,7 @@
 			. += span_warning("Better let this one sleep.")
 
 /obj/structure/closet/dirthole/insertion_allowed(atom/movable/AM)
-	if(istype(AM, /obj/structure/closet/crate/chest) || istype(AM, /obj/structure/closet/burial_shroud))
+	if(istype(AM, /obj/structure/closet/crate/coffin) || istype(AM, /obj/structure/closet/burial_shroud))
 		for(var/mob/living/M in contents)
 			return FALSE
 		for(var/obj/structure/closet/C in contents)

@@ -137,6 +137,7 @@ GLOBAL_LIST_INIT(stone_personality_descs, list(
 	slot_flags = ITEM_SLOT_MOUTH
 	obj_flags = null
 	w_class = WEIGHT_CLASS_TINY
+	experimental_inhand = FALSE
 	/// If our stone is magical, this lets us know -how- magical. Maximum is 15.
 	var/magic_power = 0
 

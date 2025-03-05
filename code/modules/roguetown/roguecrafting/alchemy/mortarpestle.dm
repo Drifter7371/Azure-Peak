@@ -5,6 +5,7 @@
 	icon_state = "pestle"
 	force = 7
 	dropshrink = 0.9
+	experimental_inhand = FALSE
 
 	grid_width = 32
 	grid_height = 64
@@ -15,6 +16,7 @@
 	icon = 'icons/roguetown/misc/alchemy.dmi'
 	icon_state = "mortar"
 	dropshrink = 0.9
+	experimental_inhand = FALSE
 	var/obj/item/to_grind
 
 	grid_width = 64

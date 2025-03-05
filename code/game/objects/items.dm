@@ -454,6 +454,8 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 				if(length(C.prevent_crits))
 					inspec += "\n<b>PREVENTS CRITS:</b>"
 					for(var/X in C.prevent_crits)
+						if(X == BCLASS_PICK)	//BCLASS_PICK is named "stab", and "stabbing" is its own damage class. Prevents confusion.
+							X = "pick"
 						inspec += ("\n<b>[capitalize(X)]</b>")
 				inspec += "<br>"
 

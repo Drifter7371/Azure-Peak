@@ -9,11 +9,13 @@
 	dynamic_hair_suffix = "+generic"
 	bloody_icon_state = "helmetblood"
 	experimental_onhip = TRUE
+	var/mask_override = FALSE //override if we want to always respect our inv flags if the helm is in a mask slot
+	experimental_inhand = FALSE
 
 /obj/item/clothing/head/roguetown/equipped(mob/user, slot)
 	. = ..()
 	user.update_fov_angles()
-	if(slot != SLOT_HEAD)
+	if(slot != SLOT_HEAD && !mask_override)
 		flags_inv = null
 	else
 		flags_inv = initial(flags_inv)
@@ -82,6 +84,7 @@
 	blocksound = SOFTHIT
 	max_integrity = 100
 	sewrepair = TRUE
+	mask_override = TRUE
 
 /obj/item/clothing/head/roguetown/roguehood/shalal/black
 	color = CLOTHING_BLACK
@@ -160,9 +163,11 @@
 	mob_overlay_icon = 'icons/roguetown/clothing/onmob/head.dmi' //Overrides slot icon behavior
 	body_parts_covered = NECK|MOUTH //Jaw bone
 	slot_flags = ITEM_SLOT_HEAD|ITEM_SLOT_MASK
-	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	flags_inv = HIDEEARS|HIDESNOUT|HIDEHAIR|HIDEFACIALHAIR
 	dynamic_hair_suffix = ""
 	sewrepair = TRUE
+	mask_override = TRUE
+
 
 /obj/item/clothing/head/roguetown/dendormask
 	name = "briarmask"
@@ -235,7 +240,10 @@
 			block2add = FOV_BEHIND
 		else if(adjustable == CADJUSTED)
 			ResetAdjust(user)
-			flags_inv = null
+			if(mask_override == TRUE)
+				flags_inv = initial(flags_inv)
+			else
+				flags_inv = null
 			if(user)
 				if(ishuman(user))
 					var/mob/living/carbon/H = user
@@ -835,10 +843,9 @@
 /obj/item/clothing/head/roguetown/helmet/heavy/zizo/pickup(mob/living/user)
 	if(!HAS_TRAIT(user, TRAIT_CABAL))
 		to_chat(user, "<font color='purple'>UNWORTHY HANDS TOUCH THE HELMET, CEASE OR BE PUNISHED</font>")
-		if(loc == user)
-			user.adjust_fire_stacks(5)
-			user.IgniteMob()
-			user.Stun(40)
+		user.adjust_fire_stacks(5)
+		user.IgniteMob()
+		user.Stun(40)
 	..()
 
 /obj/item/clothing/head/roguetown/helmet/heavy/zizo/AdjustClothes(mob/user)
@@ -862,7 +869,7 @@
 					var/mob/living/carbon/H = user
 					H.update_inv_head()
 		user.update_fov_angles()
-	
+
 
 /obj/item/clothing/head/roguetown/helmet/heavy/guard
 	name = "savoyard"
@@ -964,6 +971,36 @@
 			pic.color = get_detail_color()
 		add_overlay(pic)
 
+/obj/item/clothing/head/roguetown/helmet/heavy/knight/armet
+	name = "armet"
+	desc = "Holy lamb, sacrificial hero, blessed idiot - Psydon endures. Will you endure alongside Him, as a knight of humenity, or crumble before temptation?"
+	icon_state = "armet"
+
+/obj/item/clothing/head/roguetown/helmet/heavy/knight/armet/AdjustClothes(mob/user)
+	if(loc == user)
+		playsound(user, "sound/items/visor.ogg", 100, TRUE, -1)
+		if(adjustable == CAN_CADJUST)
+			adjustable = CADJUSTED
+			icon_state = "armet_raised"
+			body_parts_covered = HEAD|HAIR|EARS
+			flags_inv = HIDEEARS
+			flags_cover = null
+			emote_environment = 0
+			update_icon()
+			if(ishuman(user))
+				var/mob/living/carbon/H = user
+				H.update_inv_head()
+			block2add = null
+		else if(adjustable == CADJUSTED)
+			ResetAdjust(user)
+			emote_environment = 3
+			update_icon()
+			if(user)
+				if(ishuman(user))
+					var/mob/living/carbon/H = user
+					H.update_inv_head()
+		user.update_fov_angles()
+
 /obj/item/clothing/head/roguetown/helmet/heavy/bucket/gold
 	name = "golden helmet"
 	icon_state = "topfhelm_gold"
@@ -1043,7 +1080,7 @@
 
 /obj/item/clothing/head/roguetown/helmet/heavy/psydonhelm
 	name = "psydonian armet"
-	desc = "An ornate helmet, whose visor has been bound shut with blacksteel chains. The Order of Saint Eora often decorates these armets with flowers - not only as a lucky charm gifted to them by fair maidens and family, but also as a vibrant reminder that 'happiness has to be fought for.'" 
+	desc = "An ornate helmet, whose visor has been bound shut with blacksteel chains. The Order of Saint Eora often decorates these armets with flowers - not only as a lucky charm gifted to them by fair maidens and family, but also as a vibrant reminder that 'happiness has to be fought for.'"
 	icon_state = "psydonarmet"
 	item_state = "psydonarmet"
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDESNOUT
@@ -1222,6 +1259,46 @@
 			pic.color = get_detail_color()
 		add_overlay(pic)
 
+/obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull
+	name = "hounskull bascinet"
+	desc = "A bascinet with a conical visor, prominent amongst those who remain unburdened with snouts and whiskers. Nestle a feather onto the rim to bare your pride."
+	icon_state = "bascinet"
+
+/obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull/AdjustClothes(mob/user)
+	if(loc == user)
+		playsound(user, "sound/items/visor.ogg", 100, TRUE, -1)
+		if(adjustable == CAN_CADJUST)
+			adjustable = CADJUSTED
+			icon_state = "bascinet_raised"
+			body_parts_covered = HEAD|EARS|HAIR
+			flags_inv = HIDEEARS|HIDEHAIR
+			flags_cover = null
+			emote_environment = 0
+			update_icon()
+			if(ishuman(user))
+				var/mob/living/carbon/H = user
+				H.update_inv_head()
+			block2add = null
+		else if(adjustable == CADJUSTED)
+			ResetAdjust(user)
+			emote_environment = 3
+			update_icon()
+			if(user)
+				if(ishuman(user))
+					var/mob/living/carbon/H = user
+					H.update_inv_head()
+		user.update_fov_angles()
+
+
+/obj/item/clothing/head/roguetown/helmet/bascinet/pigface/hounskull/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
+
 /obj/item/clothing/head/roguetown/helmet/heavy/frogmouth
 	name = "froggemund helmet"
 	desc = "A tall and imposing frogmouth-style helm popular in the highest plateaus of the Azure Peak. Covers not just the head, but the neck as well. Add a cloth to show the colors of your family or allegiance."
@@ -1245,10 +1322,9 @@
 /obj/item/clothing/head/roguetown/helmet/heavy/frogmouth/zizo/pickup(mob/living/user)
 	if(!HAS_TRAIT(user, TRAIT_CABAL))
 		to_chat(user, "<font color='purple'>UNWORTHY HANDS TOUCH THE HELMET, CEASE OR BE PUNISHED</font>")
-		if(loc == user)
-			user.adjust_fire_stacks(5)
-			user.IgniteMob()
-			user.Stun(40)
+		user.adjust_fire_stacks(5)
+		user.IgniteMob()
+		user.Stun(40)
 	..()
 
 /obj/item/clothing/head/roguetown/helmet/heavy/frogmouth/attackby(obj/item/W, mob/living/user, params)
@@ -1336,6 +1412,7 @@
 	mob_overlay_icon = 'icons/roguetown/clothing/onmob/64x64/head.dmi'
 	worn_x_dimension = 64
 	worn_y_dimension = 64
+	bloody_icon = 'icons/effects/blood64.dmi'
 	armor = list("blunt" = 60, "slash" = 40, "stab" = 45, "piercing" = 15, "fire" = 0, "acid" = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
 	flags_cover = HEADCOVERSEYES

@@ -19,6 +19,11 @@
 /datum/outfit/job/roguetown/adventurer/cleric/pre_equip(mob/living/carbon/human/H)
 	..()
 
+	// Add druidic skill for Dendor followers
+	if(istype(H.patron, /datum/patron/divine/dendor))
+		H.mind.adjust_skillrank(/datum/skill/magic/druidic, 3, TRUE)
+		to_chat(H, span_notice("As a follower of Dendor, you have innate knowledge of druidic magic."))
+
 	// CLASS ARCHETYPES
 	H.adjust_blindness(-3)
 	var/classes = list("Monk","Paladin","Cantor","Missionary")
@@ -297,6 +302,8 @@
 					cloak = /obj/item/clothing/suit/roguetown/shirt/robe/eora
 					head = /obj/item/clothing/head/roguetown/eoramask
 				if(/datum/patron/inhumen/zizo)
+					cloak = /obj/item/clothing/suit/roguetown/shirt/robe 
+					head = /obj/item/clothing/head/roguetown/roguehood
 					H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/minion_order)
 				else
 					cloak = /obj/item/clothing/suit/roguetown/shirt/robe //placeholder, anyone who doesn't have cool patron drip sprites just gets generic robes

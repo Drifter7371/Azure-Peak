@@ -17,7 +17,8 @@
 	drinksounds = list('sound/items/drink_bottle (1).ogg','sound/items/drink_bottle (2).ogg')
 	fillsounds = list('sound/items/fillcup.ogg')
 	poursounds = list('sound/items/fillbottle.ogg')
-	experimental_onhip = TRUE
+	experimental_onhip = FALSE
+	experimental_inhand = FALSE
 	sellprice = 1
 
 

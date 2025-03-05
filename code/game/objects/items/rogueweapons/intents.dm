@@ -350,6 +350,21 @@
 	if(masteritem && mastermob)
 		mastermob.visible_message(span_warning("[mastermob] aims [masteritem]!"))
 
+/datum/intent/swing //swinging a sling, no parrydrain
+	name = "swing"
+	icon_state = "inshoot"
+	tranged = 1
+	warnie = "aimwarn"
+	item_d_type = "stab"
+	chargetime = 0.1
+	no_early_release = FALSE
+	noaa = TRUE
+	charging_slowdown = 3
+	warnoffset = 20
+
+/datum/intent/swing/prewarning()
+	if(masteritem && mastermob)
+		mastermob.visible_message(span_warning("[mastermob] swings [masteritem]!"))
 
 /datum/intent/unarmed
 	unarmed = TRUE

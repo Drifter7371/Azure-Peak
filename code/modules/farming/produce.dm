@@ -9,6 +9,7 @@
 	var/list/pipe_reagents = list()
 	var/seed
 	var/bitesize_mod = 0
+	experimental_inhand = FALSE
 
 
 /obj/item/reagent_containers/food/snacks/grown/Initialize(mapload)

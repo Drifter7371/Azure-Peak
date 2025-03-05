@@ -30,8 +30,8 @@
 	var/blood_timer
 
 /obj/effect/decal/cleanable/blood/Initialize(mapload)
-	GLOB.weather_act_upon_list += src
 	. = ..()
+	GLOB.weather_act_upon_list += src
 	if(. == INITIALIZE_HINT_QDEL)
 		return .
 	pixel_x = rand(-5,5)

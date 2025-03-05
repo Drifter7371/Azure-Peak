@@ -3,7 +3,7 @@
 	skin_tone = SKIN_COLOR_GROONN
 	hairstyle = "Bald"
 	facial_hairstyle = "Shaved"
-	outfit = /datum/outfit/savageorc
+	var/orc_outfit = /datum/outfit/job/roguetown/orc/npc
 
 	race = /datum/species/orc
 	gender = MALE

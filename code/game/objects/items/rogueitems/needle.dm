@@ -13,6 +13,7 @@
 	max_integrity = 20
 	anvilrepair = /datum/skill/craft/blacksmithing
 	tool_behaviour = TOOL_SUTURE
+	experimental_inhand = FALSE
 	/// Amount of uses left
 	var/stringamt = 20
 	var/maxstring = 20

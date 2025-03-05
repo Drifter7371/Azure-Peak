@@ -918,3 +918,13 @@
 	craftdiff = 4
 	sellprice = 13
 	
+/datum/crafting_recipe/roguetown/sewing/weddingdress
+	name = "wedding silk dress"
+	result = list(/obj/item/clothing/suit/roguetown/shirt/dress/silkdress/weddingdress)
+	reqs = list(/obj/item/natural/cloth = 2,
+				/obj/item/natural/fibers = 2,
+				/obj/item/natural/silk = 2,
+				/obj/item/alch/golddust = 1)
+	tools = list(/obj/item/needle)
+	craftdiff = 5
+	sellprice = 40

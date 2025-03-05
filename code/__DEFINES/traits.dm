@@ -55,6 +55,8 @@
 #define TRAIT_STUDENT		"Student"
 #define TRAIT_INTELLECTUAL "Intellectual"
 #define TRAIT_GRAVEROBBER "Experienced Grave Robber"
+#define TRAIT_PURITAN "Puritan"
+#define TRAIT_MIRROR_MAGIC "Mirror Magic"
 #define TRAIT_WITCH "They fear me, but I am useful to them."
 
 
@@ -80,6 +82,7 @@
 #define TRAIT_ABYSSOR_SWIM "Blessing of Abyssor" //less base fatigue drain when swimming
 #define TRAIT_XYLIX "Blessing of Xylix" //secret thieves cant language
 #define TRAIT_FORGEBLESSED "Blessing of Malum" //Reduces the fatigue cost of smithing a bit.
+#define TRAIT_JUSTICARSIGHT "Blessing of Ravox" //Allows seeing bounties and crimes when examining outlaws.
 
 // ASCENDANT CULTIST TRAITS (all of them recognize each other)
 #define TRAIT_COMMIE "Blessing of Matthios" //recognized by bandits as an ally
@@ -119,6 +122,7 @@
 #define TRAIT_DUALWIELDER "Dual Wielder"
 #define TRAIT_SENTINELOFWITS "Sentinel of Wits"
 #define TRAIT_KEENEARS "Keen Ears"
+#define TRAIT_CICERONE "Cicerone"
 
 GLOBAL_LIST_INIT(roguetraits, list(
 	TRAIT_LEPROSY = span_necrosis("I'm a disgusting leper..."),
@@ -214,6 +218,10 @@ GLOBAL_LIST_INIT(roguetraits, list(
 	TRAIT_SENTINELOFWITS = span_info("My Intelligence aids in my defense. Every 2 points above 10 INT become an additional 10% chance to dodge or parry. Does not count positive buffs from potions or substances."),
 	TRAIT_KEENEARS = span_info("I've a good pair of ears, and can tell who is speaking, even when they're out of sight."),
 	TRAIT_GRAVEROBBER = span_info("My experience with 'post-mortem artifact recovery' has allowed me to resist Necra's curse placed upon those who disturb resting places."),
+	TRAIT_PURITAN = span_info("I can hear the secret whispers of the heretics."),
+	TRAIT_MIRROR_MAGIC = span_info("Mirror, mirror on the wall, who's the fairest of them all?"),
+	TRAIT_JUSTICARSIGHT = span_info("I am able to remember someone's crimes by looking at them, and how much their bounty is."),
+	TRAIT_CICERONE = span_info("I am well-versed in the differences of brews and spirits, and can tell them apart at a glance."),
 ))
 
 // trait accessor defines
@@ -493,3 +501,19 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 //for ai
 #define TRAIT_SUBTREE_REQUIRED_OPERATIONAL_DATUM "element-required"
+
+/*/mob/living/proc/on_trait_gain(trait, source)
+	SEND_SIGNAL(src, COMSIG_TRAIT_GAIN, trait, source)
+	switch(trait)
+		if(TRAIT_COMMIE, TRAIT_CABAL, TRAIT_HORDE, TRAIT_DEPRAVED)
+			if(ishuman(src))
+				var/mob/living/carbon/human/H = src
+				H.update_heretic_commune()
+
+/mob/living/proc/on_trait_loss(trait, source)
+	SEND_SIGNAL(src, COMSIG_TRAIT_LOSS, trait, source)
+	switch(trait)
+		if(TRAIT_COMMIE, TRAIT_CABAL, TRAIT_HORDE, TRAIT_DEPRAVED)
+			if(ishuman(src))
+				var/mob/living/carbon/human/H = src
+				H.update_heretic_commune()*/
