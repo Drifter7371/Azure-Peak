@@ -5,6 +5,10 @@
 	icon_state = "pestle"
 	force = 7
 	dropshrink = 0.9
+	experimental_inhand = FALSE
+
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/mortar
 	name = "alchemical mortar"
@@ -12,7 +16,11 @@
 	icon = 'icons/roguetown/misc/alchemy.dmi'
 	icon_state = "mortar"
 	dropshrink = 0.9
+	experimental_inhand = FALSE
 	var/obj/item/to_grind
+
+	grid_width = 64
+	grid_height = 32
 
 /obj/item/mortar/attack_right(mob/user)
 	user.changeNext_move(CLICK_CD_MELEE)

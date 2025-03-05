@@ -93,7 +93,7 @@
 		gloves = /obj/item/clothing/gloves/roguetown/fingerless
 	else
 		gloves = null
-	if(H.gender == FEMALE)
+	if(H.pronouns == SHE_HER || H.pronouns == THEY_THEM_F)
 		armor = /obj/item/clothing/suit/roguetown/shirt/rags
 	else
 		armor = null

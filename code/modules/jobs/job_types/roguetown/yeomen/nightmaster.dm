@@ -23,7 +23,7 @@
 	belt = /obj/item/storage/belt/rogue/leather/black
 	shirt = /obj/item/clothing/suit/roguetown/shirt/tunic/purple // Tunics are far swaggier than shirts
 	wrists = /obj/item/storage/keyring/nightman
-	neck = /obj/item/storage/belt/rogue/pouch/coins/mid
+	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
 	pants = /obj/item/clothing/under/roguetown/trou/leather
 	beltl = /obj/item/rogueweapon/whip // In case the one whip in the office has already been pilfered
 
@@ -33,6 +33,7 @@
 	ADD_TRAIT(H, TRAIT_GOODLOVER, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_SEEPRICES_SHITTY, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_NUTCRACKER, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_CICERONE, TRAIT_GENERIC)
 	if(H.mind)
 		H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 4, TRUE) // Need the strongarm to wrestle people out of the baths
 		H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 4, TRUE)

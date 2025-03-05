@@ -107,7 +107,7 @@
 	if(!H || !H.mind || !patron)
 		return
 
-	var/list/spelllist = list(/obj/effect/proc_holder/spell/targeted/touch/orison, patron.t0, patron.t1)
+	var/list/spelllist = list(patron.extra_spell, /obj/effect/proc_holder/spell/targeted/touch/orison, patron.t0, patron.t1)
 	for(var/spell_type in spelllist)
 		if(!spell_type || H.mind.has_spell(spell_type))
 			continue
@@ -122,8 +122,8 @@
 /datum/devotion/proc/grant_spells_templar(mob/living/carbon/human/H)
 	if(!H || !H.mind || !patron)
 		return
-
-	var/list/spelllist = list(/obj/effect/proc_holder/spell/targeted/touch/orison, patron.t0)
+		
+	var/list/spelllist = list(patron.extra_spell, /obj/effect/proc_holder/spell/targeted/touch/orison, patron.t0)
 	if(istype(patron,/datum/patron/divine))
 		spelllist += /obj/effect/proc_holder/spell/targeted/abrogation
 	for(var/spell_type in spelllist)
@@ -154,9 +154,8 @@
 /datum/devotion/proc/grant_spells_priest(mob/living/carbon/human/H)
 	if(!H || !H.mind || !patron)
 		return
-
 	granted_spells = list()
-	var/list/spelllist = list(/obj/effect/proc_holder/spell/targeted/touch/orison, patron.t0, patron.t1, patron.t2, patron.t3, patron.t4)
+	var/list/spelllist = list(patron.extra_spell, /obj/effect/proc_holder/spell/targeted/touch/orison, patron.t0, patron.t1, patron.t2, patron.t3, patron.t4)
 	for(var/spell_type in spelllist)
 		if(!spell_type || H.mind.has_spell(spell_type))
 			continue
@@ -165,6 +164,7 @@
 		LAZYADD(granted_spells, newspell)
 	level = CLERIC_T4
 	passive_devotion_gain = 1
+	devotion = max_devotion
 	update_devotion(300, CLERIC_REQ_4, silent = TRUE)
 	START_PROCESSING(SSobj, src)
 
@@ -173,7 +173,7 @@
 		return
 
 	granted_spells = list()
-	var/list/spelllist = list(/obj/effect/proc_holder/spell/targeted/touch/orison, patron.t0, patron.t1, patron.t2, patron.t3, patron.t4)
+	var/list/spelllist = list(patron.extra_spell, /obj/effect/proc_holder/spell/targeted/touch/orison, patron.t0, patron.t1, patron.t2, patron.t3, patron.t4)
 	for(var/spell_type in spelllist)
 		if(!spell_type || H.mind.has_spell(spell_type))
 			continue
@@ -182,6 +182,7 @@
 		LAZYADD(granted_spells, newspell)
 	level = CLERIC_T4
 	passive_devotion_gain = 1
+	devotion = max_devotion
 	update_devotion(300, CLERIC_REQ_4, silent = TRUE)
 	START_PROCESSING(SSobj, src)
 
@@ -232,4 +233,32 @@
 		prayersesh += prayer_effectiveness
 	visible_message("[src] concludes their prayer.", "I conclude my prayer.")
 	to_chat(src, "<font color='purple'>I gained [prayersesh] devotion!</font>")
+	return TRUE
+
+/mob/living/carbon/human/proc/changevoice()
+	set name = "Change Second Voice (Can only use Once!)"
+	set category = "Virtue"
+
+	var/newcolor = input(src, "Choose your character's SECOND voice color:", "VIRTUE","#a0a0a0") as color|null
+	if(newcolor)
+		second_voice = sanitize_hexcolor(newcolor)
+		src.verbs -= /mob/living/carbon/human/proc/changevoice
+		return TRUE
+	else
+		return FALSE
+
+/mob/living/carbon/human/proc/swapvoice()
+	set name = "Swap Voice"
+	set category = "Virtue"
+
+	if(!second_voice)
+		to_chat(src, span_info("I haven't decided on my second voice yet."))
+		return FALSE
+	if(voice_color != second_voice)
+		original_voice = voice_color
+		voice_color = second_voice
+		to_chat(src, span_info("I've changed my voice to the second one."))
+	else
+		voice_color = original_voice
+		to_chat(src, span_info("I've returned to my natural voice."))
 	return TRUE

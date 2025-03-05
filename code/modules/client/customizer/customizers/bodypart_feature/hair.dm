@@ -262,6 +262,7 @@
 		/datum/sprite_accessory/hair/head/short,
 		/datum/sprite_accessory/hair/head/shorthair2,
 		/datum/sprite_accessory/hair/head/shorthair3,
+		/datum/sprite_accessory/hair/head/shorthair6,
 		/datum/sprite_accessory/hair/head/shorthair7,
 		/datum/sprite_accessory/hair/head/rosa,
 		/datum/sprite_accessory/hair/head/shoulderlength,

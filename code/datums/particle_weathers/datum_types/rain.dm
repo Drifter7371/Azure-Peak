@@ -36,6 +36,7 @@
 	L.adjust_bodytemperature(-rand(1,3))
 	L.adjust_fire_stacks(-100)
 	L.SoakMob(FULL_BODY)
+	wash_atom(L,CLEAN_WEAK)
 
 /datum/particle_weather/rain_storm
 	name = "Rain"
@@ -59,3 +60,4 @@
 	L.adjust_bodytemperature(-rand(3,5))
 	L.adjust_fire_stacks(-100)
 	L.SoakMob(FULL_BODY)
+	wash_atom(L,CLEAN_STRONG)

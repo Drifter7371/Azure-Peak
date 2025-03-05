@@ -9,6 +9,7 @@
 	var/list/pipe_reagents = list()
 	var/seed
 	var/bitesize_mod = 0
+	experimental_inhand = FALSE
 
 
 /obj/item/reagent_containers/food/snacks/grown/Initialize(mapload)
@@ -137,7 +138,7 @@
 	icon_state = "berries"
 	tastes = list("berry" = 1)
 	bitesize = 5
-	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3, /datum/reagent/water = 5)
 	faretype = FARE_NEUTRAL
 	dropshrink = 0.75
 	var/color_index = "good"
@@ -181,7 +182,7 @@
 	seed = /obj/item/seeds/berryrogue/poison
 	icon_state = "berries"
 	tastes = list("berry" = 1)
-	list_reagents = list(/datum/reagent/berrypoison = 5, /datum/reagent/consumable/nutriment = 3)
+	list_reagents = list(/datum/reagent/berrypoison = 5, /datum/reagent/consumable/nutriment = 3, /datum/reagent/water = 5)
 	grind_results = list(/datum/reagent/berrypoison = 5)
 	color_index = "bad"
 
@@ -333,6 +334,18 @@
 	distill_reagent = /datum/reagent/consumable/ethanol/beer/voddena
 	rotprocess = null
 	seed = /obj/item/seeds/potato
+
+/obj/item/reagent_containers/food/snacks/grown/garlick/rogue
+	name = "garlick bulb"
+	desc = ""
+	icon_state = "garlick"
+	eat_effect = /datum/status_effect/debuff/uncookedfood
+	tastes = list("pungent umami" = 1)
+	bitesize = 2
+	list_reagents = list(/datum/reagent/consumable/nutriment = 1) //add a reagent that harms vampires later
+	can_distill = FALSE
+	rotprocess = null
+	seed = /obj/item/seeds/garlick
 
 // poppies, from vanderlin
 /obj/item/reagent_containers/food/snacks/grown/rogue/poppy

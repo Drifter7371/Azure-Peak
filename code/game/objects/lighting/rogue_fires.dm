@@ -206,6 +206,7 @@
 /obj/machinery/light/rogue/torchholder/Initialize()
 	torchy = new /obj/item/flashlight/flare/torch(src)
 	torchy.spark_act()
+	torchy.weather_resistant = TRUE
 	. = ..()
 
 /obj/machinery/light/rogue/torchholder/OnCrafted(dirin, user)
@@ -234,6 +235,7 @@
 		return
 	if(torchy)
 		if(!istype(user) || !Adjacent(user) || !user.put_in_active_hand(torchy))
+			torchy.weather_resistant = FALSE
 			torchy.forceMove(loc)
 		torchy = null
 		on = FALSE
@@ -282,6 +284,7 @@
 				if(!user.transferItemToLoc(LR, src))
 					return
 				torchy = LR
+				torchy.weather_resistant = TRUE
 				on = TRUE
 				update()
 				update_icon()
@@ -290,6 +293,7 @@
 				if(!user.transferItemToLoc(LR, src))
 					return
 				torchy = LR
+				torchy.weather_resistant = TRUE
 				update_icon()
 			playsound(src.loc, 'sound/foley/torchfixtureput.ogg', 70)
 		return
@@ -330,6 +334,7 @@
 	climb_offset = 14
 	on = FALSE
 	cookonme = TRUE
+	soundloop = /datum/looping_sound/fireloop
 	var/obj/item/attachment = null
 	var/obj/item/reagent_containers/food/snacks/food = null
 	var/datum/looping_sound/boilloop/boilloop
@@ -565,6 +570,7 @@
 	bulb_colour = "#da5e21"
 	cookonme = TRUE
 	max_integrity = 30
+	soundloop = /datum/looping_sound/fireloop
 
 /obj/machinery/light/rogue/campfire/process()
 	..()
@@ -591,10 +597,9 @@
 			H.visible_message("<span class='info'>[H] warms \his hand near the fire.</span>")
 
 			if(do_after(H, 100, target = src))
-				var/obj/item/bodypart/affecting = H.get_bodypart("[(user.active_hand_index % 2 == 0) ? "r" : "l" ]_arm")
-				to_chat(H, "<span class='warning'>HOT!</span>")
-				if(affecting && affecting.receive_damage( 0, 5 ))		// 5 burn damage
-					H.update_damage_overlays()
+				H.apply_status_effect(/datum/status_effect/buff/healing, 1)
+				H.add_stress(/datum/stressevent/campfire)
+				to_chat(H, "<span class='info'>The warmth of the fire comforts me, affording me a short rest.</span>")
 		return TRUE //fires that are on always have this interaction with lmb unless its a torch
 
 /obj/machinery/light/rogue/campfire/densefire

@@ -49,8 +49,6 @@ GLOBAL_VAR_INIT(running_create_and_destroy, FALSE)
 	ignore += typesof(/obj/effect/abstract/eye_lighting)
 	//We have a baseturf limit of 10, adding more than 10 baseturf helpers will kill CI, so here's a future edge case to fix.
 	ignore += typesof(/obj/effect/baseturf_helper)
-	//No trauma to pass in
-	ignore += typesof(/mob/camera/imaginary_friend)
 	//See above
 	ignore += typesof(/obj/effect/timestop)
 	//Our system doesn't support it without warning spam from unregister calls on things that never registered

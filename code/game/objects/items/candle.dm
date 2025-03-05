@@ -6,6 +6,7 @@
 	icon_state = "candle1"
 	item_state = "candle1"
 	w_class = WEIGHT_CLASS_TINY
+	experimental_inhand = FALSE
 	light_color = LIGHT_COLOR_FIRE
 	heat = 1000
 	var/wax = 1000
@@ -91,6 +92,18 @@
 	icon = 'icons/roguetown/items/lighting.dmi'
 
 /obj/item/candle/yellow/lit
+	start_lit = TRUE
+	icon_state = "candle1_lit"
+
+/obj/item/candle/eora
+	icon = 'icons/roguetown/items/lighting.dmi'
+	name = "eora's candle"
+	desc = ""
+	color = "#f858b5ff"
+	light_color = "#ff13d8ff"
+	infinite = TRUE
+
+/obj/item/candle/eora/lit
 	start_lit = TRUE
 	icon_state = "candle1_lit"
 

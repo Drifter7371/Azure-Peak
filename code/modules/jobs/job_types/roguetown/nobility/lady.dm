@@ -10,7 +10,8 @@
 	allowed_races = RACES_ALL_KINDS
 	tutorial = "Picked out of your political value rather than likely any form of love, you have become the Grand Duke's most trusted confidant--and likely friend--throughout your marriage. Your loyalty and perhaps even your love will be tested this day... for the daggers that threaten your beloved are as equally pointed at your own throat."
 
-	spells = list(/obj/effect/proc_holder/spell/self/convertrole/servant)
+	spells = list(/obj/effect/proc_holder/spell/self/convertrole/servant,
+	/obj/effect/proc_holder/spell/self/grant_nobility)
 	outfit = /datum/outfit/job/roguetown/lady
 
 	display_order = JDO_LADY
@@ -81,3 +82,20 @@
 	accept_message = "FOR THE CROWN!"
 	refuse_message = "I refuse."
 	charge_max = 100
+
+/obj/effect/proc_holder/spell/self/convertrole/mercenary
+	name = "Recruit Mercenary"
+	new_role = "Mercenary"
+	recruitment_faction = "MERCENARIES"
+	recruitment_message = "Serve the Guild, %RECRUIT!"
+	accept_message = "FOR THE GUILD!"
+	refuse_message = "I refuse."
+	charge_max = 100
+
+/obj/effect/proc_holder/spell/self/convertrole/bog
+	name = "Recruit Warden"
+	new_role = "Warden"
+	recruitment_faction = "Bog Guard"
+	recruitment_message = "Serve the Wardens, %RECRUIT!"
+	accept_message = "FOR THE GROVE!"
+	refuse_message = "I refuse."

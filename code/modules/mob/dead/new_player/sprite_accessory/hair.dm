@@ -1138,6 +1138,10 @@
 	name = "Kusanagi (Alt)"
 	icon_state = "kusanagi_alt"
 
+/datum/sprite_accessory/hair/head/shorthair6
+	name = "Short Hair 6"
+	icon_state = "shorthair_alt"
+
 /datum/sprite_accessory/hair/head/vulpkian
 	abstract_type = /datum/sprite_accessory/hair/head/vulpkian
 	icon = 'icons/mob/sprite_accessory/hair/vulpkian_hair.dmi'

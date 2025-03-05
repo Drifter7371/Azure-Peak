@@ -30,7 +30,7 @@
 		else
 			H.mind.adjust_skillrank(/datum/skill/misc/alchemy, 5, TRUE)
 //Requires a lot of sprites, so this is just a placeholder
-	if(H.gender == MALE)
+	if(H.pronouns == HE_HIM || H.pronouns == THEY_THEM || H.pronouns == IT_ITS)
 		pants = /obj/item/clothing/under/roguetown/trou
 		shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 		shirt = /obj/item/clothing/suit/roguetown/shirt/shortshirt

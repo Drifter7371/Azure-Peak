@@ -41,7 +41,10 @@
 
 /obj/item/quiver/attackby(obj/A, loc, params)
 	if(A.type in subtypesof(/obj/item/ammo_casing/caseless/rogue))
-		if(arrows.len < max_storage)
+		if(A.type in subtypesof(/obj/item/ammo_casing/caseless/rogue/javelin))
+			to_chat(loc, span_warning("Javelins are too big to fit in a quiver, silly!"))
+			return FALSE
+		else if(arrows.len < max_storage)
 			if(ismob(loc))
 				var/mob/M = loc
 				M.doUnEquip(A, TRUE, src, TRUE, silent = TRUE)
@@ -112,3 +115,135 @@
 	update_icon()
 */
 
+
+/obj/item/quiver/javelin
+	name = "javelinbag"
+	desc = ""
+	icon_state = "javelinbag0"
+	item_state = "javelinbag"
+	slot_flags = ITEM_SLOT_BACK
+	max_storage = 4
+
+/obj/item/quiver/javelin/attack_turf(turf/T, mob/living/user)
+	if(arrows.len >= max_storage)
+		to_chat(user, span_warning("My [src.name] is full!"))
+		return
+	to_chat(user, span_notice("I begin to gather the ammunition..."))
+	for(var/obj/item/ammo_casing/caseless/rogue/javelin in T.contents)
+		if(do_after(user, 5))
+			if(!eatarrow(javelin))
+				break
+
+/obj/item/quiver/javelin/attackby(obj/A, loc, params)
+	if(A.type in subtypesof(/obj/item/ammo_casing/caseless/rogue/javelin))
+		if(arrows.len < max_storage)
+			if(ismob(loc))
+				var/mob/M = loc
+				M.doUnEquip(A, TRUE, src, TRUE, silent = TRUE)
+			else
+				A.forceMove(src)
+			arrows += A
+			update_icon()
+		else
+			to_chat(loc, span_warning("Full!"))
+		return
+	..()
+
+/obj/item/quiver/javelin/attack_right(mob/user)
+	if(arrows.len)
+		var/obj/O = arrows[arrows.len]
+		arrows -= O
+		O.forceMove(user.loc)
+		user.put_in_hands(O)
+		update_icon()
+		return TRUE
+
+/obj/item/quiver/javelin/examine(mob/user)
+	. = ..()
+	if(arrows.len)
+		. += span_notice("[arrows.len] inside.")
+
+/obj/item/quiver/javelin/update_icon()
+	if(arrows.len)
+		icon_state = "javelinbag1"
+	else
+		icon_state = "javelinbag0"
+
+/obj/item/quiver/javelin/iron/Initialize()
+	. = ..()
+	for(var/i in 1 to max_storage)
+		var/obj/item/ammo_casing/caseless/rogue/javelin/A = new()
+		arrows += A
+	update_icon()
+
+/obj/item/quiver/javelin/steel/Initialize()
+	. = ..()
+	for(var/i in 1 to max_storage)
+		var/obj/item/ammo_casing/caseless/rogue/javelin/steel/A = new()
+		arrows += A
+	update_icon()
+
+/obj/item/quiver/sling
+	name = "sling bullet pouch"
+	desc = "This pouch holds the ouch." //i came up with this line on an impulse
+	icon = 'icons/roguetown/weapons/ammo.dmi'
+	icon_state = "slingpouch"
+	item_state = "slingpouch"
+	slot_flags = ITEM_SLOT_HIP | ITEM_SLOT_NECK
+	max_storage = 20
+	w_class = WEIGHT_CLASS_NORMAL
+	grid_height = 64
+	grid_width = 32
+
+/obj/item/quiver/sling/attack_turf(turf/T, mob/living/user)
+	if(arrows.len >= max_storage)
+		to_chat(user, span_warning("My [src.name] is full!"))
+		return
+	to_chat(user, span_notice("I begin to gather the ammunition..."))
+	for(var/obj/item/ammo_casing/caseless/rogue/sling_bullet in T.contents)
+		if(do_after(user, 5))
+			if(!eatarrow(sling_bullet))
+				break
+
+/obj/item/quiver/sling/attackby(obj/A, loc, params)
+	if(A.type in subtypesof(/obj/item/ammo_casing/caseless/rogue/sling_bullet))
+		if(arrows.len < max_storage)
+			if(ismob(loc))
+				var/mob/M = loc
+				M.doUnEquip(A, TRUE, src, TRUE, silent = TRUE)
+			else
+				A.forceMove(src)
+			arrows += A
+			update_icon()
+		else
+			to_chat(loc, span_warning("Full!"))
+		return
+	if(istype(A, /obj/item/gun/ballistic/revolver/grenadelauncher/sling))
+		var/obj/item/gun/ballistic/revolver/grenadelauncher/sling/B = A
+		if(arrows.len && !B.chambered)
+			for(var/AR in arrows)
+				if(istype(AR, /obj/item/ammo_casing/caseless/rogue/sling_bullet))
+					arrows -= AR
+					B.attackby(AR, loc, params)
+					break
+		return
+	..()
+
+/obj/item/quiver/sling/attack_right(mob/user)
+	if(arrows.len)
+		var/obj/O = arrows[arrows.len]
+		arrows -= O
+		O.forceMove(user.loc)
+		user.put_in_hands(O)
+		update_icon()
+		return TRUE
+
+/obj/item/quiver/sling/update_icon()
+	return
+
+/obj/item/quiver/sling/iron/Initialize()
+	. = ..()
+	for(var/i in 1 to max_storage)
+		var/obj/item/ammo_casing/caseless/rogue/sling_bullet/iron/A = new()
+		arrows += A
+	update_icon()

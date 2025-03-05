@@ -27,8 +27,8 @@
 	pants = /obj/item/clothing/under/roguetown/tights/random
 	belt = /obj/item/storage/belt/rogue/leather
 	beltr = /obj/item/storage/keyring/mage
-	backr = /obj/item/storage/backpack/rogue/satchel
-	r_hand = /obj/item/rogueweapon/woodstaff
+	backl = /obj/item/storage/backpack/rogue/satchel
+	backr = /obj/item/rogueweapon/woodstaff
 	shoes = /obj/item/clothing/shoes/roguetown/gladiator // FANCY SANDALS
 
 /datum/job/roguetown/wapprentice/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
@@ -69,6 +69,7 @@
 			H.change_stat("speed", -1)
 			H.change_stat("intelligence", 1)
 		H.mind.adjust_spellpoints(3)
+		ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 		H.change_stat("intelligence", 2)
 		H.change_stat("speed", 1)
 		H.change_stat("perception", 1)
@@ -106,6 +107,7 @@
 			H.change_stat("perception", -1)
 			H.change_stat("intelligence", 1)
 		H.mind.adjust_spellpoints(3)
+		ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 		H.change_stat("intelligence", 2)
 		H.change_stat("perception", 2)
 		ADD_TRAIT(H, TRAIT_SEEDKNOW, TRAIT_GENERIC)
@@ -129,6 +131,7 @@
 		H.mind.adjust_skillrank(/datum/skill/misc/alchemy, 2, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/combat/polearms, 1, TRUE)
 		H.mind.adjust_spellpoints(3)
+		ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 		H.change_stat("intelligence", 3)
 		H.change_stat("speed", 1)
 		H.change_stat("fortune", 1)

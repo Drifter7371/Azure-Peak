@@ -4,7 +4,18 @@ GLOBAL_LIST_EMPTY(loadout_items)
 	var/name = "Parent loadout datum"
 	var/desc
 	var/path
+	var/donoritem			//autoset on new if null
+	var/list/ckeywhitelist
 
+/datum/loadout_item/New()
+	if(isnull(donoritem))
+		if(ckeywhitelist)
+			donoritem = TRUE
+
+/datum/loadout_item/proc/donator_ckey_check(key)
+	if(ckeywhitelist && ckeywhitelist.Find(key))
+		return TRUE
+	return
 
 //HATS
 /datum/loadout_item/shalal
@@ -171,6 +182,11 @@ GLOBAL_LIST_EMPTY(loadout_items)
 	name = "Nun Habit"
 	path = /obj/item/clothing/suit/roguetown/shirt/robe/nun
 
+//PANTS
+/datum/loadout_item/skirt
+	name = "Skirt"
+	path = /obj/item/clothing/under/roguetown/skirt
+
 //ACCESSORIES
 /datum/loadout_item/stockings
 	name = "Stockings"
@@ -219,3 +235,12 @@ GLOBAL_LIST_EMPTY(loadout_items)
 /datum/loadout_item/bell_collar
 	name = "Bell Collar"
 	path = /obj/item/clothing/neck/roguetown/collar/bell_collar
+
+//Donator Section
+//All these items are stored in the donator_fluff.dm in the azure modular folder for simplicity.
+//All should be subtypes of existing weapons/clothes/armor/gear, whatever, to avoid balance issues I guess. Idk, I'm not your boss.
+
+/datum/loadout_item/donator_plex
+	name = "Rapier di Aliseo"
+	path = /obj/item/rogueweapon/sword/rapier/aliseo
+	ckeywhitelist = list("plexiant")

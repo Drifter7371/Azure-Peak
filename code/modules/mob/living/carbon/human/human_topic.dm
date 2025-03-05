@@ -10,14 +10,24 @@ GLOBAL_VAR_INIT(year_integer, text2num(year)) // = 2013???
 		var/mob/user = usr
 		var/list/dat = list()
 		dat += "<div align='center'><font size = 5; font color = '#dddddd'><b>[src]</b></font></div>"
+		if(isnull(flavortext_display) && flavortext)
+			is_legacy = TRUE
+			flavortext_display = replacetext(flavortext, "\n", "<BR>")
+		if(isnull(ooc_notes_display) && ooc_notes)
+			is_legacy = TRUE
+			ooc_notes_display = replacetext(ooc_notes, "\n", "<BR>")
+		if(is_legacy)
+			dat += "<center><i><font color = '#b9b9b9'; font size = 1>This is a LEGACY Profile from naive days of Psydon.</font></i></center>"
 		if(valid_headshot_link(null, headshot_link, TRUE))
 			dat += ("<div align='center'><img src='[headshot_link]' width='325px' height='325px'></div>")
 		if(flavortext)
-			dat += "<div align='left'>[replacetext(flavortext, "\n", "<BR>")]</div>"
+			dat += "<div align='left'>[flavortext_display]</div>"
 		if(ooc_notes)
 			dat += "<br>"
 			dat += "<div align='center'><b>OOC notes</b></div>"
-			dat += "<div align='left'>[replacetext(ooc_notes, "\n", "<BR>")]"
+			dat += "<div align='left'>[ooc_notes_display]</div>"
+		if(ooc_extra)
+			dat += "[ooc_extra]"
 		var/datum/browser/popup = new(user, "[src]", nwidth = 600, nheight = 800)
 		popup.set_content(dat.Join())
 		popup.open(FALSE)
@@ -140,8 +150,26 @@ GLOBAL_VAR_INIT(year_integer, text2num(year)) // = 2013???
 			return
 		if(!ishuman(src))
 			return
+		var/success = FALSE
+		var/obscured_name = FALSE 
+
+		var/static/list/unknown_names = list(
+		"Unknown",
+		"Unknown Man",
+		"Unknown Woman",
+		)
+		
 		var/mob/living/carbon/human/H = src
 		var/mob/living/carbon/human/user = usr
+
+		if(H.get_visible_name() in unknown_names)
+			obscured_name = TRUE
+
+		if(get_dist(user, H) <= 2 + clamp(floor(((user.STAPER - 10) / 2)),-1, 2) && (!obscured_name || H.client?.prefs.masked_examine))
+			success = TRUE
+		if(!success)
+			to_chat(user, span_info("They've moved too far away or put a mask on!"))
+			return
 		user.visible_message("[user] begins assessing [src].")
 		if(do_mob(user, src, (40 - (user.STAINT - 10) - (user.STAPER - 10) - user.mind?.get_skill_level(/datum/skill/misc/reading)), double_progress = TRUE))
 			var/is_guarded = HAS_TRAIT(src, TRAIT_DECEIVING_MEEKNESS)	//Will scramble Stats and prevent skills from being shown
@@ -340,6 +368,9 @@ GLOBAL_VAR_INIT(year_integer, text2num(year)) // = 2013???
 
 /proc/defense_report(var/obj/item/clothing/C, var/stupid, var/normal, var/smart, var/stupid_string)
 	var/list/str = list()
+	if(!istype(C, /obj/item/clothing))
+		str += "<br>---------------------------<br>"
+		return str
 	if(C.armor)
 		var/defense = "<u><b>ABSORPTION: </b></u><br>"
 		var/datum/armor/def_armor = C.armor

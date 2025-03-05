@@ -118,7 +118,7 @@
 /obj/structure/roguemachine/scomm/MiddleClick(mob/living/carbon/human/user)
 	if(.)
 		return
-	if((HAS_TRAIT(user, TRAIT_GUARDSMAN) || (HAS_TRAIT(user, TRAIT_KNIGHTSMAN)) || (HAS_TRAIT(user, TRAIT_WOODSMAN)) || (user.job == "Squire") || (user.job == "Marshal") || (user.job == "Grand Duke") || (user.job == "Guard Captain") || (user.job == "Grand Duchess")))
+	if((HAS_TRAIT(user, TRAIT_GUARDSMAN) || (HAS_TRAIT(user, TRAIT_KNIGHTSMAN)) || (user.job == "Warden") || (user.job == "Squire") || (user.job == "Marshal") || (user.job == "Grand Duke") || (user.job == "Guard Captain") || (user.job == "Grand Duchess")))
 		if(alert("Would you like to swap lines or connect to a jabberline?",, "swap", "jabberline") != "jabberline")
 			garrisonline = !garrisonline
 			to_chat(user, span_info("I [garrisonline ? "connect to the garrison SCOMline" : "connect to the general SCOMLINE"]"))
@@ -321,6 +321,7 @@
 	obj_flags = null
 	icon = 'icons/roguetown/items/misc.dmi'
 	w_class = WEIGHT_CLASS_SMALL
+	experimental_inhand = FALSE
 	flags_1 = HEAR_1
 	muteinmouth = TRUE
 	var/listening = TRUE
@@ -419,6 +420,7 @@
 	obj_flags = null
 	icon = 'icons/roguetown/clothing/neck.dmi'
 	w_class = WEIGHT_CLASS_SMALL
+	experimental_inhand = FALSE
 	flags_1 = HEAR_1
 	muteinmouth = TRUE
 	var/listening = TRUE
@@ -488,6 +490,7 @@
 	obj_flags = null
 	icon = 'icons/roguetown/items/misc.dmi'
 	w_class = WEIGHT_CLASS_SMALL
+	experimental_inhand = FALSE
 	flags_1 = HEAR_1
 	muteinmouth = TRUE
 	var/listening = TRUE
@@ -583,6 +586,7 @@
 	force = 10
 	throwforce = 10
 	w_class = WEIGHT_CLASS_SMALL
+	experimental_inhand = FALSE
 	slot_flags = ITEM_SLOT_MOUTH|ITEM_SLOT_HIP|ITEM_SLOT_NECK|ITEM_SLOT_RING
 	possible_item_intents = list(INTENT_GENERIC)
 	grid_width = 32
@@ -643,6 +647,7 @@
 	force = 10
 	throwforce = 10
 	w_class = WEIGHT_CLASS_SMALL
+	experimental_inhand = FALSE
 	grid_width = 32
 	grid_height = 32
 

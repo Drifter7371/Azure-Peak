@@ -313,6 +313,7 @@
 	dropshrink = 0.75
 	amount_per_transfer_from_this = 9
 	volume = 100
+	experimental_inhand = FALSE
 	reagent_flags = OPENCONTAINER|REFILLABLE|DRAINABLE
 	spillable = TRUE
 	var/obj/item/grinded

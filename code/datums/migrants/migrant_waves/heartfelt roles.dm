@@ -202,7 +202,7 @@
 		var/prev_real_name = H.real_name
 		var/prev_name = H.name
 		var/honorary = "Sir"
-		if(H.gender == FEMALE)
+		if(H.pronouns == SHE_HER || H.pronouns == THEY_THEM_F)
 			honorary = "Dame"
 		H.real_name = "[honorary] [prev_real_name]"
 		H.name = "[honorary] [prev_name]"
@@ -249,6 +249,7 @@
 		H.change_stat("constitution", -1)
 		H.change_stat("intelligence", 4)
 		H.mind.adjust_spellpoints(3)
+		ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 		if(H.age == AGE_OLD)
 			H.mind.adjust_skillrank(/datum/skill/magic/arcane, 1, TRUE)
 			H.change_stat("speed", -1)

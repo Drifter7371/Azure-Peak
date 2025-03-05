@@ -114,6 +114,8 @@
 // /mob/living/carbon/human
 #define VV_HK_APPLY_SPECIAL "apply_special"
 #define VV_HK_REAPPLY_PREFS "reapply_prefs"
+#define VV_HK_PURGE_SLOT "purge_slot"
+#define VV_HK_PURGE_PARTOF_SLOT "purge_partof_slot"
 #define VV_HK_COPY_OUTFIT "copy_outfit"
 #define VV_HK_MOD_MUTATIONS "quirkmut"
 #define VV_HK_MOD_QUIRKS "quirkmod"

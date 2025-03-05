@@ -15,6 +15,7 @@
 	drop_sound = 'sound/foley/dropsound/chain_drop.ogg'
 	anvilrepair = /datum/skill/craft/blacksmithing
 	resistance_flags = FIRE_PROOF
+	experimental_inhand = FALSE
 	component_type = /datum/component/storage/concrete/roguetown/keyring
 
 /obj/item/storage/keyring/Initialize()

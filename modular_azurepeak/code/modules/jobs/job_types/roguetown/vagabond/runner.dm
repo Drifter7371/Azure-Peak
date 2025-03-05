@@ -8,7 +8,7 @@
 
 /datum/outfit/job/roguetown/vagabond/runner/pre_equip(mob/living/carbon/human/H)
 	..()
-	if(H.gender == FEMALE)
+	if(H.pronouns == SHE_HER || H.pronouns == THEY_THEM_F)
 		armor = /obj/item/clothing/suit/roguetown/shirt/rags
 	else
 		pants = /obj/item/clothing/under/roguetown/tights/vagrant

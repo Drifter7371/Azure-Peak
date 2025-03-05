@@ -602,8 +602,6 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	M.Jitter(2)
 	if(HAS_TRAIT(M.mind, TRAIT_LAW_ENFORCEMENT_METABOLISM))
 		M.adjustStaminaLoss(-10, 0)
-		if(prob(20))
-			new /datum/hallucination/items_other(M)
 	..()
 	. = 1
 

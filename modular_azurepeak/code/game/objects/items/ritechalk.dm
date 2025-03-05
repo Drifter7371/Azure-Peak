@@ -4,6 +4,7 @@
 	desc = "Simple white chalk. A useful tool for rites."
 	icon = 'icons/roguetown/misc/rituals.dmi'
 	w_class = WEIGHT_CLASS_TINY
+	experimental_inhand = FALSE
 
 /obj/item/ritechalk/attack_self(mob/living/user)
 	if(!HAS_TRAIT(user, TRAIT_RITUALIST))
@@ -12,8 +13,8 @@
 
 	var/ritechoices = list()
 	switch (user.patron?.type)
-/*		if(/datum/patron/inhumen/zizo)
-			ritechoices+="Rune of ZIZO" */
+		if(/datum/patron/inhumen/zizo)
+			ritechoices+="Rune of ZIZO" 
 		if(/datum/patron/divine/astrata)
 			ritechoices+="Rune of Sun"
 		if(/datum/patron/divine/noc)
@@ -88,8 +89,8 @@
 			if(do_after(user, 30, src))
 				playsound(src, 'sound/foley/scribble.ogg', 40, TRUE)
 				new /obj/structure/ritualcircle/abyssor(step_turf)
-	/*	if("Rune of ZIZO")
+		if("Rune of ZIZO")
 			to_chat(user,span_cultsmall("I begin inscribing the rune of Her Knowledge..."))
 			if(do_after(user, 30, src))
 				playsound(src, 'sound/foley/scribble.ogg', 40, TRUE)
-				new /obj/structure/ritualcircle/zizo(step_turf) */
+				new /obj/structure/ritualcircle/zizo(step_turf)

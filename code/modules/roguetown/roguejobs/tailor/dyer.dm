@@ -62,7 +62,8 @@
 		"Royal Brown"="#61462c")
 		
 /obj/machinery/gear_painter/Destroy()
-	inserted.forceMove(drop_location())
+	if(inserted)
+		inserted.forceMove(drop_location())
 	return ..()
 
 /obj/machinery/gear_painter/attackby(obj/item/I, mob/living/user)

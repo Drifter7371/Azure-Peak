@@ -17,6 +17,7 @@
 #define TRAIT_MEDIUMARMOR "Maille Training"
 #define TRAIT_HEAVYARMOR "Plate Training"
 #define TRAIT_DODGEEXPERT "Fast Reflexes"
+#define TRAIT_MAGEARMOR "Magic Barrier"
 #define TRAIT_DECEIVING_MEEKNESS "Deceiving Meekness"
 #define TRAIT_CRITICAL_RESISTANCE "Critical Resistance"
 #define TRAIT_CRITICAL_WEAKNESS "Critical Weakness"
@@ -53,6 +54,10 @@
 #define TRAIT_SEA_DRINKER "Denizen of the Deep"
 #define TRAIT_STUDENT		"Student"
 #define TRAIT_INTELLECTUAL "Intellectual"
+#define TRAIT_GRAVEROBBER "Experienced Grave Robber"
+#define TRAIT_PURITAN "Puritan"
+#define TRAIT_MIRROR_MAGIC "Mirror Magic"
+#define TRAIT_WITCH "They fear me, but I am useful to them."
 
 
 //Hearthstone port (Tracking)
@@ -77,6 +82,7 @@
 #define TRAIT_ABYSSOR_SWIM "Blessing of Abyssor" //less base fatigue drain when swimming
 #define TRAIT_XYLIX "Blessing of Xylix" //secret thieves cant language
 #define TRAIT_FORGEBLESSED "Blessing of Malum" //Reduces the fatigue cost of smithing a bit.
+#define TRAIT_JUSTICARSIGHT "Blessing of Ravox" //Allows seeing bounties and crimes when examining outlaws.
 
 // ASCENDANT CULTIST TRAITS (all of them recognize each other)
 #define TRAIT_COMMIE "Blessing of Matthios" //recognized by bandits as an ally
@@ -111,6 +117,12 @@
 #define TRAIT_BIGGUY "Big Guy"
 #define TRAIT_RESIDENT "Resident"
 #define TRAIT_COUNTERCOUNTERSPELL "Counter Counterspell"
+#define TRAIT_UNSEEMLY "Ugly"
+#define TRAIT_HERETIC_SEER "Heretic Seer"
+#define TRAIT_DUALWIELDER "Dual Wielder"
+#define TRAIT_SENTINELOFWITS "Sentinel of Wits"
+#define TRAIT_KEENEARS "Keen Ears"
+#define TRAIT_CICERONE "Cicerone"
 
 GLOBAL_LIST_INIT(roguetraits, list(
 	TRAIT_LEPROSY = span_necrosis("I'm a disgusting leper..."),
@@ -142,6 +154,7 @@ GLOBAL_LIST_INIT(roguetraits, list(
 	TRAIT_MEDIUMARMOR = "I can move freely in medium armor.",
 	TRAIT_HEAVYARMOR = "I can move freely in heavy armor.",
 	TRAIT_DODGEEXPERT = "I can dodge easily while only wearing light armor.",
+	TRAIT_MAGEARMOR = "My magics can protect me from a blow every so often.",
 	TRAIT_DECEIVING_MEEKNESS = "People look at me and think I am a weakling. They are mistaken. I've learned how to feint, and how to avoid theirs.",
 	TRAIT_CRITICAL_RESISTANCE = "I am resistant to wounds that would be life threatening to others.",
 	TRAIT_CRITICAL_WEAKNESS = span_danger("I am weak to wounds that others could survive."),
@@ -199,6 +212,16 @@ GLOBAL_LIST_INIT(roguetraits, list(
 	TRAIT_LEGENDARY_ALCHEMIST = span_info("An expert in the art of finding herbs in the wild."),
 	TRAIT_INTELLECTUAL = span_info("I have a keen eye and can assess a person's prowess in wit and blade."),
 	TRAIT_COUNTERCOUNTERSPELL = span_info("I automatically know when to counter Counterspells, and can do so without even thinking about it."),
+	TRAIT_UNSEEMLY = span_info("My face is ugly and makes everyone who looks at me miserable."),
+	TRAIT_HERETIC_SEER = span_info("I can tell other Ascendant followers without sharing their faith."),
+	TRAIT_DUALWIELDER = span_info("If I wield two identical weapons, I  roll twice for my attacks, and so will the enemy against me. I do not suffer penalties from using my off-hand in combat."),
+	TRAIT_SENTINELOFWITS = span_info("My Intelligence aids in my defense. Every 2 points above 10 INT become an additional 10% chance to dodge or parry. Does not count positive buffs from potions or substances."),
+	TRAIT_KEENEARS = span_info("I've a good pair of ears, and can tell who is speaking, even when they're out of sight."),
+	TRAIT_GRAVEROBBER = span_info("My experience with 'post-mortem artifact recovery' has allowed me to resist Necra's curse placed upon those who disturb resting places."),
+	TRAIT_PURITAN = span_info("I can hear the secret whispers of the heretics."),
+	TRAIT_MIRROR_MAGIC = span_info("Mirror, mirror on the wall, who's the fairest of them all?"),
+	TRAIT_JUSTICARSIGHT = span_info("I am able to remember someone's crimes by looking at them, and how much their bounty is."),
+	TRAIT_CICERONE = span_info("I am well-versed in the differences of brews and spirits, and can tell them apart at a glance."),
 ))
 
 // trait accessor defines
@@ -402,6 +425,7 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 // common trait sources
 #define TRAIT_GENERIC "generic"
+#define TRAIT_VIRTUE "virtue"
 #define UNCONSCIOUS_BLIND "unconscious_blind"
 #define EYE_DAMAGE "eye_damage"
 #define GENETIC_MUTATION "genetic"
@@ -477,3 +501,19 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 //for ai
 #define TRAIT_SUBTREE_REQUIRED_OPERATIONAL_DATUM "element-required"
+
+/*/mob/living/proc/on_trait_gain(trait, source)
+	SEND_SIGNAL(src, COMSIG_TRAIT_GAIN, trait, source)
+	switch(trait)
+		if(TRAIT_COMMIE, TRAIT_CABAL, TRAIT_HORDE, TRAIT_DEPRAVED)
+			if(ishuman(src))
+				var/mob/living/carbon/human/H = src
+				H.update_heretic_commune()
+
+/mob/living/proc/on_trait_loss(trait, source)
+	SEND_SIGNAL(src, COMSIG_TRAIT_LOSS, trait, source)
+	switch(trait)
+		if(TRAIT_COMMIE, TRAIT_CABAL, TRAIT_HORDE, TRAIT_DEPRAVED)
+			if(ishuman(src))
+				var/mob/living/carbon/human/H = src
+				H.update_heretic_commune()*/

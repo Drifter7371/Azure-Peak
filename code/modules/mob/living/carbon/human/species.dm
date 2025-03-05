@@ -2061,8 +2061,7 @@ GLOBAL_LIST_EMPTY(roundstart_races)
 /datum/action/innate/flight
 	name = "Toggle Flight"
 	check_flags = AB_CHECK_CONSCIOUS|AB_CHECK_STUN
-	icon_icon = 'icons/mob/actions/actions_items.dmi'
-	button_icon_state = "flight"
+	button_icon_state = ""
 
 /datum/action/innate/flight/Activate()
 	var/mob/living/carbon/human/H = owner

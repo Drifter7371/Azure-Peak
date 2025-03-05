@@ -4,6 +4,7 @@
 	name = "statue"
 	icon_state = ""
 	w_class = WEIGHT_CLASS_NORMAL
+	experimental_inhand = FALSE
 	smeltresult = null
 	grid_width = 32
 	grid_height = 64

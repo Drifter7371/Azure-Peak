@@ -635,7 +635,7 @@
 				  /obj/item/paper/scroll)
 	reqs = list(/obj/item/grown/log/tree/small = 1,
 	/datum/reagent/water = 48)
-	structurecraft = /obj/structure/fluff/dryingrack
+	structurecraft = /obj/machinery/tanningrack
 	craftdiff = 1
 
 /datum/crafting_recipe/roguetown/tribalrags
@@ -754,23 +754,148 @@
 	name = "heater shield"
 	result = /obj/item/rogueweapon/shield/heater/crafted
 	reqs = list(/obj/item/grown/log/tree/small = 2,
-				/obj/item/natural/hide = 1)
+				/obj/item/natural/hide/cured = 1)
 	skillcraft = /datum/skill/craft/carpentry
 
 /obj/item/rogueweapon/shield/heater/crafted
 	sellprice = 6
 
 /datum/crafting_recipe/roguetown/collar
-	name = "Collar"
+	name = "collar"
 	result = /obj/item/clothing/neck/roguetown/collar
-	reqs = list(/obj/item/natural/hide = 1)
+	reqs = list(/obj/item/natural/hide/cured = 1)
 	craftdiff = 0
 
 /datum/crafting_recipe/roguetown/bell_collar
-	name = "Bell Collar"
+	name = "bell Collar"
 	result = /obj/item/clothing/neck/roguetown/collar/bell_collar
 	reqs = list(
-				/obj/item/natural/hide = 1,
+				/obj/item/natural/hide/cured = 1,
 				/obj/item/jingle_bells = 1,
 				)
 	craftdiff = 0
+
+// BOUQUETS & CROWNS
+
+/datum/crafting_recipe/roguetown/bouquet_rosa
+	name = "rosa bouquet"
+	result = /obj/item/bouquet/rosa
+	reqs = list(/obj/item/alch/rosa = 4,
+				/obj/item/natural/fibers = 2,
+				/obj/item/paper/scroll = 1)
+	craftdiff = 0
+	verbage_simple = "arranged"
+	verbage = "arranges"
+
+/datum/crafting_recipe/roguetown/bouquet_salvia
+	name = "salvia bouquet"
+	result = /obj/item/bouquet/salvia
+	reqs = list(/obj/item/alch/salvia = 4,
+				/obj/item/natural/fibers = 2,
+				/obj/item/paper/scroll = 1)
+	craftdiff = 0
+	verbage_simple = "arranged"
+	verbage = "arranges"
+
+/datum/crafting_recipe/roguetown/bouquet_matricaria
+	name = "matricaria bouquet"
+	result = /obj/item/bouquet/matricaria
+	reqs = list(/obj/item/alch/matricaria = 4,
+				/obj/item/natural/fibers = 2,
+				/obj/item/paper/scroll = 1)
+	craftdiff = 0
+	verbage_simple = "arranged"
+	verbage = "arranges"
+
+/datum/crafting_recipe/roguetown/bouquet_calendula
+	name = "calendula bouquet"
+	result = /obj/item/bouquet/calendula
+	reqs = list(/obj/item/alch/calendula = 4,
+				/obj/item/natural/fibers = 2,
+				/obj/item/paper/scroll = 1)
+	craftdiff = 0
+	verbage_simple = "arranged"
+	verbage = "arranges"
+
+/datum/crafting_recipe/roguetown/flowercrown_rosa
+	name = "rosa crown"
+	result = /obj/item/flowercrown/rosa
+	reqs = list(/obj/item/alch/rosa = 4,
+				/obj/item/natural/fibers = 2)
+	craftdiff = 0
+	verbage_simple = "tied"
+	verbage = "ties"
+
+/datum/crafting_recipe/roguetown/flowercrown_salvia
+	name = "salvia crown"
+	result = /obj/item/flowercrown/salvia
+	reqs = list(/obj/item/alch/salvia = 4,
+				/obj/item/natural/fibers = 2)
+	craftdiff = 0
+	verbage_simple = "tied"
+	verbage = "ties"
+
+/datum/crafting_recipe/roguetown/candle/eora
+	name = "eora's candle (x3)"
+	result = list(
+				/obj/item/candle/eora,
+				/obj/item/candle/eora,
+				/obj/item/candle/eora,
+				)
+	reqs = list(/obj/item/reagent_containers/food/snacks/tallow = 1,
+				/obj/item/alch/rosa = 1,
+				/datum/reagent/water/blessed = 25)
+
+/datum/crafting_recipe/roguetown/slingcraft
+	name = "sling"
+	result = /obj/item/gun/ballistic/revolver/grenadelauncher/sling
+	reqs = list(/obj/item/natural/fibers = 6)
+	verbage_simple = "twist"
+	verbage = "twists"
+	craftdiff = 1 //you should make some ammo first!
+	
+/datum/crafting_recipe/roguetown/slingpouchcraft
+	name = "sling bullet pouch"
+	result = /obj/item/quiver/sling/
+	reqs = list(/obj/item/natural/fibers = 1, /obj/item/natural/cloth = 1)
+	verbage_simple = "craft"
+	verbage = "crafts"
+	craftdiff = 0
+
+/datum/crafting_recipe/roguetown/stonebullets
+	name = "stone sling bullets (x2)"
+	result = list(
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				)
+	reqs = list(/obj/item/natural/stone = 1)
+	verbage_simple = "smooth"
+	verbage = "smooths"
+	craftdiff = 0
+	
+/datum/crafting_recipe/roguetown/stonebullets10x
+	name = "stone sling bullets (x10)"
+	result = list(
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				/obj/item/ammo_casing/caseless/rogue/sling_bullet/stone,
+				)
+	reqs = list(/obj/item/natural/stone = 5)
+	verbage_simple = "smooth"
+	verbage = "smooths"
+	craftdiff = 0
+
+/datum/crafting_recipe/hair_dye
+    name = "Hair Dye Cream"
+    result = /obj/item/hair_dye_cream
+    reqs = list(
+        /obj/item/reagent_containers/glass/bowl = 1,
+        /obj/item/reagent_containers/food/snacks/grown/berries/rogue = 3
+    )
