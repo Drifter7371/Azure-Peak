@@ -172,7 +172,6 @@ if("Biome Wanderer")
 					H.mind.adjust_skillrank(/datum/skill/combat/slings, 3, TRUE)
 					beltr = /obj/item/quiver/sling/iron
 					beltl = /obj/item/gun/ballistic/revolver/grenadelauncher/sling
-
 				var/armors = list("Light Armor","Medium Armor")
 			var/armor_choice = input("Choose your armor.", "TAKE UP ARMS") as anything in armors
 			switch(armor_choice)
