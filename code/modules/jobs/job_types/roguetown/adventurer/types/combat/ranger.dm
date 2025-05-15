@@ -8,8 +8,8 @@
 	category_tags = list(CTAG_ADVENTURER, CTAG_COURTAGENT)
 	classes = list("Sentinel" = "You are a ranger well-versed in traversing untamed lands, with years of experience taking odd jobs as a pathfinder and bodyguard in areas of wilderness untraversable to common soldiery.",
 					"Assassin" = "You've lived the life of a hired killer and have spent your time training with blades and crossbows alike.",
-					"Bombadier" = "Bombs? You've got them. Plenty of them - and the skills to make more. You've spent years training under skilled alchemists and have found the perfect mix to create some chaos - now go blow something up!"
-					"Biome-Wanderer" = "The dangers of the wilds vary upon the plains they rest upon, You happen to be experienced in many.")
+					"Bombadier" = "Bombs? You've got them. Plenty of them - and the skills to make more. You've spent years training under skilled alchemists and have found the perfect mix to create some chaos - now go blow something up!",
+					"Biome Wanderer" = "The dangers of the wilds vary upon the plains they rest upon, You happen to be experienced in many.")
 
 /datum/outfit/job/roguetown/adventurer/ranger/pre_equip(mob/living/carbon/human/H)
 	..()
@@ -131,7 +131,7 @@
 			H.change_stat("intelligence", 2)
 			H.set_blindness(0)
 
-if("Biome-Wanderer")
+if("Biome Wanderer")
 			to_chat(H, span_warning("The dangers of the wilds vary upon the plains they rest upon, You happen to be experienced in many."))
 			shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 			shirt = /obj/item/clothing/suit/roguetown/shirt/tunic/black
