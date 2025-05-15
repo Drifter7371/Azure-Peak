@@ -185,8 +185,8 @@ if("Biome-Wanderer")
 					armor = /obj/item/clothing/suit/roguetown/armor/chainmail/iron
 					pants = /obj/item/clothing/under/roguetown/chainlegs/iron
 					gloves = /obj/item/clothing/gloves/roguetown/chain/iron
-					H.set_blindness(0)
 					ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
+					H.set_blindness(0)
 			H.change_stat("perception", 2)
 			H.change_stat("speed", 1)
 			H.change_stat("endurance", 1)
