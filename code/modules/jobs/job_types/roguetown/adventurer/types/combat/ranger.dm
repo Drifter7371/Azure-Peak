@@ -8,7 +8,8 @@
 	category_tags = list(CTAG_ADVENTURER, CTAG_COURTAGENT)
 	classes = list("Sentinel" = "You are a ranger well-versed in traversing untamed lands, with years of experience taking odd jobs as a pathfinder and bodyguard in areas of wilderness untraversable to common soldiery.",
 					"Assassin" = "You've lived the life of a hired killer and have spent your time training with blades and crossbows alike.",
-					"Bombadier" = "Bombs? You've got them. Plenty of them - and the skills to make more. You've spent years training under skilled alchemists and have found the perfect mix to create some chaos - now go blow something up!")
+					"Bombadier" = "Bombs? You've got them. Plenty of them - and the skills to make more. You've spent years training under skilled alchemists and have found the perfect mix to create some chaos - now go blow something up!"
+					"Biome-Wanderer" = "The dangers of the wilds vary upon the plains they rest upon, You happen to be experienced in many.")
 
 /datum/outfit/job/roguetown/adventurer/ranger/pre_equip(mob/living/carbon/human/H)
 	..()
@@ -129,3 +130,63 @@
 			H.change_stat("strength", 2)
 			H.change_stat("intelligence", 2)
 			H.set_blindness(0)
+
+if("Biome-Wanderer")
+			to_chat(H, span_warning("The dangers of the wilds vary upon the plains they rest upon, You happen to be experienced in many."))
+			shoes = /obj/item/clothing/shoes/roguetown/boots/leather
+			shirt = /obj/item/clothing/suit/roguetown/shirt/tunic/black
+			neck = /obj/item/storage/belt/rogue/pouch/coins/poor
+			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
+			belt = /obj/item/storage/belt/rogue/leather
+			cloak = /obj/item/clothing/cloak/raincloak/green
+			backl = /obj/item/storage/backpack/rogue/satchel
+			beltr = /obj/item/rogueweapon/stoneaxe/woodcut // Technical main weapon?
+			backpack_contents = list(/obj/item/rogueweapon/huntingknife = 1, /obj/item/flashlight/flare/torch/lantern = 1)
+			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/bows, 1, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/axes, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 2, TRUE) // On par with battlemaster.
+			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/swimming, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/craft/tanning, 1, TRUE) // Still a ranger, nerfed.
+			H.mind.adjust_skillrank(/datum/skill/labor/butchering, 1, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/craft/cooking, 1, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/tracking, 3, TRUE)
+			ADD_TRAIT(H, TRAIT_OUTDOORSMAN, TRAIT_GENERIC)
+			var/weapons = list("Recurve Bow","Billhook","Sling")
+			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+			switch(weapon_choice)
+				if("Recurve Bow")
+					H.mind.adjust_skillrank(/datum/skill/combat/bows, 2, TRUE)
+					backr = /obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve
+					beltl = /obj/item/quiver/arrows
+				if("Billhook") // Debatable here, but we love variety.
+					H.mind.adjust_skillrank(/datum/skill/combat/polearms, 3, TRUE)
+					r_hand = /obj/item/rogueweapon/spear/billhook
+					backr = /obj/item/gwstrap
+				if("Sling")
+					H.mind.adjust_skillrank(/datum/skill/combat/slings, 3, TRUE)
+					beltr = /obj/item/quiver/sling/iron
+					beltl = /obj/item/gun/ballistic/revolver/grenadelauncher/sling
+
+				var/armors = list("Light Armor","Medium Armor")
+			var/armor_choice = input("Choose your armor.", "TAKE UP ARMS") as anything in armors
+			switch(armor_choice)
+				if("Light Armor")
+					armor = /obj/item/clothing/suit/roguetown/armor/leather/hide
+					pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
+					gloves = /obj/item/clothing/gloves/roguetown/fingerless_leather
+					ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
+				if("Medium Armor")
+					armor = /obj/item/clothing/suit/roguetown/armor/chainmail/iron
+					pants = /obj/item/clothing/under/roguetown/chainlegs/iron
+					gloves = /obj/item/clothing/gloves/roguetown/chain/iron
+					H.set_blindness(0)
+					ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
+			H.change_stat("perception", 2)
+			H.change_stat("speed", 1)
+			H.change_stat("endurance", 1)
