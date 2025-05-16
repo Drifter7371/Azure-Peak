@@ -86,6 +86,7 @@
 	
 	var/too_powerful = FALSE
 	var/list/things_to_churn = list()
+	var/list/things_to_stun = list()
 	for (var/mob/living/L in targets)
 		var/is_vampire = FALSE
 		var/is_zombie = FALSE
@@ -97,6 +98,7 @@
 				is_vampire = TRUE
 			if (L.mind.has_antag_datum(/datum/antagonist/zombie))
 				is_zombie = TRUE
+				things_to_stun += L
 			if (L.mind.special_role == "Vampire Lord")
 				too_powerful = L
 				user.visible_message(span_warning("[user] suddenly pales before an unseen presence, and gasps!"), span_warning("The sound of rushing blood fills my ears and mind, drowning out my abrogation!"))
@@ -109,7 +111,12 @@
 			user.visible_message(span_warning("A frigid blue glower suddenly erupts in [user]'s eyes as a whispered prayer summons forth a winding veil of ghostly mists!"), span_notice("I perform the sacred rite of Abrogation, bringing forth Her servants to harry and weaken the unliving!"))
 			for(var/mob/living/thing in things_to_churn)
 				thing.apply_status_effect(/datum/status_effect/churned, user, debuff_power)
-		else
+		if(LAZYLEN(things_to_stun))
+			for(var/mob/living/thing in things_to_churn)
+				thing.Stun(100)
+				thing.Knockdown(50)
+				thing.emote("scream")
+		if(!LAZYLEN(things_to_churn))
 			to_chat(user, span_notice("The rite of Abrogation passes from my lips in silence, having found nothing to assail."))
 			return
 	else

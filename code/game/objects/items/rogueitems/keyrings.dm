@@ -294,3 +294,6 @@
 
 /obj/item/storage/keyring/heir
 	keys = list(/obj/item/roguekey/manor, /obj/item/roguekey/heir, /obj/item/roguekey/garrison)
+
+/obj/item/storage/keyring/mageapprentice
+	keys = list(/obj/item/roguekey/manor, /obj/item/roguekey/tower)

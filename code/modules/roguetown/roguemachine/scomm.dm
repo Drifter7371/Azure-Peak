@@ -274,6 +274,7 @@
 			for(var/obj/structure/roguemachine/scomm/S in SSroguemachine.scomm_machines)
 				if(S.garrisonline)
 					S.repeat_message(raw_message, src, usedcolor, message_language)
+			SSroguemachine.crown?.repeat_message(raw_message, src, usedcolor, message_language)
 			return
 		for(var/obj/structure/roguemachine/scomm/S in SSroguemachine.scomm_machines)
 			if(!S.calling)
@@ -282,6 +283,7 @@
 			S.repeat_message(raw_message, src, usedcolor, message_language)
 		for(var/obj/item/listenstone/S in SSroguemachine.scomm_machines)
 			S.repeat_message(raw_message, src, usedcolor, message_language)//make the listenstone hear scom
+		SSroguemachine.crown?.repeat_message(raw_message, src, usedcolor, message_language)
 
 /obj/structure/roguemachine/scomm/proc/dictate_laws()
 	if(dictating)
@@ -351,6 +353,7 @@
 			S.repeat_message(input_text, src, usedcolor)
 		for(var/obj/item/listenstone/S in SSroguemachine.scomm_machines)//make the listenstone hear scomstone
 			S.repeat_message(input_text, src, usedcolor)
+		SSroguemachine.crown?.repeat_message(input_text, src, usedcolor)
 
 /obj/item/scomstone/MiddleClick(mob/user)
 	if(.)
@@ -733,6 +736,7 @@
 				S.repeat_message(input_text, src, usedcolor)
 			for(var/obj/item/listenstone/S in SSroguemachine.scomm_machines)
 				S.repeat_message(input_text, src, usedcolor)
+			SSroguemachine.crown?.repeat_message(input_text, src, usedcolor)
 		if(garrisonline)
 			input_text = "<big><span style='color: [GARRISON_SCOM_COLOR]'>[input_text]</span></big>" //Prettying up for Garrison line
 			for(var/obj/item/scomstone/bad/garrison/S in SSroguemachine.scomm_machines)
@@ -742,6 +746,7 @@
 			for(var/obj/structure/roguemachine/scomm/S in SSroguemachine.scomm_machines)
 				if(S.garrisonline)
 					S.repeat_message(input_text, src, usedcolor)
+			SSroguemachine.crown?.repeat_message(input_text, src, usedcolor)
 
 /obj/item/scomstone/garrison/attack_self(mob/living/user)
 	if(.)

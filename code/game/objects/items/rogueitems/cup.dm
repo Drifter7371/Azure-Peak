@@ -52,6 +52,12 @@
 	last_used = 0
 	is_silver = TRUE
 
+/obj/item/reagent_containers/glass/cup/silver/small
+	name = "silver cup"
+	desc = "A silver cup, its surface adorned with intricate carvings and runes."
+	icon_state = "scup"
+	sellprice = 20
+
 /obj/item/reagent_containers/glass/cup/silver/pickup(mob/user)
 	. = ..()
 	var/mob/living/carbon/human/H = user
@@ -99,6 +105,12 @@
 	desc = "Adorned with gemstones, this goblet radiates opulence and grandeur."
 	icon_state = "golden"
 	sellprice = 50
+
+/obj/item/reagent_containers/glass/cup/golden/small
+	name = "golden cup"
+	desc = "Adorned with gemstones, this cup radiates opulence and grandeur."
+	icon_state = "gcup"
+	sellprice = 40
 
 /obj/item/reagent_containers/glass/cup/golden/poison
 	name = "golden goblet"

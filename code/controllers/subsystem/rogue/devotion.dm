@@ -1,4 +1,5 @@
 /// DEFINITIONS ///
+#define CLERIC_ORI -1
 #define CLERIC_T0 0
 #define CLERIC_T1 1
 #define CLERIC_T2 2
@@ -32,6 +33,8 @@
 	var/max_progression = CLERIC_REQ_4
 	/// Current spell tier, basically
 	var/level = CLERIC_T0
+	/// Last spell tier, to prevent duplicating miracles
+	var/last_level = null
 	/// How much devotion is gained per process call
 	var/passive_devotion_gain = 0
 	/// How much progression is gained per process call
@@ -95,7 +98,9 @@
 				level = CLERIC_T4
 	if(!holder?.mind)
 		return FALSE
-	try_add_spells(silent = silent)
+	if(level != last_level)
+		try_add_spells(silent = silent)
+		last_level = level
 	return TRUE
 
 /datum/devotion/proc/try_add_spells(silent = FALSE)

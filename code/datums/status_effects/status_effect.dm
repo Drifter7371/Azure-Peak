@@ -163,7 +163,7 @@
 		var/datum/status_effect/S1 = effect
 		for(var/datum/status_effect/S in status_effects)
 			if(initial(S1.id) == S.id)
-				. += S
+				. += S	
 
 //////////////////////
 // STACKING EFFECTS //

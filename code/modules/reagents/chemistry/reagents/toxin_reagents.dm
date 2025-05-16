@@ -426,18 +426,6 @@
 	M.adjustToxLoss(3, 0)
 	return ..()
 
-/datum/reagent/toxin/killersice
-	name = "killersice"
-	description = "killersice"
-	reagent_state = LIQUID
-	color = "#FFFFFF"
-	metabolization_rate = 0.01
-	toxpwr = 0
-
-/datum/reagent/toxin/killersice/on_mob_life(mob/living/carbon/M)
-	M.adjustToxLoss(10, 0)
-	return ..()
-
 /datum/reagent/toxin/bad_food
 	name = "Bad Food"
 	description = "The result of some abomination of cookery, food so bad it's toxic."

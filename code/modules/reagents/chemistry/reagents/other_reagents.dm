@@ -81,6 +81,7 @@
 /datum/reagent/water/gross
 	taste_description = "something vile"
 	color = "#98934bc6"
+	harmful = TRUE
 
 /datum/reagent/water/gross/reaction_mob(mob/living/L, method=TOUCH, reac_volume)
 	if(method == INGEST) // Make sure you DRANK the toxic water before giving damage

@@ -89,7 +89,7 @@
 	icon_state = "seeddust"
 	major_pot = /datum/alch_cauldron_recipe/big_stamina_potion
 	med_pot = /datum/alch_cauldron_recipe/stamina_potion
-	minor_pot = /datum/alch_cauldron_recipe/disease_cure
+	minor_pot = /datum/alch_cauldron_recipe/strong_antidote
 
 /obj/item/alch/runedust
 	name = "raw essentia"
@@ -108,7 +108,7 @@
 /obj/item/alch/silverdust
 	name = "silver dust"
 	icon_state = "silverdust"
-	major_pot = /datum/alch_cauldron_recipe/disease_cure
+	major_pot = /datum/alch_cauldron_recipe/strong_antidote
 	med_pot = /datum/alch_cauldron_recipe/antidote
 	minor_pot = /datum/alch_cauldron_recipe/big_health_potion
 
@@ -179,7 +179,7 @@
 	grid_width = 32
 	grid_height = 64
 
-	major_pot = /datum/alch_cauldron_recipe/disease_cure
+	major_pot = /datum/alch_cauldron_recipe/strong_antidote
 	med_pot = /datum/alch_cauldron_recipe/health_potion
 	minor_pot = /datum/alch_cauldron_recipe/con_potion
 
@@ -211,7 +211,7 @@
 
 	major_pot = /datum/alch_cauldron_recipe/spd_potion
 	med_pot = /datum/alch_cauldron_recipe/big_mana_potion
-	minor_pot = /datum/alch_cauldron_recipe/disease_cure
+	minor_pot = /datum/alch_cauldron_recipe/strong_antidote
 
 /obj/item/alch/ozium
 	name = "alchemical ozium"
@@ -237,7 +237,7 @@
 	icon_state = "puresalt"
 
 	major_pot = /datum/alch_cauldron_recipe/antidote
-	med_pot = /datum/alch_cauldron_recipe/disease_cure
+	med_pot = /datum/alch_cauldron_recipe/strong_antidote
 	minor_pot = /datum/alch_cauldron_recipe/big_mana_potion
 
 /obj/item/alch/mineraldust

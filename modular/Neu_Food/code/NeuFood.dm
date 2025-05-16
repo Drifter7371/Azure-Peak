@@ -102,6 +102,16 @@
 	name = "pewter spoon"
 	icon_state = "spoon_iron"
 
+/obj/item/kitchen/spoon/gold
+	name = "gold spoon"
+	icon_state = "spoon_gold"
+	sellprice = 10
+
+/obj/item/kitchen/spoon/silver
+	name = "silver spoon"
+	icon_state = "spoon_silver"
+	sellprice = 20
+
 /obj/item/kitchen/fork
 	name = "wooden fork"	
 	icon = 'modular/Neu_Food/icons/cooking.dmi'
@@ -116,6 +126,16 @@
 /obj/item/kitchen/fork/tin
 	name = "pewter fork"
 	icon_state = "fork_iron"
+
+/obj/item/kitchen/fork/gold
+	name = "gold fork"
+	icon_state = "fork_gold"
+	sellprice = 10
+
+/obj/item/kitchen/fork/silver
+	name = "silver fork"
+	icon_state = "fork_silver"
+	sellprice = 20
 
 /obj/item/kitchen/rollingpin
 	icon = 'modular/Neu_Food/icons/cooking.dmi'
@@ -156,7 +176,18 @@
 	var/in_use // so you can't spam eating with spoon
 
 /obj/item/reagent_containers/glass/bowl/iron
+	name = "iron bowl"
 	icon_state = "bowl_iron"
+
+/obj/item/reagent_containers/glass/bowl/gold
+	name = "gold bowl"
+	icon_state = "bowl_gold"
+	sellprice = 40
+
+/obj/item/reagent_containers/glass/bowl/silver
+	name = "silver bowl"
+	icon_state = "bowl_silver"
+	sellprice = 60
 
 /obj/item/reagent_containers/glass/bowl/update_icon()
 	cut_overlays()
@@ -254,7 +285,7 @@
 		/obj/item/reagent_containers/food/snacks/rogue/wienercabbage = "wienercabbage_platter",
 		/obj/item/reagent_containers/food/snacks/rogue/wienerpotato = "wienerpotato_platter",
 		/obj/item/reagent_containers/food/snacks/rogue/wienerpotatonions = "wpotonion_platter",
-		 )
+		)
 
 
 /obj/item/cooking/platter
@@ -303,6 +334,13 @@
 	sellprice = 25
 	smeltresult = /obj/item/ingot/gold
 
+/obj/item/tablecloth/silk
+	name = "silk tablecloth"
+	desc = "A fancy silk tablecloth, laid out for diplomatic feasts and other important events."
+	icon = 'modular/Neu_Food/icons/cooking.dmi'
+	icon_state = "tablecloth_silk"
+	sellprice = 40
+	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/book/rogue/yeoldecookingmanual // new book with some tips to learn
 	name = "Ye olde ways of cookinge"

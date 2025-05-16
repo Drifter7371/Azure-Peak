@@ -140,80 +140,103 @@
 	..()
 	. = 1
 
+/** Design Note: Antidotes are meant to last as long as the poison, and purge them much quicker
+ Having a 1 to 1 antidote to poison where you have to tailor defense to an increasing amount of attack
+ is a bad idea, since that just means no one will use antidotes and the weapon win the race vs defense.
+ This means pre ingesting antidote when expecting poison is a viable strategy.
+ Previously, antidote did not have a dylovene-like effect and just purged toxin damage while poison will outlast them.
+**/
 /datum/reagent/medicine/antidote
-	name = "Poison Antidote"
+	name = "Antidote"
 	description = ""
 	reagent_state = LIQUID
 	color = "#00ff00"
 	taste_description = "sickly sweet"
-	metabolization_rate = REAGENTS_METABOLISM
+	metabolization_rate = 0.1 * REAGENTS_METABOLISM
 
 /datum/reagent/medicine/antidote/on_mob_life(mob/living/carbon/M)
 	if(volume > 0.99)
 		M.adjustToxLoss(-4, 0)
+	for(var/datum/reagent/R in M.reagents.reagent_list)
+		if(R.harmful)
+			holder.remove_reagent(R.type, 1)
+
 	..()
 	. = 1
 
-/datum/reagent/medicine/diseasecure
-	name = "Disease Cure"
+// About 3 time as potent as antidote
+/datum/reagent/medicine/strong_antidote
+	name = "Strong Antidote"
 	description = ""
 	reagent_state = LIQUID
 	color = "#004200"
 	taste_description = "dirt"
-	metabolization_rate = REAGENTS_METABOLISM * 3
+	metabolization_rate = 0.1 * REAGENTS_METABOLISM
 
-/datum/reagent/medicine/diseasecure/on_mob_life(mob/living/carbon/M)
+/datum/reagent/medicine/strong_antidote/on_mob_life(mob/living/carbon/M)
 	if(volume > 0.99)
-		M.adjustToxLoss(-16, 0)
+		M.adjustToxLoss(-12, 0)
+	for(var/datum/reagent/R in M.reagents.reagent_list)
+		if(R.harmful)
+			holder.remove_reagent(R, 3)
 	..()
 	. = 1
 
-//Buff potions
+/* Buff potions
+	Previously, it would apply a status effect to the mob lasting for 93 / 300 seconds and remove everything
+	However it meant that putting it in an alchemical vial was a trap as it sipped 9 units instead of 5 units that is the required minimum.
+	And removed any excessive potion inside the body. This has been changed to apply a 3 seconds buff to the mob, but have much lower
+	metabolization rate, so that the duration of the buff depends on how long you last. 
+	Roughly tested. At Metabolization Rate 1. 9 units sip (1/3 of a vial) last 20 seconds.
+	To make this somewhat equal to the old system, base metabolization rate is 0.1 - making it last 200 seconds - 600 seconds if you sip an entire vial.
+	This is 2x on weaker potions (Intelligence, Fortune). However, overdose threshold is now 30 units so you can only drink one vial at once.
+	And potion stacking is not possible without neutralizing itself.
+*/
 /datum/reagent/buff
 	description = ""
 	reagent_state = LIQUID
-	metabolization_rate = REAGENTS_METABOLISM
+	metabolization_rate = REAGENTS_METABOLISM * 0.1
+	overdose_threshold = 30
+
+/datum/reagent/buff/overdose_process(mob/living/carbon/M)
+	. = ..()
+	M.Jitter(2)
+	if(!HAS_TRAIT(M, TRAIT_CRACKHEAD)) // Baothan get to stack more of one potion in their body, but not multiple
+		M.adjustToxLoss(3)
+
+/datum/reagent/buff/on_mob_life(mob/living/carbon/M)
+	for(var/datum/reagent/R in M.reagents.reagent_list)
+		if(istype(R, /datum/reagent/buff) && R != src)
+			holder.remove_reagent(R.type, 10)
+			// Rapidly purge stacking buffs
 
 /datum/reagent/buff/strength
 	name = "Strength"
 	color = "#ff9000"
 	taste_description = "old meat"
 
-/datum/reagent/buff/strength/on_mob_add(mob/living/carbon/M)
-	testing("str pot in system")
-	if(M.has_status_effect(/datum/status_effect/buff/alch/strengthpot))
-		return ..()
-	if(M.reagents.has_reagent(/datum/reagent/buff/strength,4))
-		M.apply_status_effect(/datum/status_effect/buff/alch/strengthpot)
-		M.reagents.remove_reagent(/datum/reagent/buff/strength, M.reagents.get_reagent_amount(/datum/reagent/buff/strength))
+/datum/reagent/buff/strength/on_mob_life(mob/living/carbon/M)
+	M.apply_status_effect(/datum/status_effect/buff/alch/strengthpot)
 	return ..()
 
 /datum/reagent/buff/perception
 	name = "Perception"
 	color = "#ffff00"
 	taste_description = "cat piss"
+	metabolization_rate = REAGENTS_METABOLISM * 0.05
 
 /datum/reagent/buff/perception/on_mob_life(mob/living/carbon/M)
-	testing("per pot in system")
-	if(M.has_status_effect(/datum/status_effect/buff/alch/perceptionpot))
-		return ..()
-	if(M.reagents.has_reagent((/datum/reagent/buff/perception),4))
-		M.apply_status_effect(/datum/status_effect/buff/alch/perceptionpot)
-		M.reagents.remove_reagent(/datum/reagent/buff/perception, M.reagents.get_reagent_amount(/datum/reagent/buff/perception))
+	M.apply_status_effect(/datum/status_effect/buff/alch/perceptionpot)
 	return ..()
 
 /datum/reagent/buff/intelligence
 	name = "Intelligence"
 	color = "#438127"
 	taste_description = "bog water"
+	metabolization_rate = REAGENTS_METABOLISM * 0.05
 
 /datum/reagent/buff/intelligence/on_mob_life(mob/living/carbon/M)
-	testing("int pot in system")
-	if(M.has_status_effect(/datum/status_effect/buff/alch/intelligencepot))
-		return ..()
-	if(M.reagents.has_reagent((/datum/reagent/buff/intelligence),4))
-		M.apply_status_effect(/datum/status_effect/buff/alch/intelligencepot)
-		M.reagents.remove_reagent(/datum/reagent/buff/intelligence, M.reagents.get_reagent_amount(/datum/reagent/buff/intelligence))
+	M.apply_status_effect(/datum/status_effect/buff/alch/intelligencepot)
 	return ..()
 
 /datum/reagent/buff/constitution
@@ -222,26 +245,16 @@
 	taste_description = "bile"
 
 /datum/reagent/buff/constitution/on_mob_life(mob/living/carbon/M)
-	testing("con pot in system")
-	if(M.has_status_effect(/datum/status_effect/buff/alch/constitutionpot))
-		return ..()
-	if(M.reagents.has_reagent((/datum/reagent/buff/constitution),4))
-		M.apply_status_effect(/datum/status_effect/buff/alch/constitutionpot)
-		M.reagents.remove_reagent(/datum/reagent/buff/constitution, M.reagents.get_reagent_amount(/datum/reagent/buff/constitution))
+	M.apply_status_effect(/datum/status_effect/buff/alch/constitutionpot)
 	return ..()
 
 /datum/reagent/buff/endurance
 	name = "Endurance"
 	color = "#ffff00"
-	taste_description = "gote urine"
+	taste_description = "goat urine"
 
 /datum/reagent/buff/endurance/on_mob_life(mob/living/carbon/M)
-	testing("end pot in system")
-	if(M.has_status_effect(/datum/status_effect/buff/alch/endurancepot))
-		return ..()
-	if(M.reagents.has_reagent((/datum/reagent/buff/endurance),4))
-		M.apply_status_effect(/datum/status_effect/buff/alch/endurancepot)
-		M.reagents.remove_reagent(/datum/reagent/buff/endurance, M.reagents.get_reagent_amount(/datum/reagent/buff/endurance))
+	M.apply_status_effect(/datum/status_effect/buff/alch/endurancepot)
 	return ..()
 
 /datum/reagent/buff/speed
@@ -250,26 +263,17 @@
 	taste_description = "raw egg yolk"
 
 /datum/reagent/buff/speed/on_mob_life(mob/living/carbon/M)
-	testing("spd pot in system")
-	if(M.has_status_effect(/datum/status_effect/buff/alch/speedpot))
-		return ..()
-	if(M.reagents.has_reagent((/datum/reagent/buff/speed),4))
-		M.apply_status_effect(/datum/status_effect/buff/alch/speedpot)
-		M.reagents.remove_reagent(/datum/reagent/buff/speed, M.reagents.get_reagent_amount(/datum/reagent/buff/speed))
+	M.apply_status_effect(/datum/status_effect/buff/alch/speedpot)
 	return ..()
 
 /datum/reagent/buff/fortune
 	name = "Fortune"
 	color = "#ffff00"
 	taste_description = "pig urine"
+	metabolization_rate = REAGENTS_METABOLISM * 0.05
 
 /datum/reagent/buff/fortune/on_mob_life(mob/living/carbon/M)
-	testing("luck pot in system")
-	if(M.has_status_effect(/datum/status_effect/buff/alch/fortunepot))
-		return ..()
-	if(M.reagents.has_reagent((/datum/reagent/buff/fortune),4))
-		M.apply_status_effect(/datum/status_effect/buff/alch/fortunepot)
-		M.reagents.remove_reagent(/datum/reagent/buff/fortune, M.reagents.get_reagent_amount(/datum/reagent/buff/fortune))
+	M.apply_status_effect(/datum/status_effect/buff/alch/fortunepot)
 	return ..()
 
 
@@ -286,6 +290,7 @@ If you want to expand on poisons theres tons of fun effects TG chemistry has tha
 	color = "#47b2e0"
 	taste_description = "bitterness"
 	metabolization_rate = 0.1 * REAGENTS_METABOLISM
+	harmful = TRUE
 
 /datum/reagent/berrypoison/on_mob_life(mob/living/carbon/M)
 	if(volume > 0.09)
@@ -305,6 +310,7 @@ If you want to expand on poisons theres tons of fun effects TG chemistry has tha
 	color = "#1a1616"
 	taste_description = "burning"
 	metabolization_rate = 0.1 * REAGENTS_METABOLISM
+	harmful = TRUE
 
 /datum/reagent/strongpoison/on_mob_life(mob/living/carbon/M)
 	testing("Someone was poisoned")
@@ -324,6 +330,8 @@ If you want to expand on poisons theres tons of fun effects TG chemistry has tha
 	color = "#2c1818"
 	taste_description = "sour meat"
 	metabolization_rate = 0.1 * REAGENTS_METABOLISM
+	harmful = TRUE
+
 
 /datum/reagent/organpoison/on_mob_life(mob/living/carbon/M)
 	if(!HAS_TRAIT(M, TRAIT_NASTY_EATER) && !HAS_TRAIT(M, TRAIT_ORGAN_EATER))
@@ -338,6 +346,8 @@ If you want to expand on poisons theres tons of fun effects TG chemistry has tha
 	color = "#083b1c"
 	taste_description = "breathlessness"
 	metabolization_rate = 0.1 * REAGENTS_METABOLISM * 3
+	harmful = TRUE
+
 
 /datum/reagent/stampoison/on_mob_life(mob/living/carbon/M)
 	if(!HAS_TRAIT(M,TRAIT_NOROGSTAM))
@@ -351,26 +361,26 @@ If you want to expand on poisons theres tons of fun effects TG chemistry has tha
 	color = "#041d0e"
 	taste_description = "frozen air"
 	metabolization_rate = 0.1 * REAGENTS_METABOLISM * 9
+	harmful = TRUE
+
 
 /datum/reagent/strongstampoison/on_mob_life(mob/living/carbon/M)
 	if(!HAS_TRAIT(M,TRAIT_NOROGSTAM))
 		M.rogstam_add(-180) //Rapidly leech stamina
 	return ..()
 
-
-/datum/reagent/killersice
+/datum/reagent/toxin/killersice
 	name = "Killer's Ice"
-	description = ""
+	description = "c8c9e9"
 	reagent_state = LIQUID
-	color = "#c8c9e9"
-	taste_description = "cold needles"
-	metabolization_rate = 0.1 * REAGENTS_METABOLISM
+	color = "#FFFFFF"
+	metabolization_rate = 0.1
+	toxpwr = 0
+	harmful = TRUE
 
-/datum/reagent/killersice/on_mob_life(mob/living/carbon/M)
-	if(!HAS_TRAIT(M, TRAIT_NASTY_EATER) && !HAS_TRAIT(M, TRAIT_ORGAN_EATER))
-		M.adjustToxLoss(5)
+/datum/reagent/toxin/killersice/on_mob_life(mob/living/carbon/M)
+	M.adjustToxLoss(10, 0)
 	return ..()
-
 
 //Potion reactions
 /datum/chemical_reaction/alch/stronghealth
@@ -427,6 +437,7 @@ If you want to expand on poisons theres tons of fun effects TG chemistry has tha
 	reagent_state = LIQUID
 	color = "#ffc400"
 	metabolization_rate = 0.5
+	harmful = TRUE
 
 /datum/reagent/toxin/fyritiusnectar/on_mob_life(mob/living/carbon/M)
 	if(volume > 0.49)
