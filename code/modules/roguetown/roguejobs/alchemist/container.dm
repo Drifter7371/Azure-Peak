@@ -144,7 +144,7 @@
 
 /obj/item/reagent_containers/glass/bottle/rogue/beer/rtoper
 	list_reagents = list(/datum/reagent/consumable/ethanol/beer/rtoper = 48)
-	desc = "A bottle with the Rockhill-crest cork-seal. An especially tart cider from the kingdom of Rockhill. Myths say the brewers let the barrels age in the bog, which results in that especially stong flavour."
+	desc = "A bottle with the Lirvas-crest cork-seal. An especially tart cider from the petty kingdom of Lirvas. Myths say the brewers let the barrels age in the bog, which results in that especially stong flavour."
 
 /obj/item/reagent_containers/glass/bottle/rogue/beer/nred
 	list_reagents = list(/datum/reagent/consumable/ethanol/beer/nred = 48)
@@ -177,3 +177,31 @@
 /obj/item/reagent_containers/glass/bottle/rogue/beer/kgunplum
 	list_reagents = list(/datum/reagent/consumable/ethanol/beer/kgunplum = 48)
 	desc = "A bottle with a Golden Swan cork-seal. A reddish-golden alcohol made from a fruit commonly found on the Kazengun-isles. A favourite of the commoners."
+
+		//////////////////////////
+		/// CLAY BOTTLES ///
+		//////////////////////////
+
+/obj/item/reagent_containers/glass/bottle/claybottle/wine
+	list_reagents = list(/datum/reagent/consumable/ethanol/beer/wine = 65)
+	desc = "A clay bottle that contains a generic red-wine, likely from Raneshen. It has a red-clay cork-seal."
+
+/obj/item/reagent_containers/glass/bottle/claybottle/water
+	list_reagents = list(/datum/reagent/water = 65)
+	desc = "A clay bottle with no markings."
+
+/obj/item/reagent_containers/glass/bottle/claybottle/beer
+	list_reagents = list(/datum/reagent/consumable/ethanol/beer = 65)
+	desc = "A clay bottle that contains a generic housebrewed small-beer. It has an improvised corkseal made of hardened clay."
+
+/obj/item/reagent_containers/glass/bottle/claybottle/nred
+	list_reagents = list(/datum/reagent/consumable/ethanol/beer/nred = 65)
+	desc = "A clay bottle with the City of Norwandine cork-seal. A red ale brewed to perfection in the lands of Hammerhold."
+
+/obj/item/reagent_containers/glass/bottle/claybottle/gronnmead
+	list_reagents = list(/datum/reagent/consumable/ethanol/beer/gronnmead = 65)
+	desc = "A clay bottle with a Shieldmaiden Berewrey cork-seal. A deep red honey-wine, refined with the red berries native to Gronns highlands."
+
+/obj/item/reagent_containers/glass/bottle/claybottle/whitewine
+	list_reagents = list(/datum/reagent/consumable/ethanol/beer/whitewine = 65)
+	desc = "A bottle with the Otavan Merchant Guild cork-seal. This one appears to be labelled as a sweet wine from the colder northern regions."

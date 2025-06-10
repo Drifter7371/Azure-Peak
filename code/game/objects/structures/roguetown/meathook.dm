@@ -66,7 +66,7 @@
 		if (M != user)
 			M.visible_message(span_notice("[user] is trying to pull [M] free of [src]!"),\
 				span_notice("[user] is trying to pull you off [src]! It hurts!"),\
-				span_hear("I hear the sound of torn flesh and whimpering..."))
+				span_hear("I hear the sound of tearing flesh and pained whimpering..."))
 			if(!do_after(user, 300, target = src))
 				if(M && M.buckled)
 					M.visible_message(span_notice("[user] fails to free [M]!"),\
@@ -75,7 +75,7 @@
 		else
 			M.visible_message(span_warning("[M] struggles to break free from [src]!"),\
 				span_notice("I struggle to break free from [src], tearing my legs! (Stay still for two minutes.)"),\
-				span_hear("I hear the sound of torn flesh and whimpering..."))
+				span_hear("I hear the sound of tearing flesh and pained whimpering..."))
 			M.adjustBruteLoss(30)
 			if(!do_after(M, 1200, target = src))
 				if(M && M.buckled)

@@ -111,6 +111,9 @@
 	rotprocess = 20 MINUTES
 	can_distill = TRUE
 	distill_reagent = /datum/reagent/consumable/ethanol/beer/cider
+	slice_path = /obj/item/reagent_containers/food/snacks/rogue/fruit/apple_sliced
+	slices_num = 3
+	chopping_sound = TRUE
 	var/equippedloc = null
 	var/list/bitten_names = list()
 
@@ -281,7 +284,7 @@
 /obj/item/reagent_containers/food/snacks/grown/rogue/sweetleaf
 	seed = /obj/item/seeds/sweetleaf
 	name = "swampweed"
-	desc = "A 'foggy' pipe weed."
+	desc = "A pipeweed with pungent odor and a sparkling surface."
 	icon_state = "swampweed"
 	filling_color = "#008000"
 	bitesize_mod = 1
@@ -294,7 +297,7 @@
 /obj/item/reagent_containers/food/snacks/grown/rogue/pipeweed
 	seed = /obj/item/seeds/pipeweed
 	name = "westleach leaf"
-	desc = "A generic kind of pipe weed."
+	desc = "A pipeweed prized for its rich flavor."
 	icon_state = "westleach"
 	filling_color = "#008000"
 	bitesize_mod = 1
@@ -308,7 +311,7 @@
 /obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry
 	seed = null
 	name = "westleach leaf"
-	desc = "A dried leaf."
+	desc = "A dried pipeweed, ready to smoke."
 	icon_state = "westleachd"
 	dry = TRUE
 	pipe_reagents = list(/datum/reagent/drug/nicotine = 30)
@@ -316,10 +319,23 @@
 	list_reagents = list(/datum/reagent/drug/nicotine = 5, /datum/reagent/consumable/nutriment = 1)
 	grind_results = list(/datum/reagent/drug/nicotine = 10)
 
+/obj/item/reagent_containers/food/snacks/grown/rogue/pipeweeddry/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/sigdry,
+		/datum/crafting_recipe/roguetown/survival/sigdry/cheroot,
+		/datum/crafting_recipe/roguetown/survival/sigsweet/cheroot,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
+
 /obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry
 	seed = null
 	name = "swampweed"
-	desc = "It's dried."
+	desc = "A prepared pipeweed prized for its foggy effects."
 	icon_state = "swampweedd"
 	dry = TRUE
 	pipe_reagents = list(/datum/reagent/drug/space_drugs = 30)
@@ -327,11 +343,26 @@
 	grind_results = list(/datum/reagent/drug/space_drugs = 5)
 	eat_effect = /datum/status_effect/debuff/badmeal
 
+/obj/item/reagent_containers/food/snacks/grown/rogue/sweetleafdry/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/sigsweet,
+		/datum/crafting_recipe/roguetown/survival/sigsweet/cheroot,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
+
 /obj/item/reagent_containers/food/snacks/grown/onion/rogue
 	name = "onion"
-	desc = ""
+	desc = "A wonderful vegetable with many layers and broad flavor profile."
+	slice_path = /obj/item/reagent_containers/food/snacks/rogue/veg/onion_sliced
+	chopping_sound = TRUE
+	dropshrink = 0.8
 	icon_state = "onion"
-	slices_num = 1
+	slices_num = 2
 	tastes = list("spicy sweetness" = 1)
 	bitesize = 2
 	list_reagents = list(/datum/reagent/consumable/nutriment = 2)
@@ -342,24 +373,31 @@
 
 /obj/item/reagent_containers/food/snacks/grown/cabbage/rogue
 	name = "cabbage"
-	desc = ""
+	desc = "A dense leafed vegetable, crunchy and ripe. A symbol of prosperity for elves."
 	icon_state = "cabbage"
 	tastes = list("blandness" = 1)
 	bitesize = 10
 	list_reagents = list(/datum/reagent/consumable/nutriment = 5)
 	can_distill = TRUE
+	slices_num = 3
+	slice_path = /obj/item/reagent_containers/food/snacks/rogue/veg/cabbage_sliced
+	chopping_sound = TRUE
 	distill_reagent = /datum/reagent/consumable/ethanol/beer/fireleaf
 	rotprocess = SHELFLIFE_LONG
 	seed = /obj/item/seeds/cabbage
 
 /obj/item/reagent_containers/food/snacks/grown/potato/rogue
 	name = "potato"
-	desc = ""
+	desc = "A spud, dwarven icon of growth. Can be eaten raw."
 	icon_state = "potato"
-	eat_effect = /datum/status_effect/debuff/uncookedfood
-	tastes = list("starchy dirt" = 1)
+	eat_effect = null
+	tastes = list("potato" = 1)
 	bitesize = 2
 	list_reagents = list(/datum/reagent/consumable/nutriment = 1)
+	slices_num = 2
+	slice_path = /obj/item/reagent_containers/food/snacks/rogue/veg/potato_sliced
+	cooked_type = /obj/item/reagent_containers/food/snacks/rogue/preserved/potato_baked
+	chopping_sound = TRUE
 	can_distill = TRUE
 	distill_reagent = /datum/reagent/consumable/ethanol/beer/voddena
 	rotprocess = null
@@ -367,14 +405,17 @@
 
 /obj/item/reagent_containers/food/snacks/grown/garlick/rogue
 	name = "garlick bulb"
-	desc = ""
+	desc = "Hated by the foule vampyres that lurk in the dark. Garlick."
 	icon_state = "garlick"
-	eat_effect = /datum/status_effect/debuff/uncookedfood
+	slices_num = 5
+	slice_path = /obj/item/reagent_containers/food/snacks/rogue/veg/garlick_clove
+	eat_effect = null
 	tastes = list("pungent umami" = 1)
 	bitesize = 2
 	list_reagents = list(/datum/reagent/consumable/nutriment = 1) //add a reagent that harms vampires later
 	can_distill = FALSE
 	rotprocess = null
+	chopping_sound = TRUE
 	seed = /obj/item/seeds/garlick
 
 // poppies, from vanderlin
@@ -411,3 +452,30 @@
 	bitesize = 1
 	list_reagents = list(/datum/reagent/consumable/nutriment = 1)
 	rotprocess = null
+
+/obj/item/reagent_containers/food/snacks/grown/carrot
+	name = "carrot"
+	desc = "A long vegetable said to help with eyesight. Often baked"
+	icon_state = "carrot"
+	cooked_type = /obj/item/reagent_containers/food/snacks/rogue/preserved/carrot_baked
+	tastes = list("carrot" = 1)
+	dropshrink = 0.75
+
+/*	..................   Cucumber   ................... */
+/obj/item/reagent_containers/food/snacks/grown/cucumber
+	name = "cucumber"
+	desc = "A long, green vegetable that is crunchy and refreshing. Can be sliced for easier consumption."
+	icon_state = "cucumber"
+	dropshrink = 0.75
+	slices_num = 2
+	slice_path = /obj/item/reagent_containers/food/snacks/rogue/veg/cucumber_sliced
+	tastes = list("cucumber" = 1)
+	chopping_sound = TRUE
+
+/obj/item/reagent_containers/food/snacks/grown/eggplant
+	name = "eggplant"
+	desc = "A large, purple vegetable with a mild taste. Can be carved to be filled up."
+	icon_state = "eggplant"
+	slices_num = 1
+	slice_path = /obj/item/reagent_containers/food/snacks/rogue/eggplantcarved
+	slice_sound = TRUE

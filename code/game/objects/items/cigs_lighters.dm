@@ -336,7 +336,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 
 /obj/item/clothing/mask/cigarette/rollie
 	name = "zig"
-	desc = ""
+	desc = "Dried westleach carefully wrapped in fine paper for a soothing flavor."
 	icon_state = "spliffoff"
 	icon_on = "spliffon"
 	icon_off = "spliffoff"
@@ -356,12 +356,31 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 /obj/item/clothing/mask/cigarette/rollie/nicotine
 	list_reagents = list(/datum/reagent/drug/nicotine = 30)
 
+/obj/item/clothing/mask/cigarette/rollie/nicotine/cheroot
+	name = "cheroot"
+	desc = "Rich smokeleaf self-rolled into an open-clipped cigarillo. Envigorating for the enthusiast, \
+	nauseating for the laymen."
+	smoketime = 240
+	list_reagents = list(/datum/reagent/drug/nicotine = 45)
+
 /obj/item/clothing/mask/cigarette/rollie/trippy
 	list_reagents = list(/datum/reagent/drug/nicotine = 15, /datum/reagent/drug/mushroomhallucinogen = 35)
 	starts_lit = TRUE
 
 /obj/item/clothing/mask/cigarette/rollie/cannabis
+	name = "swampleaf zig"
+	desc = "A paper wrapped cartridge of sweet smelling smokeleaf."
 	list_reagents = list(/datum/reagent/drug/space_drugs = 30)
+
+/obj/item/clothing/mask/cigarette/rollie/cannabis/cheroot
+	name = "swampleaf cheroot"
+	desc = "Heady sweatleaf rolled in a broad westleach leaf, combining the desirable and troublesome \
+	aspects of both."
+	smoketime = 240
+	list_reagents = list(
+		/datum/reagent/drug/space_drugs = 30,
+		/datum/reagent/drug/nicotine = 15,
+		)
 
 /obj/item/clothing/mask/cigarette/rollie/mindbreaker
 	list_reagents = list(/datum/reagent/toxin/mindbreaker = 35, /datum/reagent/toxin/lipolicide = 15)

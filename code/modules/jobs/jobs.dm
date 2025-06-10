@@ -83,8 +83,8 @@ GLOBAL_LIST_INIT(garrison_positions, list(
 	"Warden",
 	"Sergeant",
 	"Man at Arms",
+	"Squire",
 	"Dungeoneer",
-	"Gatemaster",
 ))
 
 GLOBAL_LIST_INIT(church_positions, list(
@@ -149,7 +149,6 @@ GLOBAL_LIST_INIT(mercenary_positions, list(
 ))
 
 GLOBAL_LIST_INIT(youngfolk_positions, list(
-	"Squire",
 	"Clerk",
 	"Apothecary",
 	"Smithy Apprentice",

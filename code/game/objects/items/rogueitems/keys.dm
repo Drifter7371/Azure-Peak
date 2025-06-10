@@ -66,8 +66,8 @@
 	possible_item_intents = list(/datum/intent/use, /datum/intent/stab)
 	force = 10
 	throwforce = 5
+	max_integrity = null
 	dropshrink = 0.7
-	sellprice = 50
 	drop_sound = 'sound/items/gems (2).ogg'
 	destroy_sound = 'sound/items/pickbreak.ogg'
 	anvilrepair = /datum/skill/craft/armorsmithing
@@ -96,7 +96,6 @@
 	item_state = "silverpin"
 	icon = 'icons/roguetown/clothing/head.dmi'
 	mob_overlay_icon = 'icons/roguetown/clothing/onmob/head_items.dmi'
-	sellprice = 100
 	material = "silver"
 	is_silver = TRUE
 
@@ -243,8 +242,14 @@
 /obj/item/roguekey/townie // For use in round-start available houses in town. Do not use default lockID.
 	name = "town dwelling key"
 	desc = "The key of some townie's home. Hope it's not lost."
-	icon_state ="brownkey"
+	icon_state = "brownkey"
 	lockid = "townie"
+
+/obj/item/roguekey/bath // For use in round-start available bathhouse quarters. Do not use default lockID.
+	name = "bathhouse quarter key"
+	desc = "The key to an employee's quarters. Hope it's not lost."
+	icon_state = "brownkey"
+	lockid = "bath"
 
 /obj/item/roguekey/tavern
 	name = "tavern key"

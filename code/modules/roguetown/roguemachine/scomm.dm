@@ -407,7 +407,7 @@
 
 /obj/item/scomstone/bad
 	name = "serfstone"
-	desc = "A shoddily made, rusty metal ring. The gem embedded barely holding on."
+	desc = "A rusty shoddily-made metal ring. The gem embedded within is barely holding on."
 	icon_state = "ring_serfscom"
 	listening = FALSE
 	sellprice = 20
@@ -419,7 +419,7 @@
 /obj/item/listenstone
 	name = "emerald choker"
 	icon_state = "listenstone"
-	desc = "A iron and gold choker with an emerald gem."
+	desc = "An iron and gold choker with an emerald gem."
 	gripped_intents = null
 	//dropshrink = 0.75
 	possible_item_intents = list(INTENT_GENERIC)
@@ -489,7 +489,7 @@
 /obj/item/mattcoin
 	name = "rontz ring"
 	icon_state = "mattcoin"
-	desc = "A faded coin, a ruby laid into its center."
+	desc = "A faded coin with a ruby laid into its center."
 	gripped_intents = null
 	dropshrink = 0.75
 	possible_item_intents = list(INTENT_GENERIC)
@@ -655,7 +655,7 @@
 
 /obj/item/listeningdevice
 	name = "listener"
-	desc = "A ever attentive ear"
+	desc = "An ever-attentive ear"
 	icon = 'icons/roguetown/items/misc.dmi'
 	icon_state = "listenstone"
 	dropshrink = 0.75
@@ -681,7 +681,7 @@
 
 /obj/structure/listeningdeviceactive
 	name = "listener"
-	desc = "A ever attentive ear, a red light blinks upon it..."
+	desc = "An ever attentive ear. A red light blinks upon it..."
 	icon_state = "listenstone_active"
 	icon = 'icons/roguetown/items/misc.dmi'
 	var/listening = TRUE

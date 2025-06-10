@@ -28,6 +28,10 @@
 	name = "berry pie"
 	scent = "berry pie"
 
+/datum/pollutant/food/crab_pie
+	name = "crab pie"
+	scent = "crab pie"
+
 /datum/pollutant/food/bread
 	name = "fresh baked bread"
 	scent = "fresh baked bread"
@@ -76,27 +80,11 @@
 	name = "baked potatos"
 	scent = "baked potatos"
 
-/datum/pollutant/food/baked_carp
-	name = "cooked carp"
-	scent = "cooked carp"
-
-/datum/pollutant/food/baked_eel
-	name = "cooked eel"
-	scent = "cooked eel"
-
-/datum/pollutant/food/baked_clownfish
-	name = "cooked clown fish"
-	scent = "cooked clown fish"
-
-/datum/pollutant/food/baked_angler
-	name = "cooked angler fish"
-	scent = "cooked angler fish"
-
 /datum/pollutant/food/truffles
 	name = "cooked truffles"
 	scent = "cooked truffles"
 
-/datum/pollutant/food/bacon
+/datum/pollutant/food/fried_bacon
 	name = "fried bacon"
 	scent = "fried bacon"
 
@@ -104,17 +92,13 @@
 	name = "fried meat"
 	scent = "fried meat"
 
-/datum/pollutant/food/fried_chicken
+/datum/pollutant/food/cooked_chicken
 	name = "cooked chicken"
 	scent = "cooked chicken"
 
-/datum/pollutant/food/sausage
-	name = "cooked sausage"
-	scent = "cooked sausage"
-
-/datum/pollutant/food/sausage
-	name = "cooked sausage"
-	scent = "cooked sausage"
+/datum/pollutant/food/fried_sausage
+	name = "fried sausage"
+	scent = "fried sausage"
 
 /datum/pollutant/food/fried_cabbage
 	name = "fried cabbage"
@@ -135,3 +119,27 @@
 /datum/pollutant/food/fried_crow
 	name = "fried crows"
 	scent = "fried crows"
+
+/datum/pollutant/food/fried_butter
+	name = "fried butter"
+	scent = "fried butter"
+
+// Other server have multiple different fish but logically most fresh fish don't really smell much when cooked
+/datum/pollutant/food/cooked_fish
+	name = "cooked fish"
+	scent = "cooked fish"
+
+// Fried crab, especially soft shell crab, has a very distinct smell
+/datum/pollutant/food/fried_crab
+	name = "fried crab"
+	scent = "fried crab"
+
+// Fried shellfish meat has a distinct
+/datum/pollutant/food/fried_shellfish
+	name = "fried shellfish"
+	scent = "fried shellfish"
+
+// Special smell just for you
+/datum/pollutant/food/fried_crab_cake
+	name = "fried crab cake"
+	scent = "fried crab cake"

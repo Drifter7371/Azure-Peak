@@ -14,7 +14,7 @@
 	speak_chance = 1
 	turns_per_move = 5
 	see_in_dark = 6
-	move_to_delay = 8
+	move_to_delay = 8//Fastest mount
 	animal_species = /mob/living/simple_animal/hostile/retaliate/rogue/saiga/saigabuck
 	botched_butcher_results = list(
 								/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 1,
@@ -72,7 +72,7 @@
 	can_saddle = TRUE
 	aggressive = 1
 	remains_type = /obj/effect/decal/remains/saiga
-	rot_type = null
+	
 
 /mob/living/simple_animal/hostile/retaliate/rogue/saiga/saigakid
 	name = "saiga calf"
@@ -115,7 +115,6 @@
 	speak_chance = 1
 	turns_per_move = 3
 	see_in_dark = 6
-	move_to_delay = 8
 	faction = list("saiga")
 	attack_verb_continuous = "headbutts"
 	attack_verb_simple = "headbutt"
@@ -131,7 +130,7 @@
 	milkies = FALSE //what the fuck
 	STACON = 15
 	STASTR = 12
-	STASPD = 12
+	STASPD = 18
 	attack_sound = list('sound/vo/mobs/saiga/attack (1).ogg','sound/vo/mobs/saiga/attack (2).ogg')
 	buckle_lying = 0
 	tame_chance = 25
@@ -179,7 +178,7 @@
 
 /mob/living/simple_animal/hostile/retaliate/rogue/saiga/find_food()
 	..()
-	var/obj/structure/spacevine/SV = locate(/obj/structure/spacevine) in loc
+	var/obj/structure/vine/SV = locate(/obj/structure/vine) in loc
 	if(SV)
 		SV.eat(src)
 		food = max(food + 30, 100)

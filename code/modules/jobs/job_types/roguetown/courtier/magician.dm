@@ -22,6 +22,12 @@
 	round_contrib_points = 2
 	cmode_music = 'sound/music/combat_bandit_mage.ogg'
 
+	// Can't get very far as a magician if you can't chant spells now can you?
+	vice_restrictions = list(/datum/charflaw/mute)
+
+/datum/outfit/job/roguetown/magician
+	job_bitflag = BITFLAG_ROYALTY
+
 /datum/outfit/job/roguetown/magician/pre_equip(mob/living/carbon/human/H)
 	..()
 	neck = /obj/item/clothing/neck/roguetown/talkstone

@@ -1,7 +1,7 @@
 
 /mob/living/simple_animal/hostile/rogue/werewolf
 	name = "WEREWOLF"
-	desc = ""
+	desc = "THE HOWL OF A MAD GOD SHAKES YOUR BONES! FLESH SHORN INTO VISCERA SPRAYS THE WALLS! RIP AND TEAR!"
 	icon = 'icons/roguetown/mob/monster/werewolf.dmi'
 	icon_state = "wwolf_m"
 	icon_living = "wwolf_m"

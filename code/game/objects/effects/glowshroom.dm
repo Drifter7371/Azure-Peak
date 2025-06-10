@@ -2,7 +2,7 @@
 
 /obj/structure/glowshroom
 	name = "kneestingers"
-	desc = ""
+	desc = "Deceptively-delicate stalks sprout from the ground in luminous-green repose. Some scholars claim they're not really a fungus, even if the Dendorites insist otherwise. Either way they hurt like hell."
 	anchored = TRUE
 	opacity = 0
 	density = FALSE

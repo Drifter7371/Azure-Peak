@@ -260,7 +260,7 @@
 	* some clothing will be invisible on the mannequin.
 	*/
 	msg += "This mannequin has a [gender == FEMALE ? "feminine" : "masculine"] body.<br>"
-	msg += "Aim for the place where the clothing fits, drag the mannequin onto yourself for a less immersive panel."
+	msg += "Aim for the place where the clothing fits, or drag the mannequin onto yourself for a less immersive panel."
 	to_chat(user, msg)
 
 //Tries to equip the mannequin. Part of attack_hand() reflection of Topic()
@@ -727,7 +727,7 @@
 ////Subtypes/////
 /obj/structure/mannequin/male
 	name = "mannequin"
-	desc = "Its unsettlingly still."
+	desc = "It's unnvervingly still..."
 	icon_state = "man"
 
 /*

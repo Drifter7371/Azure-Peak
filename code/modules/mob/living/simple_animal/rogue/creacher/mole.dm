@@ -60,7 +60,7 @@
 	aggressive = 1
 //	stat_attack = UNCONSCIOUS
 	remains_type = /obj/effect/decal/remains/mole
-	rot_type = null
+	
 
 //new ai, old ai off
 	AIStatus = AI_OFF

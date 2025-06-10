@@ -5,7 +5,7 @@
 	allowed_races = RACES_ALL_KINDS
 	outfit = /datum/outfit/job/roguetown/wretch/outlaw
 	category_tags = list(CTAG_WRETCH)
-	traits_applied = list(TRAIT_STEELHEARTED, TRAIT_OUTLANDER, TRAIT_MEDIUMARMOR, TRAIT_DODGEEXPERT, TRAIT_OUTLAW) //Maybe seperate Marmor and DE between the classes but meh
+	traits_applied = list(TRAIT_STEELHEARTED, TRAIT_OUTLANDER, TRAIT_DODGEEXPERT, TRAIT_OUTLAW) //Maybe seperate Marmor and DE between the classes but meh
 	classes = list("Cutpurse" = "You are the person folk fear at night - use your cunning and speed to strike fast and get out with your spoils before anyone notices.",
 					"Marauder"= "You are a brigand and a pillager - you prefer to get your coins with direct means from unfortunate victims.")
 
@@ -62,7 +62,7 @@
 					beltl = /obj/item/rogueweapon/sword/rapier
 				if("Dagger")
 					H.mind.adjust_skillrank(/datum/skill/combat/knives, 1, TRUE)
-					beltl = /obj/item/rogueweapon/huntingknife/idagger/silver/elvish
+					beltl = /obj/item/rogueweapon/huntingknife/idagger/steel/special // Why were they spawning with an elven dagger in the first place??? Please LMK.
 				if ("Whip")
 					H.mind.adjust_skillrank(/datum/skill/combat/whipsflails, 1, TRUE)
 					beltl = /obj/item/rogueweapon/whip
@@ -72,16 +72,16 @@
 
 		if("Marauder")
 			to_chat(H, span_warning("You are a brigand and a pillager - you prefer to get your coins with direct means from unfortunate victims."))
-			head = /obj/item/clothing/head/roguetown/helmet
-			pants = /obj/item/clothing/under/roguetown/chainlegs
-			armor = /obj/item/clothing/suit/roguetown/armor/chainmail/hauberk
+			head = /obj/item/clothing/head/roguetown/helmet/leather/volfhelm
+			pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
+			armor = /obj/item/clothing/suit/roguetown/armor/leather/heavy/coat
 			cloak = /obj/item/clothing/cloak/stabard/dungeon
-			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
 			backl = /obj/item/storage/backpack/rogue/satchel
 			belt = /obj/item/storage/belt/rogue/leather
 			gloves = /obj/item/clothing/gloves/roguetown/angle
 			shoes = /obj/item/clothing/shoes/roguetown/boots
-			neck = /obj/item/clothing/neck/roguetown/chaincoif
+			neck = /obj/item/clothing/neck/roguetown/gorget 
 			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather/heavy
 			mask = /obj/item/clothing/mask/rogue/ragmask/black
 			r_hand = /obj/item/rogueweapon/mace/cudgel //From thief PR
@@ -102,28 +102,30 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 4, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/stealing, 4, TRUE)
 			H.cmode_music = 'sound/music/combat_bandit_brigand.ogg'
-			var/weapons = list("Mace + Heather Shield","Dagger + Crossbow", "Axe + Heather Shield", "Bardiche")
+			var/weapons = list("Just A Heater Shield","Dagger + Crossbow", "Militia Warpick + Heater Shield", "Militia Spear + Heater Shield")
 			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 			H.set_blindness(0)
 			switch(weapon_choice)
-				if("Mace + Heather Shield")
+				if("Just A Heater Shield")
 					H.mind.adjust_skillrank(/datum/skill/combat/maces, 1, TRUE)
-					beltl = /obj/item/rogueweapon/mace/steel
+					H.mind.adjust_skillrank(/datum/skill/combat/shields, 1, TRUE)
 					backr = /obj/item/rogueweapon/shield/heater
 				if("Dagger + Crossbow")
 					H.mind.adjust_skillrank(/datum/skill/combat/knives, 1, TRUE)
-					beltl = /obj/item/rogueweapon/huntingknife/idagger/silver/elvish
+					beltl = /obj/item/rogueweapon/huntingknife/idagger/steel 
 					backr = /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow
 					beltr = /obj/item/quiver/bolts
-				if ("Axe + Heather Shield")
+				if ("Militia Warpick + Heater Shield")
 					H.mind.adjust_skillrank(/datum/skill/combat/axes, 1, TRUE)
-					beltl = /obj/item/rogueweapon/stoneaxe/battle
+					beltl = /obj/item/rogueweapon/pick/militia
 					backr = /obj/item/rogueweapon/shield/heater
-				if ("Bardiche")
+				if ("Militia Spear + Heater Shield")
 					H.mind.adjust_skillrank(/datum/skill/combat/polearms, 1, TRUE)
-					l_hand = /obj/item/rogueweapon/halberd/bardiche
-					backr = /obj/item/gwstrap
-			H.change_stat("constitution", 3)
-			H.change_stat("endurance", 2)
+					l_hand = /obj/item/rogueweapon/spear/militia
+					backr = /obj/item/rogueweapon/shield/heater
+			H.change_stat("constitution", 2)
+			H.change_stat("strength", 1)
+			H.change_stat("endurance", 1)
 			H.change_stat("speed", 2)//Still the speed class
+	H.grant_language(/datum/language/thievescant)
 	wretch_select_bounty(H)

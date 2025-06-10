@@ -1150,6 +1150,14 @@
 	name = "Short Hair 6"
 	icon_state = "shorthair_alt"
 
+/datum/sprite_accessory/hair/head/bubblebraids
+	name = "Bubble Braids"
+	icon_state = "bubblebraid"
+
+/datum/sprite_accessory/hair/head/bubblebraids_v2
+	name = "Bubble Braids Alt"
+	icon_state = "bubblebraid_v2"
+
 /datum/sprite_accessory/hair/head/vulpkian
 	abstract_type = /datum/sprite_accessory/hair/head/vulpkian
 	icon = 'icons/mob/sprite_accessory/hair/vulpkian_hair.dmi'

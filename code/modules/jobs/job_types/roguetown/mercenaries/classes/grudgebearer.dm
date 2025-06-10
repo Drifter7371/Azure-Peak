@@ -90,7 +90,7 @@
 	allowed_race = list(/datum/species/dwarf, /datum/species/dwarf/mountain)
 	icon_state = "dwarfchest"
 	item_state = "dwarfchest"
-	armor = list("blunt" = 40, "slash" = 200, "stab" = 200, "piercing" = 100, "fire" = 0, "acid" = 0)
+	armor = ARMOR_GRUDGEBEARER
 	prevent_crits = list(BCLASS_TWIST)
 	body_parts_covered = CHEST|GROIN|VITALS|ARMS|LEGS
 	equip_delay_self = 5 SECONDS
@@ -108,7 +108,7 @@
 	name = "grudgebearer dwarven helm"
 	desc = "A hardy, layered helmet. It lets one's dwarvenly beard to poke out."
 	body_parts_covered = (HEAD | MOUTH | NOSE | EYES | EARS | NECK)	//This specifically omits hair so you could hang your beard out of the helm
-	armor = list("blunt" = 40, "slash" = 200, "stab" = 200, "piercing" = 80, "fire" = 0, "acid" = 0)
+	armor = ARMOR_GRUDGEBEARER
 	prevent_crits = list(BCLASS_TWIST)
 	allowed_race = list(/datum/species/dwarf, /datum/species/dwarf/mountain)
 	icon = 'icons/roguetown/clothing/special/race_armor.dmi'
@@ -135,7 +135,7 @@
 	prevent_crits = list(BCLASS_TWIST)
 	icon_state = "dwarfhand"
 	item_state = "dwarfhand"
-	armor = list("blunt" = 40, "slash" = 200, "stab" = 200, "piercing" = 90, "fire" = 0, "acid" = 0)
+	armor = ARMOR_GRUDGEBEARER
 	max_integrity = 1000
 
 /obj/item/clothing/gloves/roguetown/plate/dwarven/ComponentInitialize()
@@ -151,7 +151,7 @@
 	prevent_crits = list(BCLASS_TWIST)
 	icon_state = "dwarfshoe"
 	item_state = "dwarfshoe"
-	armor = list("blunt" = 40, "slash" = 200, "stab" = 200, "piercing" = 90, "fire" = 0, "acid" = 0)
+	armor = ARMOR_GRUDGEBEARER
 	max_integrity = 1000
 
 /obj/item/clothing/shoes/roguetown/boots/armor/dwarven/ComponentInitialize()

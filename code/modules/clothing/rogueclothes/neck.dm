@@ -23,13 +23,14 @@
 
 /obj/item/clothing/neck/roguetown/coif
 	name = "coif"
+	desc = "Cheap and easy to make. It's better than leaving your neck exposed."
 	icon_state = "coif"
 	item_state = "coif"
 	flags_inv = HIDEHAIR
 	slot_flags = ITEM_SLOT_NECK|ITEM_SLOT_HEAD
 	blocksound = SOFTHIT
 	body_parts_covered = NECK|HAIR|EARS|HEAD
-	armor = list("blunt" = 40, "slash" = 12, "stab" = 22, "piercing" = 2, "fire" = 0, "acid" = 0)
+	armor = ARMOR_PADDED_BAD
 	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT)
 	adjustable = CAN_CADJUST
 	toggle_icon_state = TRUE
@@ -45,7 +46,8 @@
 	slot_flags = ITEM_SLOT_NECK
 	blocksound = SOFTHIT
 	body_parts_covered = NECK
-	armor = list("blunt" = 100, "slash" = 70, "stab" = 40, "piercing" = 20, "fire" = 0, "acid" = 0)
+	body_parts_inherent = NECK
+	armor = ARMOR_LEATHER_GOOD
 	prevent_crits = list(BCLASS_CUT, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_TWIST, BCLASS_SMASH)
 	sewrepair = TRUE
 	max_integrity = 150
@@ -54,10 +56,11 @@
 
 /obj/item/clothing/neck/roguetown/chaincoif
 	name = "chain coif"
+	desc = "Offers superior coverage to a simple gorget, though it sacrifices some protection in return."
 	icon_state = "chaincoif"
 	item_state = "chaincoif"
 	flags_inv = HIDEHAIR
-	armor = list("blunt" = 30, "slash" = 60, "stab" = 45, "piercing" = 20, "fire" = 0, "acid" = 0)
+	armor = ARMOR_MAILLE
 	max_integrity = 200
 	resistance_flags = FIRE_PROOF
 	slot_flags = ITEM_SLOT_NECK|ITEM_SLOT_HEAD
@@ -81,10 +84,10 @@
 
 /obj/item/clothing/neck/roguetown/chaincoif/chainmantle
 	name = "chain mantle"
-	desc = "A more durable, thicker, piece of chain neck protection, though, this one only covers the neck and mouth when pulled up."
+	desc = "A thicker and more durable piece of neck protection that also covers the mouth when pulled up."
 	icon_state = "chainmantle"
 	max_integrity = 300
-	armor = list("blunt" = 30, "slash" = 100, "stab" = 80, "piercing" = 50, "fire" = 0, "acid" = 0)
+	armor = ARMOR_MAILLE
 	body_parts_covered = NECK|MOUTH
 	slot_flags = ITEM_SLOT_NECK
 	flags_inv = HIDEFACE|HIDEFACIALHAIR|HIDESNOUT
@@ -94,6 +97,7 @@
 
 /obj/item/clothing/neck/roguetown/chaincoif/iron
 	name = "iron chain coif"
+	desc = "A coif of meticulously crafted iron rings. It isn't steel, but metal is metal, and it might just save your life."
 	icon_state = "ichaincoif"
 	anvilrepair = /datum/skill/craft/armorsmithing
 	smeltresult = /obj/item/ingot/iron
@@ -111,7 +115,7 @@
 /obj/item/clothing/neck/roguetown/chaincoif/full
 	name = "full chain coif"
 	icon_state = "fchaincoif"
-	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	resistance_flags = FIRE_PROOF
 	body_parts_covered = NECK|MOUTH|NOSE|HAIR|EARS|HEAD
 	adjustable = CAN_CADJUST
@@ -151,8 +155,9 @@
 
 /obj/item/clothing/neck/roguetown/bevor
 	name = "bevor"
+	desc = "A series of steel plates designed to protect the neck."
 	icon_state = "bevor"
-	armor = list("blunt" = 20, "slash" = 100, "stab" = 80, "piercing" = 50, "fire" = 0, "acid" = 0)
+	armor = ARMOR_BEVOR
 	anvilrepair = /datum/skill/craft/armorsmithing
 	smeltresult = /obj/item/ingot/steel
 
@@ -165,8 +170,9 @@
 
 /obj/item/clothing/neck/roguetown/gorget
 	name = "gorget"
+	desc = "A series of iron plates designed to protect the neck."
 	icon_state = "gorget"
-	armor = list("blunt" = 40, "slash" = 100, "stab" = 80, "piercing" = 50, "fire" = 0, "acid" = 0)
+	armor = ARMOR_GORGET
 	smeltresult = /obj/item/ingot/iron
 	anvilrepair = /datum/skill/craft/armorsmithing
 	max_integrity = 150
@@ -188,13 +194,13 @@
 	name = "neck protector"
 	icon_state = "copperneck"
 	desc = "An antique and simple protection for the neck, used more as an accessory by the common folk. But poor protection is still better than nothing."
-	armor = list("blunt" = 50, "slash" = 50, "stab" = 40, "piercing" = 20, "fire" = 0, "acid" = 0)
+	armor = ARMOR_NECK_BAD
 	smeltresult = /obj/item/ingot/copper
 
 /obj/item/clothing/neck/roguetown/fencerguard
 	name = "fencer neckguard"
 	icon_state = "fencercollar"
-	armor = list("blunt" = 10, "slash" = 100, "stab" = 80, "piercing" = 50, "fire" = 0, "acid" = 0)
+	armor = ARMOR_BEVOR
 	smeltresult = /obj/item/ingot/iron
 	anvilrepair = /datum/skill/craft/armorsmithing
 	max_integrity = 150
@@ -240,7 +246,7 @@
 	desc = "A metal collar that seems to radiate an ominous aura."
 	icon_state = "cursed_collar"
 	item_state = "cursed_collar"
-	armor = list("blunt" = 10, "slash" = 0, "stab" = 0, "piercing" = 0, "fire" = 0, "acid" = 0)
+	armor = ARMOR_CLOTHING
 	smeltresult = /obj/item/ingot/iron
 	anvilrepair = /datum/skill/craft/armorsmithing
 	max_integrity = 150
@@ -283,52 +289,52 @@
 
 /obj/item/clothing/neck/roguetown/zcross/aalloy
 	name = "decrepit zcross"
-	desc = "A symbol of progress from a era with reason to believe in it."
+	desc = "A symbol of progress from an era that had reason to believe in it."
 	icon_state = "zcross_a"
 
 /obj/item/clothing/neck/roguetown/psicross/astrata
 	name = "amulet of Astrata"
-	desc = ""
+	desc = "As sure as the sun rises, tomorrow will come."
 	icon_state = "astrata"
 
 /obj/item/clothing/neck/roguetown/psicross/noc
 	name = "amulet of Noc"
-	desc = ""
+	desc = "There is always more to know, more to learn, more to be."
 	icon_state = "noc"
 
 /obj/item/clothing/neck/roguetown/psicross/abyssor
 	name = "amulet of Abyssor"
-	desc = ""
+	desc = "To fear the unknown is to turn away from the greatest mysteries of all."
 	icon_state = "abyssor"
 
 /obj/item/clothing/neck/roguetown/psicross/dendor
 	name = "amulet of Dendor"
-	desc = ""
+	desc = "If you need something to worship, then worship life. Every last crawling bit of it."
 	icon_state = "dendor"
 
 /obj/item/clothing/neck/roguetown/psicross/necra
 	name = "amulet of Necra"
-	desc = ""
+	desc = "The certainty of death is a reminder to enjoy the time you have."
 	icon_state = "necra"
 
 /obj/item/clothing/neck/roguetown/psicross/pestra
 	name = "amulet of Pestra"
-	desc = ""
+	desc = "The healthy wear a crown only the sick can see."
 	icon_state = "pestra"
 
 /obj/item/clothing/neck/roguetown/psicross/ravox
 	name = "amulet of Ravox"
-	desc = ""
+	desc = "What are you fighting for?"
 	icon_state = "ravox"
 
 /obj/item/clothing/neck/roguetown/psicross/malum
 	name = "amulet of Malum"
-	desc = ""
+	desc = "From the ashes, creation."
 	icon_state = "malum"
 
 /obj/item/clothing/neck/roguetown/psicross/eora
 	name = "amulet of Eora"
-	desc = ""
+	desc = "In a world full of horror and hardship, all we have is each other."
 	icon_state = "eora"
 
 /obj/item/clothing/neck/roguetown/psicross/wood
@@ -437,7 +443,7 @@
 
 /obj/item/clothing/neck/roguetown/talkstone
 	name = "talkstone"
-	desc = ""
+	desc = "In moments of quiet it whispers softly, as though deciphering the silence itself."
 	icon_state = "talkstone"
 	item_state = "talkstone"
 	//dropshrink = 0.75
@@ -466,7 +472,7 @@
 
 /obj/item/clothing/neck/roguetown/ornateamulet
 	name = "Ornate Amulet"
-	desc = "A beautiful amulet, made of solid gold."
+	desc = "A beautiful amulet made of solid gold."
 	icon_state = "ornateamulet"
 	//dropshrink = 0.75
 	resistance_flags = FIRE_PROOF
@@ -495,7 +501,7 @@
 
 /obj/item/clothing/neck/roguetown/skullamulet
 	name = "Skull Amulet"
-	desc = "Gold shaped into the form of a skull, made into an amulet."
+	desc = "Gold shaped into the form of a skull and strung into an amulet."
 	icon_state = "skullamulet"
 	//dropshrink = 0.75
 	resistance_flags = FIRE_PROOF
@@ -518,7 +524,7 @@
 
 /obj/item/clothing/neck/roguetown/collar/bell_collar
 	name = "bell collar"
-	desc = "A band of leather with a bell protects the local zads from the local catfolk."
+	desc = "A band of leather with a bell that protects the local zads from the local catfolk."
 	icon_state = "bell_collar"
 
 /obj/item/clothing/neck/roguetown/collar/bell_collar/Initialize(mapload)

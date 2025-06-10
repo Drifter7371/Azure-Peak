@@ -111,7 +111,7 @@
 #define GUARDSMAN	(1<<0)
 #define MANATARMS	(1<<1)
 #define DUNGEONEER	(1<<2)
-#define GATEMASTER	(1<<3)
+#define SQUIRE		(1<<3)
 #define BOGGUARD	(1<<4)
 #define SERGEANT	(1<<5)
 #define SHERIFF		(1<<6)
@@ -174,14 +174,13 @@
 
 #define APPRENTICE	(1<<0)
 #define CHURCHLING	(1<<1)
-#define SQUIRE		(1<<2)
-#define SERVANT		(1<<3)
-#define ORPHAN		(1<<4)
-#define PRINCE		(1<<5)
-#define SHOPHAND	(1<<6)
-#define CLERK 		(1<<7)
-#define MAGEAPPRENTICE	(1<<8)
-#define APOTHECARY	(1<<9)
+#define SERVANT		(1<<2)
+#define ORPHAN		(1<<3)
+#define PRINCE		(1<<4)
+#define SHOPHAND	(1<<5)
+#define CLERK 		(1<<6)
+#define MAGEAPPRENTICE	(1<<7)
+#define APOTHECARY	(1<<8)
 
 #define MERCENARIES		(1<<7)
 
@@ -203,6 +202,7 @@
 #define TESTER		(1<<0)
 #define DEATHKNIGHT (1<<1)
 #define SKELETON	(1<<2)
+#define GOBLIN		(1<<3)
 
 #define INQUISITION (1<<10)
 
@@ -310,13 +310,17 @@
 #define JDO_PURITAN 40
 #define JDO_ORTHODOXIST 40.1
 
+#define BITFLAG_CHURCH (1<<0)
+#define BITFLAG_ROYALTY (1<<1)
+#define BITFLAG_CONSTRUCTOR (1<<2)
+#define BITFLAG_GARRISON (1<<3)
+
 #define MANOR_ROLES \
 	/datum/job/roguetown/jester,\
 	/datum/job/roguetown/veteran,\
 	/datum/job/roguetown/clerk,\
 	/datum/job/roguetown/wapprentice,\
 	/datum/job/roguetown/servant,\
-	/datum/job/roguetown/squire,\
 	/datum/job/roguetown/butler,\
 	/datum/job/roguetown/apothecary,\
 	/datum/job/roguetown/magician
@@ -361,7 +365,7 @@
 	/datum/job/roguetown/prisonerr
 
 #define YEOMEN_ROLES \
-	/datum/job/roguetown/woodsman,\
+	/datum/job/roguetown/elder,\
 	/datum/job/roguetown/niteman,\
 	/datum/job/roguetown/archivist,\
 	/datum/job/roguetown/barkeep,\
@@ -372,8 +376,6 @@
 	/datum/job/roguetown/merchant,\
 	/datum/job/roguetown/tailor,\
 	/datum/job/roguetown/scribe
-
-
 
 #define WANDERER_ROLES \
 	/datum/job/roguetown/pilgrim,\
@@ -390,6 +392,7 @@
 	/datum/job/roguetown/gatemaster,\
 	/datum/job/roguetown/manorguard,\
 	/datum/job/roguetown/sheriff,\
+	/datum/job/roguetown/squire,\
 	/datum/job/roguetown/guardsman
 
 #define INQUISITION_ROLES \

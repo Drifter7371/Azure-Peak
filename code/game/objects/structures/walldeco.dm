@@ -27,7 +27,7 @@
 
 /obj/structure/fluff/walldeco/wantedposter
 	name = "bandit notice"
-	desc = ""
+	desc = "A place for posters displaying the faces of roving bandits. Let's see if there are any this week..."
 	icon_state = "wanted1"
 	layer = BELOW_MOB_LAYER
 	pixel_y = 32
@@ -195,7 +195,7 @@
 	icon = 'icons/roguetown/misc/tallstructure.dmi'
 	can_buckle = 1
 	buckle_lying = 0
-	breakoutextra = 10 MINUTES
+	breakoutextra = 5 MINUTES
 	buckleverb = "tie"
 
 /obj/structure/fluff/walldeco/chains/Initialize()
@@ -204,7 +204,7 @@
 
 /obj/structure/fluff/walldeco/customflag
 	name = "Azure Peak flag"
-	desc = ""
+	desc = "A banner flutters in the breeze in the proud heraldic colors of the Duchy."
 	icon_state = "wallflag"
 
 /obj/structure/fluff/walldeco/customflag/Initialize()

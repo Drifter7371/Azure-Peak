@@ -47,7 +47,7 @@
 	retreat_health = 0.3
 	attack_sound = list('sound/vo/mobs/spider/attack (1).ogg','sound/vo/mobs/spider/attack (2).ogg','sound/vo/mobs/spider/attack (3).ogg','sound/vo/mobs/spider/attack (4).ogg')
 	aggressive = 1
-	rot_type = null
+	
 
 	//new ai, old ai off
 	AIStatus = AI_OFF
@@ -126,7 +126,7 @@
 				visible_message(span_alertalien("[src] creates some honey."))
 				var/turf/T = get_turf(src)
 				playsound(T, pick('sound/vo/mobs/spider/speak (1).ogg','sound/vo/mobs/spider/speak (2).ogg','sound/vo/mobs/spider/speak (3).ogg','sound/vo/mobs/spider/speak (4).ogg'), 100, TRUE, -1)
-				new /obj/item/reagent_containers/food/snacks/rogue/honey(T)
+				new /obj/item/reagent_containers/food/snacks/rogue/honey/spider(T)
 	if(pulledby && !tame)
 		if(HAS_TRAIT(pulledby, TRAIT_WEBWALK))
 			return

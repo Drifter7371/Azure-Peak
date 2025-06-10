@@ -1,7 +1,7 @@
 
 /obj/structure/flora/roguegrass/maneater
 	name = "grass"
-	desc = "Green and vivid.. Did i see.. a tendril?"
+	desc = "Green and vivid. Was that a tendril?"
 	icon = 'icons/roguetown/mob/monster/maneater.dmi'
 	icon_state = "maneater-hidden"
 	max_integrity = 5
@@ -143,7 +143,7 @@
 		var/time2mount = CLAMP((L.STASTR * 2), 1, 99)
 		if(istype(src, /obj/structure/flora/roguegrass/maneater/real/juvenile)) //Easier to escape juvenile
 			time2mount = CLAMP(time2mount * 3, 1, 99)
-		user.changeNext_move(CLICK_CD_RAPID)
+		user.changeNext_move(CLICK_CD_FAST, override = TRUE)
 		if(user != M)
 			if(prob(time2mount))
 				..()
@@ -199,7 +199,7 @@
 
 /obj/item/maneaterseed
 	name = "maneater seed"
-	desc = "A seed from a maneater. It looks like it could grow into something dangerous. It can only take root in green grass, or dirt."
+	desc = "A seed from a maneater. It looks like it could grow into something dangerous if planted in green grass or dirt."
 	icon = 'icons/roguetown/mob/monster/maneater.dmi'
 	icon_state = "maneater-seed"
 	max_integrity = 5
@@ -244,7 +244,7 @@
 
 /obj/structure/flora/roguegrass/maneater/real/juvenile
 	name = "juvenile maneater"
-	desc = "Green and vivid.. This plant seems smaller than usual.."
+	desc = "Green and vivid. This one seems smaller than usual."
 	icon = 'icons/roguetown/mob/monster/maneater.dmi'
 	icon_state = "maneater-hidden"
 	max_integrity = 50

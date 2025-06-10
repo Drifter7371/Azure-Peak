@@ -76,6 +76,8 @@
 		var/mob/living/carbon/human/H = M
 		add_fibers(H)
 		if(H.gloves) //Check if the gloves (if any) hide fingerprints
+			if(!istype(H.gloves, /obj/item/clothing/gloves))
+				return
 			var/obj/item/clothing/gloves/G = H.gloves
 			if(G.transfer_prints)
 				ignoregloves = TRUE

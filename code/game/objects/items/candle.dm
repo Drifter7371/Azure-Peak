@@ -1,7 +1,7 @@
 #define CANDLE_LUMINOSITY	3
 /obj/item/candle
 	name = "candle"
-	desc = ""
+	desc = "A wick repeatedly dipped into melted beespiderwax to form a candle."
 	icon = 'icons/obj/candle.dmi'
 	icon_state = "candle1"
 	item_state = "candle1"
@@ -98,7 +98,7 @@
 /obj/item/candle/eora
 	icon = 'icons/roguetown/items/lighting.dmi'
 	name = "eora's candle"
-	desc = ""
+	desc = "A rather lovely candle with a reddish hue."
 	color = "#f858b5ff"
 	light_color = "#ff13d8ff"
 	infinite = TRUE
@@ -114,6 +114,7 @@
 /obj/item/candle/skull
 	icon = 'icons/roguetown/items/lighting.dmi'
 	icon_state = "skullcandle"
+	desc = "A rather macabre way to hold a candle. Fit for crypts and old dusty libraries."
 	infinite = TRUE
 
 /obj/item/candle/skull/update_icon()

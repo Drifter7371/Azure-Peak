@@ -19,6 +19,7 @@ GLOBAL_LIST_INIT(character_flaws, list(
 	"Wood Arm (R)"=/datum/charflaw/limbloss/arm_r,
 	"Wood Arm (L)"=/datum/charflaw/limbloss/arm_l,
 	"Sleepless"=/datum/charflaw/sleepless,
+	"Mute"=/datum/charflaw/mute,
 	"Random or No Flaw"=/datum/charflaw/randflaw,
 	"No Flaw (3 TRIUMPHS)"=/datum/charflaw/noflaw,
 	))
@@ -487,3 +488,10 @@ GLOBAL_LIST_INIT(character_flaws, list(
 
 /datum/charflaw/sleepless/on_mob_creation(mob/user)
 	ADD_TRAIT(user, TRAIT_NOSLEEP, TRAIT_GENERIC)
+
+/datum/charflaw/mute
+	name = "Mute"
+	desc = "I was born without the ability to speak."
+
+/datum/charflaw/mute/on_mob_creation(mob/user)
+	ADD_TRAIT(user, TRAIT_PERMAMUTE, TRAIT_GENERIC)

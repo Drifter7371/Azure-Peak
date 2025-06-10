@@ -9,6 +9,7 @@
 	recharge_time = 2 MINUTES
 	warnie = "spellwarning"
 	school = "transmutation"
+	overlay_state = "rune3" // Temporary
 	spell_tier = 2
 	invocation = "Festinatio!"
 	invocation_type = "shout" // I mean, it is fast
@@ -31,11 +32,11 @@
 
 	if(spelltarget != user)
 		user.visible_message("[user] mutters an incantation and [spelltarget] briefly shines yellow.")
-		spelltarget.apply_status_effect(/datum/status_effect/buff/haste/other)
+		spelltarget.apply_status_effect(/datum/status_effect/buff/haste, 2 MINUTES)
 		to_chat(user, span_notice("With another person as a conduit, my spell's duration is doubled."))
 	else
 		user.visible_message("[user] mutters an incantation and they briefly shine yellow.")
-		spelltarget.apply_status_effect(/datum/status_effect/buff/haste)
+		spelltarget.apply_status_effect(/datum/status_effect/buff/haste, 1 MINUTES)
 
 	return TRUE
 	
@@ -55,6 +56,11 @@
 
 /datum/status_effect/buff/haste/other
 	duration = 2 MINUTES
+
+/datum/status_effect/buff/haste/on_creation(mob/living/new_owner, var/new_duration = null)
+	if(new_duration)
+		duration = new_duration
+	. = ..()
 
 /datum/status_effect/buff/haste/on_apply()
 	. = ..()

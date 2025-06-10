@@ -1,7 +1,7 @@
 /obj/item/reagent_containers/food/snacks/egg
-	icon = 'modular/Neu_Food/icons/food.dmi'
+	icon = 'modular/Neu_Food/icons/cooked/cooked_egg.dmi'
 	name = "egg"
-	desc = ""
+	desc = "A raw egg."
 	icon_state = "egg"
 	dropshrink = 0.8
 	list_reagents = list(/datum/reagent/consumable/eggyolk = 5)

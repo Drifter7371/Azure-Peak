@@ -4,6 +4,7 @@
 #define TAB_IMPORT 4
 #define TAB_BOUNTIES 5
 #define TAB_LOG 6
+#define TAB_STATISTICS 7
 
 /obj/structure/roguemachine/steward
 	name = "nerve master"
@@ -19,6 +20,7 @@
 	var/keycontrol = "steward"
 	var/current_tab = TAB_MAIN
 	var/compact = TRUE
+	var/total_deposit = 0
 	var/list/excluded_jobs = list("Wretch","Vagabond","Adventurer")
 	var/current_category = "Raw Materials"
 	var/list/categories = list("Raw Materials", "Foodstuffs")
@@ -73,6 +75,7 @@
 			return
 		var/amt = D.get_import_price()
 		SStreasury.treasury_value -= amt
+		SStreasury.total_import += amt
 		SStreasury.log_to_steward("-[amt] imported [D.name]")
 		if(amt >= 100) //Only announce big spending.
 			scom_announce("Azure Peak imports [D.name] for [amt] mammon.", )
@@ -82,24 +85,9 @@
 		var/datum/roguestock/D = locate(href_list["export"]) in SStreasury.stockpile_datums
 		if(!D)
 			return
-		if((D.held_items[1] + D.held_items[2]) < D.importexport_amt)
+		if(!SStreasury.do_export(D))
 			say("Insufficient stock.")
 			return
-		var/amt = D.get_export_price()
-
-		// Try to export everything from town stockpile
-		if(D.held_items[1] >= D.importexport_amt)
-			D.held_items[1] -= D.importexport_amt
-		// If not possible, first pull form town stockpile, then bog stockpile
-		else
-			D.held_items[2] -= (D.importexport_amt - D.held_items[1])
-			D.held_items[1] = 0
-
-		SStreasury.treasury_value += amt
-		SStreasury.log_to_steward("+[amt] exported [D.name]")
-		if(amt >= 100) //Only announce big spending.
-			scom_announce("Azure Peak exports [D.name] for [amt] mammon.")
-		D.lower_demand()
 	if(href_list["togglewithdraw"])
 		var/datum/roguestock/D = locate(href_list["togglewithdraw"]) in SStreasury.stockpile_datums
 		if(!D)
@@ -220,6 +208,20 @@
 		compact = !compact
 	if(href_list["changecat"])
 		current_category = href_list["changecat"]
+	if(href_list["changeautoexport"])
+		if(!usr.canUseTopic(src, BE_CLOSE) || locked)
+			return
+		var/new_autoexport = input(usr, "Set a new autoexport percentage between 0 and 100", src, SStreasury.autoexport_percentage * 100) as null|num
+		if(!new_autoexport && new_autoexport != 0)
+			return
+		if(findtext(num2text(new_autoexport), "."))
+			return
+		if(new_autoexport < 0 || new_autoexport > 100)
+			to_chat(usr, span_warning("Invalid autoexport percentage. Must be between 0 and 100."))
+			return
+		new_autoexport = round(new_autoexport)
+		SStreasury.autoexport_percentage = new_autoexport * 0.01
+	
 	return attack_hand(usr)
 
 /obj/structure/roguemachine/steward/proc/do_import(datum/roguestock/D,number)
@@ -265,13 +267,18 @@
 			contents += "<a href='?src=\ref[src];switchtab=[TAB_IMPORT]'>\[Import\]</a><BR>"
 			contents += "<a href='?src=\ref[src];switchtab=[TAB_BOUNTIES]'>\[Bounties\]</a><BR>"
 			contents += "<a href='?src=\ref[src];switchtab=[TAB_LOG]'>\[Log\]</a><BR>"
+			contents += "<a href='?src=\ref[src];switchtab=[TAB_STATISTICS]'>\[Statistics\]</a><BR>"
 			contents += "</center>"
 		if(TAB_BANK)
+			var/total_deposit = 0
+			for(var/bank_account in SStreasury.bank_accounts)
+				total_deposit += SStreasury.bank_accounts[bank_account]
 			contents += "<a href='?src=\ref[src];switchtab=[TAB_MAIN]'>\[Return\]</a>"
 			contents += " <a href='?src=\ref[src];compact=1'>\[Compact: [compact? "ENABLED" : "DISABLED"]\]</a><BR>"
 			contents += "<center>Bank<BR>"
 			contents += "--------------<BR>"
-			contents += "Treasury: [SStreasury.treasury_value]m</center><BR>"
+			contents += "Treasury: [SStreasury.treasury_value]m<BR>"
+			contents += "Reserve Ratio: [round(SStreasury.treasury_value / total_deposit * 100)]%</center><BR>"
 			contents += "<a href='?src=\ref[src];payroll=1'>\[Pay by Class\]</a><BR><BR>"
 			if(compact)
 				for(var/mob/living/carbon/human/A in SStreasury.bank_accounts)
@@ -298,6 +305,8 @@
 				contents += "Treasury: [SStreasury.treasury_value]m"
 				contents += " / Lord's Tax: [SStreasury.tax_value*100]%"
 				contents += " / Guild's Tax: [SStreasury.queens_tax*100]%</center><BR>"
+				contents += "<center>Auto Export Stockpile Above: "
+				contents += "<a href='?src=\ref[src];changeautoexport=1'>[SStreasury.autoexport_percentage * 100]%</a></center><BR>"
 				var/selection = "<center>Categories: "
 				for(var/category in categories)
 					if(category == current_category)
@@ -371,7 +380,7 @@
 			for(var/datum/roguestock/bounty/A in SStreasury.stockpile_datums)
 				contents += "[A.name]<BR>"
 				contents += "[A.desc]<BR>"
-				contents += "Total Collected: [A.held_items[1] + A.held_items[2]]<BR>"
+				contents += "Total Collected: [SStreasury.minted]<BR>"
 				if(A.percent_bounty)
 					contents += "Bounty Price: <a href='?src=\ref[src];setbounty=\ref[A]'>[A.payout_price]%</a><BR><BR>"
 				else
@@ -382,6 +391,18 @@
 			contents += "--------------</center><BR><BR>"
 			for(var/i = SStreasury.log_entries.len to 1 step -1)
 				contents += "<span class='info'>[SStreasury.log_entries[i]]</span><BR>"
+		if(TAB_STATISTICS)
+			contents += "<a href='?src=\ref[src];switchtab=[TAB_MAIN]'>\[Return\]</a><BR>"
+			contents += "<center>Statistics:<BR>"
+			contents += "Known Economic Output: [SStreasury.economic_output]m<BR>"
+			contents += "Total Rural Tax: [SStreasury.total_rural_tax]m<BR>"
+			contents += "Total Deposit Tax: [SStreasury.total_deposit_tax]m<BR>"
+			contents += "Total Noble Estate Income: [SStreasury.total_noble_income]m<BR>"
+			contents += "Total Import: [SStreasury.total_import]m<BR>"
+			contents += "Total Export: [SStreasury.total_export]m<BR>"
+			contents += "Total Mammons Minted: [SStreasury.minted]m<BR>"
+			contents += "Trade Balance: [SStreasury.total_export - SStreasury.total_import]m<BR>"
+			contents  += "</center><BR>"
 
 	if(!canread)
 		contents = stars(contents)

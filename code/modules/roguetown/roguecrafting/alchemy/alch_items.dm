@@ -1,6 +1,6 @@
 /obj/item/reagent_containers/glass/bottle/alchemical
 	name = "alchemical vial"
-	desc = "A cute bottle, conviniently holding 3 swigs of a fluid."
+	desc = "A cute bottle that can hold three swigs of liquid, which is useful for both miserly business practices and preventing accidental overdosing. This one lacks a cork."
 	icon = 'icons/roguetown/misc/alchemy.dmi'
 	icon_state = "vial_bottle"
 	amount_per_transfer_from_this = 9
@@ -9,7 +9,7 @@
 	volume = 27
 	fill_icon_thresholds = list(0, 33, 66, 100)
 	slot_flags = ITEM_SLOT_HIP|ITEM_SLOT_MOUTH
-	obj_flags = CAN_BE_HIT
+	obj_flags = CAN_BE_HIT|UNIQUE_RENAME
 	w_class = WEIGHT_CLASS_TINY
 	experimental_onhip = FALSE
 	experimental_inhand = FALSE

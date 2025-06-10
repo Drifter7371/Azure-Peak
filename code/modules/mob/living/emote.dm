@@ -35,6 +35,7 @@
 			L.check_prayer(L,msg)
 			for(var/mob/living/LICKMYBALLS in hearers(2,src))
 				LICKMYBALLS.succumb_timer = world.time
+		GLOB.azure_round_stats[STATS_PRAYERS_MADE]++
 
 /mob/living/proc/check_prayer(mob/living/L,message)
 	if(!L || !message || !ishuman(L))
@@ -528,6 +529,8 @@
 			else
 				message_param = "kisses %t on \the [parse_zone(H.zone_selected)]."
 	playsound(target.loc, pick('sound/vo/kiss (1).ogg','sound/vo/kiss (2).ogg'), 100, FALSE, -1)
+	if(user.mind)
+		GLOB.azure_round_stats[STATS_KISSES_MADE]++
 
 
 /datum/emote/living/spit
@@ -578,6 +581,16 @@
 	set category = "Emotes"
 
 	emote("hug", intentional = TRUE, targetted = TRUE)
+
+/datum/emote/living/hug/adjacentaction(mob/user, mob/target)
+	. = ..()
+	if(!user || !target)
+		return
+	if(ishuman(target))
+		playsound(target.loc, pick('sound/vo/hug.ogg'), 100, FALSE, -1)
+		if(user.mind)
+			GLOB.azure_round_stats[STATS_HUGS_MADE]++
+			SEND_SIGNAL(user, COMSIG_MOB_HUGGED, target)
 
 /datum/emote/living/holdbreath
 	key = "hold"
@@ -669,7 +682,10 @@
 
 	emote("pinch", intentional = TRUE, targetted = TRUE)
 
-
+/datum/emote/living/laugh/run_emote(mob/user, params, type_override, intentional, targetted)
+	. = ..()
+	if(. && user.mind)
+		GLOB.azure_round_stats[STATS_LAUGHS_MADE]++
 
 /datum/emote/living/laugh
 	key = "laugh"
@@ -773,6 +789,11 @@
 				to_chat(C, span_warning("I try to scream but my voice fails me."))
 				. = FALSE
 
+/datum/emote/living/scream/run_emote(mob/user, params, type_override, intentional, targetted)
+	. = ..()
+	if(. && user.mind)
+		record_featured_stat(FEATURED_STATS_SCREAMERS, user)
+
 /datum/emote/living/scream/painscream
 	key = "painscream"
 	message = "screams in pain!"
@@ -788,6 +809,13 @@
 				continue
 			if(L.has_flaw(/datum/charflaw/addiction/sadist))
 				L.sate_addiction()
+
+/datum/emote/living/scream/strain
+	key = "strain"
+	message = "strains themselves!"
+	emote_type = EMOTE_AUDIBLE
+	only_forced_audio = TRUE
+	show_runechat = FALSE
 
 /datum/emote/living/scream/agony
 	key = "agony"
@@ -919,6 +947,11 @@
 	set category = "Noises"
 
 	emote("rage", intentional = TRUE)
+
+/datum/emote/living/rage/run_emote(mob/user, params, type_override, intentional, targetted)
+	. = ..()
+	if(. && user.mind)
+		GLOB.azure_round_stats[STATS_WARCRIES]++
 
 /datum/emote/living/attnwhistle
 	key = "attnwhistle"

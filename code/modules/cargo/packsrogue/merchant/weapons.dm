@@ -74,49 +74,6 @@
 					/obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve,
 				)
 
-/datum/supply_pack/rogue/weapons/saildagger
-	name = "Sail Dagger"
-	cost = 80
-	contains = list(
-					/obj/item/rogueweapon/huntingknife/idagger/steel/parrying/vaquero,
-				)
-
-/datum/supply_pack/rogue/weapons/erapier
-	name = "Etruscan Rapier"
-	cost = 80
-	contains = list(
-					/obj/item/rogueweapon/sword/rapier/vaquero,
-	)
-
-/datum/supply_pack/rogue/weapons/shamshir
-	name = "Shamshir"
-	cost = 80
-	contains = list(
-					/obj/item/rogueweapon/sword/sabre/shamshir,
-				)
-
-
-/datum/supply_pack/rogue/weapons/beardedaxe
-	name = "Bearded Axe"
-	cost = 80
-	contains = list(
-					/obj/item/rogueweapon/stoneaxe/woodcut/steel/atgervi,
-	)
-
-/datum/supply_pack/rogue/weapons/naledistaff
-	name = "Naledi Warstaff"
-	cost = 80
-	contains = list(
-					/obj/item/rogueweapon/woodstaff/naledi,
-	)
-
-/datum/supply_pack/rogue/weapons/pulaxe
-	name = "Pulaski Axe"
-	cost = 80
-	contains = list(
-					/obj/item/rogueweapon/stoneaxe/woodcut/pick,
-	)
-
 /datum/supply_pack/rogue/weapons/quiver
 	name = "Quiver"
 	cost = 5
@@ -164,29 +121,6 @@
 					/obj/item/quiver/bolts,
 				)
 
-/*
-/datum/supply_pack/rogue/weapons/Parrows
-	name = "Poisoned Arrows"
-	cost = 20
-	contains = list(/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison,
-					/obj/item/ammo_casing/caseless/rogue/arrow/poison)
-*/
-
 /datum/supply_pack/rogue/weapons/bolt
 	name = "Bolts"
 	cost = 15
@@ -212,32 +146,23 @@
 					/obj/item/ammo_casing/caseless/rogue/bolt,
 					/obj/item/ammo_casing/caseless/rogue/bolt,
 				)
-/*
-/datum/supply_pack/rogue/weapons/Pbolts
-	name = "Poisoned Bolts"
-	cost = 30
-	contains = list(/obj/item/ammo_casing/caseless/rogue/bolt/poison,
-					/obj/item/ammo_casing/caseless/rogue/bolt/poison,
-					/obj/item/ammo_casing/caseless/rogue/bolt/poison,
-					/obj/item/ammo_casing/caseless/rogue/bolt/poison,
-					/obj/item/ammo_casing/caseless/rogue/bolt/poison,
-					/obj/item/ammo_casing/caseless/rogue/bolt/poison)
-*/
+
 /datum/supply_pack/rogue/weapons/tossbladeiron
 	name = "Iron tossblade belt"
 	cost = 20
-	contains = list(
-					/obj/item/storage/belt/rogue/leather/knifebelt/black/iron,
-				)
-
+	contains = list(/obj/item/storage/belt/rogue/leather/knifebelt/black/iron)
 
 /datum/supply_pack/rogue/weapons/tossbladesteel
 	name = "Steel tossblade belt"
 	cost = 40
-	contains = list(
-					/obj/item/storage/belt/rogue/leather/knifebelt/black/steel,
-				)
+	contains = list(/obj/item/storage/belt/rogue/leather/knifebelt/black/steel)
 
+/datum/supply_pack/rogue/weapons/javeliniron
+	name = "Javelins, Iron"
+	cost = 20
+	contains = list(/obj/item/quiver/javelin/iron)
 
-
-
+/datum/supply_pack/rogue/weapons/javeliniron
+	name = "Javelins, Iron"
+	cost = 40
+	contains = list(/obj/item/quiver/javelin/steel)

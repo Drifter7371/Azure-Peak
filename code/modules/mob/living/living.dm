@@ -58,6 +58,7 @@
 	playsound(src.loc, 'sound/foley/zfall.ogg', 100, FALSE)
 	if(!isgroundlessturf(T))
 		ZImpactDamage(T, levels)
+		GLOB.azure_round_stats[STATS_MOAT_FALLERS]++
 	return ..()
 
 /mob/living/proc/ZImpactDamage(turf/T, levels)
@@ -201,7 +202,16 @@
 				self_points -= 99
 				instafail = TRUE
 				to_chat(src, span_warning("I changed direction too late!"))
-
+			var/clash_blocked
+			if(L.has_status_effect(/datum/status_effect/buff/clash) && !instafail)
+				self_points -= 99
+				L.remove_status_effect(/datum/status_effect/buff/clash)
+				to_chat(src, span_warning("[L] was ready for me!"))
+				if(prob(10))
+					playsound(src, 'sound/combat/clash_charge_meme.ogg', 100)
+				else
+					playsound(src, 'sound/combat/clash_charge.ogg', 100)
+				clash_blocked = TRUE
 			if(self_points > target_points)
 				L.Knockdown(1)
 			if(self_points < target_points)
@@ -209,19 +219,22 @@
 			if(self_points == target_points)
 				L.Knockdown(1)
 				Knockdown(30)
-			Immobilize(30)
+			Immobilize(10)
 			var/playsound = FALSE
-			if(apply_damage(15, BRUTE, "head", run_armor_check("head", "blunt", damage = 20)))
+			if(L.apply_damage(15, BRUTE, "chest", L.run_armor_check("chest", "blunt", damage = 10)))
 				playsound = TRUE
-			if(!instafail)
-				if(L.apply_damage(15, BRUTE, "chest", L.run_armor_check("chest", "blunt", damage = 10)))
+			if(instafail)
+				if(apply_damage(15, BRUTE, "head", run_armor_check("head", "blunt", damage = 20)))
 					playsound = TRUE
 			if(playsound)
 				playsound(src, "genblunt", 100, TRUE)
-			if(!instafail)
-				visible_message(span_warning("[src] charges into [L]!"), span_warning("I charge into [L]!"))
+			if(instafail || clash_blocked)
+				if(instafail)
+					visible_message(span_warning("[src] smashes into [L] with no headstart!"), span_warning("I charge into [L] too early!"))
+				if(clash_blocked)
+					visible_message(span_warning("[src] gets tripped by [L]!"), span_warning("I get tripped by [L]!"))
 			else
-				visible_message(span_warning("[src] smashes into [L] with no headstart!"), span_warning("I charge into [L] too early!"))
+				visible_message(span_warning("[src] charges into [L]!"), span_warning("I charge into [L]!"))
 			return TRUE
 
 	//okay, so we didn't switch. but should we push?
@@ -587,6 +600,10 @@
 		return
 	if (InCritical() || health <= 0 || (blood_volume < BLOOD_VOLUME_SURVIVE))
 		log_message("Has [whispered ? "whispered his final words" : "succumbed to death"] while in [InFullCritical() ? "hard":"soft"] critical with [round(health, 0.1)] points of health!", LOG_ATTACK)
+		
+		if(istype(src.loc, /turf/open/water) && !HAS_TRAIT(src, TRAIT_NOBREATH) && lying && client)
+			GLOB.azure_round_stats[STATS_PEOPLE_DROWNED]++
+
 		adjustOxyLoss(201)
 		updatehealth()
 //		if(!whispered)
@@ -1016,6 +1033,7 @@
 			return
 	log_combat(src, null, "surrendered")
 	surrendering = 1
+	GLOB.azure_round_stats[STATS_YIELDS]++
 	toggle_cmode()
 	changeNext_move(CLICK_CD_EXHAUSTED)
 	var/obj/effect/temp_visual/surrender/flaggy = new(src)
@@ -1055,74 +1073,62 @@
 	update_charging_movespeed()
 
 /mob/proc/resist_grab(moving_resist)
-	return 1 //returning 0 means we successfully broke free
+	return TRUE //returning 0 means we successfully broke free
 
 /mob/living/resist_grab(moving_resist)
 	. = TRUE
 
 	var/wrestling_diff = 0
-	var/resist_chance = 40
+	var/resist_chance = 55
 	var/mob/living/L = pulledby
 	var/combat_modifier = 1
+	var/agg_grab = FALSE
 
 	if(mind)
 		wrestling_diff += (mind.get_skill_level(/datum/skill/combat/wrestling)) //NPCs don't use this
 	if(L.mind)
 		wrestling_diff -= (L.mind.get_skill_level(/datum/skill/combat/wrestling))
+	if(L.grab_state > GRAB_PASSIVE)
+		agg_grab = TRUE
 
 	if(restrained())
 		combat_modifier -= 0.25
-
 	if(!(L.mobility_flags & MOBILITY_STAND) && mobility_flags & MOBILITY_STAND)
 		combat_modifier += 0.2
-
 	if(cmode && !L.cmode)
 		combat_modifier += 0.3
 	else if(!cmode && L.cmode)
 		combat_modifier -= 0.3
+	if(agg_grab)
+		combat_modifier -= 0.3
 
-	resist_chance = clamp((((4 + (((STASTR - L.STASTR)/2) + wrestling_diff)) * 10 + rand(-5, 10)) * combat_modifier), 5, 95)
+	resist_chance += max((wrestling_diff * 10), -20)
+	resist_chance += (STACON - (agg_grab ? L.STASTR : L.STAEND)) * 5
+	resist_chance *= combat_modifier
+	resist_chance = clamp(resist_chance, 5, 95)
 
 	if(moving_resist && client) //we resisted by trying to move
 		client.move_delay = world.time + 20
-	if(prob(resist_chance))
-		rogfat_add(rand(5,15))
-		visible_message(span_warning("[src] breaks free of [pulledby]'s grip!"), \
-						span_notice("I break free of [pulledby]'s grip!"), null, null, pulledby)
-		to_chat(pulledby, span_danger("[src] breaks free of my grip!"))
-		log_combat(pulledby, src, "broke grab")
-		pulledby.changeNext_move(CLICK_CD_GRABBING)
-		playsound(src.loc, 'sound/combat/grabbreak.ogg', 50, TRUE, -1)
-		pulledby.stop_pulling()
-		return FALSE
-	else
-		rogfat_add(rand(5,15))
-		var/shitte = ""
-//		if(client?.prefs.showrolls)
-//			shitte = " ([resist_chance]%)"
-		visible_message(span_warning("[src] struggles to break free from [pulledby]'s grip!"), \
-						span_warning("I struggle against [pulledby]'s grip![shitte]"), null, null, pulledby)
+	rogfat_add(rand(5,15))
+
+	if(!prob(resist_chance))
+		var/rchance = ""
+		if(client?.prefs.showrolls)
+			rchance = " ([resist_chance]%)"
+		visible_message(span_warning("[src] struggles to break free from [L]'s grip!"), \
+						span_warning("I struggle against [L]'s grip![rchance]"), null, null, L)
 		playsound(src.loc, 'sound/combat/grabstruggle.ogg', 50, TRUE, -1)
 		to_chat(pulledby, span_warning("[src] struggles against my grip!"))
+		return FALSE
 
-		return TRUE
-
-/mob/living/carbon/human/resist_grab(moving_resist)
-	var/mob/living/L = pulledby
-	if(ishuman(L))
-		var/mob/living/carbon/human/H = L
-		if(HAS_TRAIT(H, TRAIT_NOSEGRAB) && !HAS_TRAIT(src, TRAIT_MISSING_NOSE))
-			var/obj/item/bodypart/head = get_bodypart(BODY_ZONE_HEAD)
-			for(var/obj/item/grabbing/G in grabbedby)
-				if(G.limb_grabbed == head)
-					if(G.grabbee == pulledby)
-						if(G.sublimb_grabbed == BODY_ZONE_PRECISE_NOSE)
-							visible_message(span_warning("[src] struggles to break free from [pulledby]'s grip!"), \
-											span_warning("I struggle against [pulledby]'s grip!"), null, null, pulledby)
-							playsound(src.loc, 'sound/combat/grabstruggle.ogg', 50, TRUE, -1)
-							to_chat(pulledby, span_warning("[src] struggles against my grip!"))
-							return FALSE
-	return ..()
+	visible_message(span_warning("[src] breaks free of [L]'s grip!"), \
+					span_notice("I break free of [L]'s grip!"), null, null, L)
+	to_chat(L, span_danger("[src] breaks free of my grip!"))
+	log_combat(L, src, "broke grab")
+	L.changeNext_move(agg_grab ? CLICK_CD_GRABBING : CLICK_CD_GRABBING + 1 SECONDS)
+	playsound(src.loc, 'sound/combat/grabbreak.ogg', 50, TRUE, -1)
+	L.stop_pulling()
+	return TRUE
 
 /mob/living/proc/resist_buckle()
 	buckled.user_unbuckle_mob(src,src)

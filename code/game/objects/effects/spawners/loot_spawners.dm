@@ -374,7 +374,7 @@
 		/obj/item/rogueweapon/woodstaff/quarterstaff/steel = 1,
 		/obj/item/rogueweapon/greataxe/steel = 1,
 		/obj/item/rogueweapon/stoneaxe/woodcut/steel = 1,
-		/obj/item/rogueweapon/stoneaxe/silver = 1,
+		/obj/item/rogueweapon/stoneaxe/woodcut/silver = 1,
 		//tools
 		/obj/item/rogueweapon/shovel = 2,
 		/obj/item/rogueweapon/shovel/aalloy = 1,
@@ -414,7 +414,6 @@
 		/obj/item/clothing/head/roguetown/helmet/bascinet/etruscan = 1,
 		//food
 		/obj/item/reagent_containers/food/snacks/fat/salo = 1,
-		/obj/item/reagent_containers/food/snacks/rogue/saltfish = 1,
 		/obj/item/reagent_containers/food/snacks/rogue/meat/coppiette = 1,
 		/obj/item/reagent_containers/food/snacks/rogue/cheddarwedge/aged = 1,
 		/obj/item/reagent_containers/food/snacks/rogue/meat/salami = 1,

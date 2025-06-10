@@ -95,11 +95,11 @@
 	craftdiff = 4
 
 /datum/anvil_recipe/engineering/bronze/smokebomb
-	name = "Smoke Bomb 2x (+Cog, +Ash)"
+	name = "Smoke Bomb 3x (+Cog, +Ash)"
 	req_bar = /obj/item/ingot/bronze
 	created_item = /obj/item/smokebomb
 	additional_items = list(/obj/item/roguegear, /obj/item/ash)
-	createditem_num = 2
+	createditem_num = 3
 	craftdiff = 3
 
 /datum/anvil_recipe/engineering/bronze/grappler

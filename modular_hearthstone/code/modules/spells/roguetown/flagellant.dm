@@ -21,7 +21,7 @@
 	warnie = "sydwarning"
 	movement_interrupt = FALSE
 	sound = 'sound/magic/diagnose.ogg'
-	invocation = "PATI PRO ALIIS!"
+	invocation = "Trahe Dolorem!" // "Take the pain and put it into another" (Translator tried really hard with this one. I took the short form) 
 	invocation_type = "shout"
 	associated_skill = /datum/skill/misc/medicine
 	antimagic_allowed = TRUE
@@ -226,7 +226,7 @@
 	warnie = "sydwarning"
 	movement_interrupt = FALSE
 	sound = 'sound/magic/diagnose.ogg'
-	invocation = "SUSCIPE DOLOREM!"
+	invocation = "Pro Te Fero Dolorem!" // I bear the pain for you
 	invocation_type = "shout"
 	associated_skill = /datum/skill/misc/medicine
 	antimagic_allowed = TRUE
@@ -372,7 +372,7 @@
 	warnie = "sydwarning"
 	movement_interrupt = FALSE
 	sound = 'sound/magic/diagnose.ogg'
-	invocation = "DIVIDE ET IMPERA DOLOREM!"
+	invocation = "Sume Dolorem Meum!" // Take my pain
 	invocation_type = "shout"
 	associated_skill = /datum/skill/misc/medicine
 	antimagic_allowed = TRUE

@@ -22,6 +22,7 @@
 	H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/labor/farming, 6, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/craft/cooking, 2, TRUE)
+	H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
 	belt = /obj/item/storage/belt/rogue/leather/rope
 	shirt = /obj/item/clothing/suit/roguetown/shirt/undershirt/random
 	pants = /obj/item/clothing/under/roguetown/trou
@@ -42,6 +43,7 @@
 						/obj/item/seeds/apple=1,
 						/obj/item/ash=1,
 						/obj/item/flashlight/flare/torch = 1,
+						/obj/item/rogueweapon/huntingknife = 1,
 						)
 	beltl = /obj/item/rogueweapon/sickle
 	beltr = /obj/item/flint

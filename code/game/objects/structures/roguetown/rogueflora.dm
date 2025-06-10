@@ -3,7 +3,7 @@
 
 /obj/structure/flora/roguetree
 	name = "old tree"
-	desc = "An old, wicked tree that not even elves could love."
+	desc = "An old wicked tree that not even elves could love."
 	icon = 'icons/roguetown/misc/foliagetall.dmi'
 	icon_state = "t1"
 	opacity = 1
@@ -32,6 +32,14 @@
 						var/obj/item/I = new path2item(user.loc)
 						user.put_in_hands(I)
 			return
+
+/obj/structure/flora/roguetree/attacked_by(obj/item/I, mob/living/user)
+	var/was_destroyed = obj_destroyed
+	. = ..()
+	if(.)
+		if(!was_destroyed && obj_destroyed)
+			record_featured_stat(FEATURED_STATS_TREE_FELLERS, user)
+			GLOB.azure_round_stats[STATS_TREES_CUT]++
 
 /obj/structure/flora/roguetree/spark_act()
 	fire_act()
@@ -96,27 +104,54 @@
 
 /obj/structure/flora/roguetree/evil
 	var/datum/looping_sound/boneloop/soundloop
-	var/datum/spacevine_controller/controller
+	var/datum/vine_controller/controller
 
 /obj/structure/flora/roguetree/wise
 	name = "sacred tree"
-	desc = "A blessed primordial tree, ancient beyond years. Said to be the very embodiment of the Tree Father himself--his very presence imbuing druids with wild energies."
+	desc = "A blessed primordial tree, ancient beyond years. Said to be the very embodiment of the Tree Father himself—whose presence alone imbues druids with wild energies."
 	icon_state = "mystical"
 	max_integrity = 400
+	var/activated = FALSE
+	var/cooldown = FALSE
+	var/retaliation_messages = list(
+		"LEAVE FOREST ALONE!",
+		"DENDOR PROTECTS!",
+		"NATURE'S WRATH!",
+		"BEGONE, INTERLOPER!"
+	)
 
 /obj/structure/flora/roguetree/wise/Initialize()
 	. = ..()
 	icon_state = "mystical"
+
+/obj/structure/flora/roguetree/wise/attackby(obj/item/I, mob/user, params)
+	. = ..()
+	if(activated && !cooldown)
+		retaliate(user)
+
+
+/obj/structure/flora/roguetree/wise/proc/retaliate(mob/living/target)
+	if(cooldown || !istype(target) || !activated)
+		return
+
+	cooldown = TRUE
+	addtimer(VARSET_CALLBACK(src, cooldown, FALSE), 5 SECONDS)
+
+	var/message = pick(retaliation_messages)
+	say(span_danger("[message]"))
+
+	var/atom/throw_target = get_edge_target_turf(src, get_dir(src, target))
+	target.throw_at(throw_target, 4, 2)
+	target.adjustBruteLoss(8)
 
 /obj/structure/flora/roguetree/wise/examine(mob/user)
 	. = ..()
 	SEND_SOUND(usr, sound(null))
 	playsound(user, 'sound/music/tree.ogg', 80)
 
-
 /obj/structure/flora/roguetree/burnt
 	name = "burnt tree"
-	desc = "Maybe lightning, maybe war took the life of this once lively tree."
+	desc = "Maybe lightning, maybe war, took the life of this once lively tree."
 	icon = 'icons/roguetown/misc/96x96.dmi'
 	icon_state = "t1"
 	stump_type = /obj/structure/flora/roguetree/stump/burnt
@@ -186,7 +221,7 @@
 
 /obj/structure/flora/roguetree/stump/log
 	name = "ancient log"
-	desc = "Rotten remains of a tree that suffered nature's cruelty ages ago."
+	desc = "The rotten remains of a tree that suffered nature's cruelty ages ago."
 	icon_state = "log1"
 	opacity = 0
 	max_integrity = 200
@@ -204,7 +239,7 @@
 
 /obj/structure/flora/roguegrass
 	name = "grass"
-	desc = "Green, soft and lively."
+	desc = "Green, soft, and lively."
 	icon = 'icons/roguetown/misc/foliage.dmi'
 	icon_state = "grass1"
 	attacked_sound = "plantcross"
@@ -266,7 +301,7 @@
 
 /obj/structure/flora/roguegrass/bush
 	name = "bush"
-	desc = "A bush, I think I can see some spiders crawling in it."
+	desc = "A bush. It's crawling with spiders, but maybe there’s something useful inside..."
 	icon_state = "bush2"
 	layer = ABOVE_ALL_MOB_LAYER
 	var/res_replenish
@@ -382,7 +417,7 @@
 
 /obj/structure/flora/roguegrass/bush/wall
 	name = "great bush"
-	desc = "A bush, this one's roots are thick and block the way."
+	desc = "A bush. This one’s roots are thick enough to block the way."
 	opacity = TRUE
 	density = 1
 	climbable = FALSE
@@ -423,7 +458,7 @@
 
 /obj/structure/flora/rogueshroom
 	name = "mushroom"
-	desc = "Mushrooms are the only happy beings in this island."
+	desc = "Mushrooms are the only happy beings in this land."
 	icon = 'icons/roguetown/misc/foliagetall.dmi'
 	icon_state = "mush1"
 	opacity = 0
@@ -533,7 +568,7 @@
 
 /obj/structure/flora/roguegrass/thorn_bush
     name = "thorn bush"
-    desc = "A thorny bush, watch your step!"
+    desc = "A thorny bush. Watch your step!"
     icon_state = "thornbush"
     layer = ABOVE_ALL_MOB_LAYER
     blade_dulling = DULLING_CUT

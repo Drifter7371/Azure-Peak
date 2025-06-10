@@ -5,7 +5,7 @@
 	density = TRUE
 	anchored = TRUE
 	resistance_flags = ACID_PROOF
-	armor = list("blunt" = 30, "slash" = 30, "stab" = 30,  "piercing" = 0, "fire" = 70, "acid" = 100)
+	armor = ARMOR_DISPLAYCASE
 	max_integrity = 200
 	integrity_failure = 0.25
 	var/obj/item/showpiece = null

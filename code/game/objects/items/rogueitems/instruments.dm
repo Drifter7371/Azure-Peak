@@ -163,6 +163,7 @@
 				soundloop.cursound = null
 				soundloop.start()
 				user.apply_status_effect(/datum/status_effect/buff/playing_music, stressevent, note_color)
+				GLOB.azure_round_stats[STATS_SONGS_PLAYED]++
 			else
 				playing = FALSE
 				groupplaying = FALSE
@@ -262,7 +263,7 @@
 
 /obj/item/rogue/instrument/flute
 	name = "flute"
-	desc = "A slender flute carefully carved from a smooth wood piece."
+	desc = "A row of slender hollow tubes of varying lengths that produce a light airy sound when blown across."
 	icon_state = "flute"
 	song_list = list("Half-Dragon's Ten Mammon" = 'sound/music/instruments/flute (1).ogg',
 	"'The Local Favorite'" = 'sound/music/instruments/flute (2).ogg',
@@ -313,7 +314,7 @@
 
 /obj/item/rogue/instrument/vocals
 	name = "vocalist's talisman"
-	desc = "This talisman eminates a small shimmer of light. When held, it can amplify and even change a bard's voice."
+	desc = "This talisman emanates a soft shimmer of light. When held, it can amplify and even change a bard's voice."
 	icon_state = "vtalisman"
 	song_list = list("Harpy's Call (Feminine)" = 'sound/music/instruments/vocalsf (1).ogg',
 	"Necra's Lullaby (Feminine)" = 'sound/music/instruments/vocalsf (2).ogg',

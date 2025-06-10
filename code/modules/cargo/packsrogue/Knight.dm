@@ -30,6 +30,11 @@
 	cost = 40
 	contains = list(/obj/item/clothing/head/roguetown/helmet/heavy/knight)
 
+/datum/supply_pack/rogue/Knight/armet
+	name = "Armet"
+	cost = 40
+	contains = list(/obj/item/clothing/head/roguetown/helmet/heavy/knight/armet)
+
 /datum/supply_pack/rogue/Knight/bhelm
 	name = "Bucket Helm"
 	cost = 40
@@ -45,6 +50,11 @@
 	name = "Steel Full plate"
 	cost = 60
 	contains = list(/obj/item/clothing/suit/roguetown/armor/plate/full)
+
+/datum/supply_pack/rogue/Knight/Fullplate
+	name = "Fluted Full plate"
+	cost = 100
+	contains = list(/obj/item/clothing/suit/roguetown/armor/plate/full/fluted)
 
 /datum/supply_pack/rogue/Knight/blacksteelfullplate
 	name = "Blacksteel Full plate"
@@ -76,6 +86,11 @@
 	cost = 20
 	contains = list(/obj/item/clothing/neck/roguetown/gorget)
 
+/datum/supply_pack/rogue/Knight/sgorget
+	name = "Steel Gorget"
+	cost = 30
+	contains = list(/obj/item/clothing/neck/roguetown/gorget/steel)
+
 /datum/supply_pack/rogue/Knight/bracers
 	name = "Steel Bracers"
 	cost = 10
@@ -96,7 +111,6 @@
 	cost = 40
 	contains = list(/obj/item/clothing/under/roguetown/platelegs)
 
-
 /datum/supply_pack/rogue/Knight/blkplatechausses
 	name = "Blacksteel Plate Chausses"
 	cost = 100
@@ -113,28 +127,43 @@
 	contains = list(/obj/item/clothing/shoes/roguetown/boots/blacksteel/plateboots)
 
 
-/datum/supply_pack/rogue/Knight/bsword
-	name = "Bastard Sword"
+/datum/supply_pack/rogue/Knight/lsword
+	name = "Longsword"
 	cost = 20
 	contains = list(/obj/item/rogueweapon/sword/long)
 
 /datum/supply_pack/rogue/Knight/estoc
 	name = "Estoc"
-	cost = 60
+	cost = 50
 	contains = list(/obj/item/rogueweapon/estoc)
 
 /datum/supply_pack/rogue/Knight/greatsword
 	name = "Greatsword"
-	cost = 60
+	cost = 50
 	contains = list(/obj/item/rogueweapon/greatsword)
 
 /datum/supply_pack/rogue/Knight/Zweihandersword
 	name = "Zweihander"
-	cost = 30
+	cost = 40
 	contains = list(/obj/item/rogueweapon/greatsword/zwei)
 
+/datum/supply_pack/rogue/Knight/SZweihandersword
+	name = "Steel Zweihander"
+	cost = 60
+	contains = list(/obj/item/rogueweapon/greatsword/grenz)
 
 /datum/supply_pack/rogue/Knight/kiteshield
 	name = "Kite Shield"
 	cost = 20
 	contains = list(/obj/item/rogueweapon/shield/tower/metal)
+
+/datum/supply_pack/rogue/Knight/saiga
+	name = "Saiga Buck"
+	cost = 100
+	contains = list(/obj/structure/closet/crate/chest/saigabuck)
+
+// The hedge-knight can buy tamed saigas now to make use of their riding skill.
+
+/obj/structure/closet/crate/chest/saigabuck/Initialize()
+	. = ..()
+	new /mob/living/simple_animal/hostile/retaliate/rogue/saiga/saigabuck/tame/saddled(src)

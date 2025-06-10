@@ -85,7 +85,6 @@ GLOBAL_LIST_INIT(stone_personalities, list(
 	"Barbarics",
 	"Fanciness",
 	"Relaxing",	
-	"Blacked",
 	"Greed",
 	"Evil",
 	"Good",
@@ -144,6 +143,28 @@ GLOBAL_LIST_INIT(stone_personality_descs, list(
 	sharpening_factor = 0.1
 	spark_chance = 35
 
+/obj/item/natural/stone/Initialize()
+	. = ..()
+	stone_lore()
+
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/stoneaxe,
+		/datum/crafting_recipe/roguetown/survival/stonehammer,
+		/datum/crafting_recipe/roguetown/survival/stonepick,
+		/datum/crafting_recipe/roguetown/survival/stonehoe,
+		/datum/crafting_recipe/roguetown/survival/stonetongs,
+		/datum/crafting_recipe/roguetown/survival/stoneknife,
+		/datum/crafting_recipe/roguetown/survival/stonespear,
+		/datum/crafting_recipe/roguetown/survival/stonesword,
+		/datum/crafting_recipe/roguetown/survival/pot,
+		/datum/crafting_recipe/roguetown/survival/net,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
+
 /obj/item/natural/whetstone
 	name = "whetstone"
 	icon_state = "whetstone"
@@ -159,9 +180,27 @@ GLOBAL_LIST_INIT(stone_personality_descs, list(
 	sharpening_factor = 0.4
 	spark_chance = 80
 
-/obj/item/natural/stone/Initialize()
+/obj/item/natural/whetstone/Initialize()
 	. = ..()
-	stone_lore()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/reinforcedshaft,
+		/datum/crafting_recipe/roguetown/survival/peasantry/thresher/whetstone,
+		/datum/crafting_recipe/roguetown/survival/peasantry/shovel/whetstone,
+		/datum/crafting_recipe/roguetown/survival/peasantry/hoe/whetstone,
+		/datum/crafting_recipe/roguetown/survival/peasantry/pitchfork/whetstone,
+		/datum/crafting_recipe/roguetown/survival/peasantry/goedendag,
+		/datum/crafting_recipe/roguetown/survival/peasantry/scythe,
+		/datum/crafting_recipe/roguetown/survival/peasantry/warflail,
+		/datum/crafting_recipe/roguetown/survival/peasantry/warpick,
+		/datum/crafting_recipe/roguetown/survival/peasantry/warpick_steel,
+		/datum/crafting_recipe/roguetown/survival/peasantry/maciejowski_knife,
+		/datum/crafting_recipe/roguetown/survival/peasantry/maciejowski_messer,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
 
 /*
 	This right here is stone lore,
@@ -339,14 +378,24 @@ GLOBAL_LIST_INIT(stone_personality_descs, list(
 			L.consider_ambush(always = TRUE)
 	..()
 
+/obj/item/natural/rock/attacked_by(obj/item/I, mob/living/user)
+	var/was_destroyed = obj_destroyed
+	. = ..()
+	if(.)
+		if(!was_destroyed && obj_destroyed)
+			record_featured_stat(FEATURED_STATS_MINERS, user)
+
 /obj/item/natural/rock/deconstruct(disassembled = FALSE)
 	if(!disassembled)
 		if(mineralType && mineralAmt)
+			if(has_world_trait(/datum/world_trait/malum_diligence))
+				mineralAmt += rand(1,2)
 			new mineralType(src.loc, mineralAmt)
 		for(var/i in 1 to rand(1,4))
 			var/obj/item/S = new /obj/item/natural/stone(src.loc)
 			S.pixel_x = rand(25,-25)
 			S.pixel_y = rand(25,-25)
+		GLOB.azure_round_stats[STATS_ROCKS_MINED]++
 	qdel(src)
 
 /obj/item/natural/rock/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir)

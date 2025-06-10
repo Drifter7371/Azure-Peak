@@ -245,7 +245,8 @@
 		add_log = " (pacifist)"
 	send_grabbed_message(user)
 	if(user != src)
-		stop_pulling()
+		if(pulling != user) // If the person we're pulling aggro grabs us don't break the grab
+			stop_pulling()
 		user.set_pull_offsets(src, user.grab_state)
 	log_combat(user, src, "grabbed", addition="aggressive grab[add_log]")
 	return 1
@@ -454,7 +455,7 @@
 	return
 
 
-/mob/living/do_attack_animation(atom/A, visual_effect_icon, obj/item/used_item, no_effect)
+/mob/living/do_attack_animation(atom/A, visual_effect_icon, obj/item/used_item, no_effect, item_animation_override = null, datum/intent/used_intent, simplified = TRUE)
 	if(!used_item)
 		used_item = get_active_held_item()
 	..()

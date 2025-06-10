@@ -5,7 +5,6 @@
 	crate_name = "merchant guild's crate"
 	crate_type = /obj/structure/closet/crate/chest/merchant
 
-
 /datum/supply_pack/rogue/luxury/sigs
 	name = "Pipe Weed Zig"
 	cost = 3
@@ -26,56 +25,14 @@
 	cost = 30
 	contains = list(/obj/item/reagent_containers/powder/spice)
 
-/datum/supply_pack/rogue/luxury/mbox
-	name = "Music Box"
-	cost = 500
-	contains = list(/obj/item/dmusicbox)
-
-/datum/supply_pack/rogue/luxury/flute
-	name = "Flute"
-	cost = 10
-	contains = list(/obj/item/rogue/instrument/flute)
-
-/datum/supply_pack/rogue/luxury/harp
-	name = "Harp"
-	cost = 20
-	contains = list(/obj/item/rogue/instrument/harp)
-
-/datum/supply_pack/rogue/luxury/guitar
-	name = "Guitar"
-	cost = 30
-	contains = list(/obj/item/rogue/instrument/guitar)
-
-/datum/supply_pack/rogue/luxury/accord
-	name = "Accordion"
-	cost = 30
-	contains = list(/obj/item/rogue/instrument/accord)
-
-/datum/supply_pack/rogue/luxury/lute
-	name = "Lute"
-	cost = 20
-	contains = list(/obj/item/rogue/instrument/lute)
-
-/datum/supply_pack/rogue/luxury/drum
-	name = "Drum"
-	cost = 10
-	contains = list(/obj/item/rogue/instrument/drum)
-
-/datum/supply_pack/rogue/luxury/hurdygurdy
-	name = "Hurdy-Gurdy"
-	cost = 30
-	contains = list(/obj/item/rogue/instrument/hurdygurdy)
-
-/datum/supply_pack/rogue/luxury/viola
-	name = "Viola"
-	cost = 30
-	contains = list(/obj/item/rogue/instrument/viola)
-
-/datum/supply_pack/rogue/luxury/vocals
-	name = "Vocalist's Talisman"
-	cost = 30
-	contains = list(/obj/item/rogue/instrument/vocals)
-
+/datum/supply_pack/rogue/luxury/fancyteaset
+	name = "Fancy Tea Set"
+	cost = 110
+	contains = list(/obj/item/reagent_containers/glass/bucket/pot/teapot/fancy, 
+	/obj/item/reagent_containers/glass/cup/ceramic/fancy,
+	/obj/item/reagent_containers/glass/cup/ceramic/fancy,
+	/obj/item/reagent_containers/glass/cup/ceramic/fancy,
+	/obj/item/reagent_containers/glass/cup/ceramic/fancy)
 
 /datum/supply_pack/rogue/luxury/silverdagger
 	name = "Silver Dagger"
@@ -107,18 +64,15 @@
 	cost = 100
 	contains = list(/obj/item/polishing_cream, /obj/item/armor_brush)
 
-
 /datum/supply_pack/rogue/luxury/talkstone
 	name = "Talkstone"
 	cost = 150
 	contains = list(/obj/item/clothing/neck/roguetown/talkstone)
 
-
 /datum/supply_pack/rogue/luxury/circlet
 	name = "Circlet"
 	cost = 80
 	contains = list(/obj/item/clothing/head/roguetown/circlet)
-
 
 /datum/supply_pack/rogue/luxury/goldring
 	name = "Gold Ring"

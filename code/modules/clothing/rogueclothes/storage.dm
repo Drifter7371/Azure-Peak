@@ -26,7 +26,7 @@
 
 /obj/item/storage/belt/rogue/leather
 	name = "belt"
-	desc = ""
+	desc = "A fine leather strap notched with holes for a buckle to secure itself."
 	icon_state = "leather"
 	item_state = "leather"
 	equip_sound = 'sound/blank.ogg'
@@ -74,7 +74,7 @@
 
 /obj/item/storage/belt/rogue/leather/rope
 	name = "rope belt"
-	desc = ""
+	desc = "A length of strong rope repurposed into a belt. Better than nothing."
 	icon_state = "rope"
 	item_state = "rope"
 	color = "#b9a286"
@@ -82,7 +82,7 @@
 
 /obj/item/storage/belt/rogue/leather/cloth
 	name = "cloth sash"
-	desc = ""
+	desc = "A strip of cloth tied together at the ends into a makeshift belt. It's better than nothing."
 	icon_state = "cloth"
 	component_type = /datum/component/storage/concrete/roguetown/belt/cloth
 
@@ -95,7 +95,7 @@
 
 /obj/item/storage/belt/rogue/pouch
 	name = "pouch"
-	desc = ""
+	desc = "A small sack with a drawstring that allows it to be worn around the neck. Or at the hips, provided you have a belt."
 	icon = 'icons/roguetown/clothing/storage.dmi'
 	mob_overlay_icon = null
 	icon_state = "pouch"
@@ -166,7 +166,7 @@
 
 /obj/item/storage/backpack/rogue/satchel
 	name = "satchel"
-	desc = ""
+	desc = "Modest, easy on the shoulders, and holds a respectable amount."
 	icon_state = "satchel"
 	item_state = "satchel"
 	icon = 'icons/roguetown/clothing/storage.dmi'
@@ -210,7 +210,7 @@
 
 /obj/item/storage/backpack/rogue/backpack
 	name = "backpack"
-	desc = ""
+	desc = "One of the best ways to carry many things while keeping your hands free."
 	icon_state = "backpack"
 	item_state = "backpack"
 	icon = 'icons/roguetown/clothing/storage.dmi'

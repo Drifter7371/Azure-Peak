@@ -3,8 +3,6 @@
 	crate_name = "merchant guild's crate"
 	crate_type = /obj/structure/closet/crate/chest/merchant
 
-
-
 /datum/supply_pack/rogue/drugs/ozium
 	name = "Ozium"
 	cost = 5

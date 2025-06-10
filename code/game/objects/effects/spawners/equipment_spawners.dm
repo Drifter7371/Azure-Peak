@@ -227,7 +227,7 @@
 		/obj/item/rogueweapon/sword/silver = 1,
 		/obj/item/rogueweapon/huntingknife/idagger/silver = 3,
 		/obj/item/rogueweapon/mace/silver = 1,
-		/obj/item/rogueweapon/stoneaxe/silver = 1,
+		/obj/item/rogueweapon/stoneaxe/woodcut/silver = 1,
 	)
 
 /obj/effect/spawner/lootdrop/decrepit_equipment_spawner

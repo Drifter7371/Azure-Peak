@@ -4,8 +4,8 @@
 	cost = 2
 	releasedrain = 35
 	chargedrain = 1
-	chargetime = 30
-	recharge_time = 120 SECONDS
+	chargetime = 1 SECONDS
+	recharge_time = 2 MINUTES
 	warnie = "spellwarning"
 	no_early_release = TRUE
 	movement_interrupt = FALSE

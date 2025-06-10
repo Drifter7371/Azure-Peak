@@ -15,9 +15,10 @@
 
 /obj/item/reagent_containers/glass/bottle/claybottle
 	name = "clay vessel"
-	desc = "A small ceramic bottle."
+	desc = "A ceramic bottle." //The sprite was anything but small
 	icon = 'icons/roguetown/items/cooking.dmi'
 	icon_state = "claybottlecook"
+	volume = 65 // Larger than glass bottle
 	sellprice = 6
 	reagent_flags = OPENCONTAINER	//So it doesn't appear through
 
@@ -70,6 +71,22 @@
 	icon_state = "claycupcook"
 	sellprice = 3
 	reagent_flags = OPENCONTAINER	//So it doesn't appear through
+
+// Raw teapot
+/obj/item/natural/clay/rawteapot
+	name = "raw teapot"
+	icon = 'icons/roguetown/items/cooking.dmi'
+	icon_state = "teapot_raw"
+	desc = "A teapot fashioned from clay. Still needs to be baked to be useful."
+	cooked_type = /obj/item/reagent_containers/glass/bucket/pot/teapot
+
+// Raw teacup
+/obj/item/natural/clay/rawteacup
+	name = "raw teacup"
+	icon = 'icons/roguetown/items/cooking.dmi'
+	icon_state = "teacup_raw"
+	desc = "A teacup fashioned from clay. Still needs to be baked to be useful."
+	cooked_type = /obj/item/reagent_containers/glass/cup/ceramic
 
 //Bricks - Makes bricks which are used for building. (Need brick-wall sprites for this.. augh..)
 /obj/item/natural/clay/claybrick

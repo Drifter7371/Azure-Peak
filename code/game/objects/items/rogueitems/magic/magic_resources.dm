@@ -3,9 +3,12 @@
 // Let me use another .dmi 
 // Since the enchanting / summoning system is not here yet, sellprice has been adjusted.
 /obj/item/magic
-    name = "magic resource"
-    desc = "You shouldn't be seeing this."
-    icon = 'icons/roguetown/items/magic_resources.dmi'
+	name = "magic resource"
+	desc = "You shouldn't be seeing this."
+	icon = 'icons/roguetown/items/magic_resources.dmi'
+	w_class = WEIGHT_CLASS_TINY
+	grid_width = 32
+	grid_height = 32
 
 // MELD
 /obj/item/magic/melded

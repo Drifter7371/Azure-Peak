@@ -26,6 +26,20 @@
 	cost = 100
 	contains = list(/obj/structure/fermenting_barrel/zagul)
 
+/datum/supply_pack/rogue/bulk/coffee
+	name = "Barrel of Coffee"
+	cost = 100
+	contains = list(/obj/structure/fermenting_barrel/coffee)
+
+/datum/supply_pack/rogue/bulk/tea
+	name = "Barrel of Tea"
+	cost = 100
+	contains = list(/obj/structure/fermenting_barrel/tea)
+
+/datum/supply_pack/rogue/bulk/rose_tea
+	name = "Barrel of Rose Tea"
+	cost = 100
+	contains = list(/obj/structure/fermenting_barrel/rose_tea)
 
 /datum/supply_pack/rogue/bulk/saigamilk
 	name = "Barrel of Running Saiga"

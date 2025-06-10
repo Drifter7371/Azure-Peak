@@ -148,7 +148,7 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 	var/dropshrink = 0
 
 	var/wlength = WLENGTH_NORMAL		//each weapon length class has its own inherent dodge properties
-	var/wbalance = 0
+	var/wbalance = WBALANCE_NORMAL
 	var/wdefense = 0 //better at defending
 	var/minstr = 0  //for weapons
 	var/intdamage_factor = 0	//%-age of our raw damage that is dealt to armor or weapon on hit / parry.
@@ -224,6 +224,12 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 
 	/// Number of torn sleves, important for salvaging calculations and examine text
 	var/torn_sleeve_number = 0
+	
+	/// Angle of the icon, these are used for attack animations.
+	var/icon_angle = 50 // most of our icons are angled
+
+	/// Angle of the icon while wielded, these are used for attack animations. Generally it's flat, but not always.
+	var/icon_angle_wielded = 0
 
 /obj/item/Initialize()
 	. = ..()
@@ -422,9 +428,9 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 
 		if(wbalance)
 			inspec += "\n<b>BALANCE: </b>"
-			if(wbalance < 0)
+			if(wbalance == WBALANCE_HEAVY)
 				inspec += "Heavy"
-			if(wbalance > 0)
+			if(wbalance == WBALANCE_SWIFT)
 				inspec += "Swift"
 
 		if(wlength != WLENGTH_NORMAL)
@@ -1207,6 +1213,7 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 		to_chat(user, "<span class='notice'>I wield [src] normally.</span>")
 	if(user.get_active_held_item() == src)
 		user.update_a_intents()
+	icon_angle = initial(icon_angle)
 	return
 
 /obj/item/proc/altgrip(mob/living/carbon/user)
@@ -1244,6 +1251,7 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 			return
 	user.update_a_intents()
 	user.update_inv_hands()
+	icon_angle = icon_angle_wielded
 
 /obj/item/attack_self(mob/user)
 	. = ..()
@@ -1365,6 +1373,13 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 	if(peel_count > 0 && !success)
 		visible_message(span_info("Peel count lost on [src]!"))
 	peel_count = 0
+
+/obj/item/proc/reduce_peel(amt)
+	if(peel_count > amt)
+		peel_count -= amt
+	else
+		peel_count = 0
+	visible_message(span_info("Peel reduced to [peel_count == 0 ? "none" : "[peel_count]"] on [src]!"))
 
 /obj/item/proc/attackzone2coveragezone(location)
 	switch(location)

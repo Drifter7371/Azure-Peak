@@ -160,8 +160,33 @@
 	verbage = "constructs"
 	skillcraft = /datum/skill/craft/carpentry
 
+
 /obj/item/chair/rogue/crafted
 	sellprice = 6
+
+/datum/crafting_recipe/roguetown/structure/parkbenchleft
+	name = "park bench (left)"
+	result = /obj/structure/chair/hotspring_bench/left
+	reqs = list(/obj/item/grown/log/tree/small = 1)
+	verbage_simple = "construct"
+	verbage = "constructs"
+	skillcraft = /datum/skill/craft/carpentry
+
+/datum/crafting_recipe/roguetown/structure/parkbenchmiddle
+	name = "park bench (middle)"
+	result = /obj/structure/chair/hotspring_bench
+	reqs = list(/obj/item/grown/log/tree/small = 1)
+	verbage_simple = "construct"
+	verbage = "constructs"
+	skillcraft = /datum/skill/craft/carpentry
+
+/datum/crafting_recipe/roguetown/structure/parkbenchright
+	name = "park bench (right)"
+	result = /obj/structure/chair/hotspring_bench/right
+	reqs = list(/obj/item/grown/log/tree/small = 1)
+	verbage_simple = "construct"
+	verbage = "constructs"
+	skillcraft = /datum/skill/craft/carpentry
 
 /datum/crafting_recipe/roguetown/structure/fancychair
 	name = "fancy wooden chair"
@@ -622,6 +647,24 @@
 	wallcraft = TRUE
 	craftdiff = 0
 
+/datum/crafting_recipe/roguetown/structure/stonelantern
+	name = "stone lantern (ground)"
+	result = /obj/machinery/light/rogue/torchholder/hotspring
+	reqs = list(/obj/item/natural/stone = 2)
+	verbage_simple = "build"
+	verbage = "builds"
+	wallcraft = FALSE
+	skillcraft = /datum/skill/craft/masonry
+
+/datum/crafting_recipe/roguetown/structure/stonelanternstanding
+	name = "stone lantern (standing)"
+	result = /obj/machinery/light/rogue/torchholder/hotspring/standing
+	reqs = list(/obj/item/natural/stone = 2)
+	verbage_simple = "build"
+	verbage = "builds"
+	wallcraft = FALSE
+	skillcraft = /datum/skill/craft/masonry
+
 /datum/crafting_recipe/roguetown/structure/wallcandle
 	name = "wall candles"
 	result = /obj/machinery/light/rogue/wallfire/candle
@@ -707,3 +750,18 @@
 	result = /obj/structure/bobcatpelt
 	reqs = list(/obj/item/natural/fur/bobcat = 2)	//Gives no head for lynx, plus it's the smallest rug anyway.
 	craftdiff = 0
+
+/datum/crafting_recipe/roguetown/structure/curtain
+	name = "curtain"
+	result = /obj/structure/curtain
+	reqs = list(/obj/item/natural/cloth = 2)
+	craftdiff = 0
+
+/datum/crafting_recipe/roguetown/structure/apiary
+	name = "apiary"
+	result = /obj/structure/apiary
+	reqs = list(/obj/item/grown/log/tree/small = 2, /obj/item/grown/log/tree/stick = 4)
+	verbage_simple = "build"
+	verbage = "builds"
+	skillcraft = /datum/skill/craft/carpentry
+	craftdiff = 2

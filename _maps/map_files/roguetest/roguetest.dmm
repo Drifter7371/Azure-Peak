@@ -39,9 +39,9 @@
 /turf/open/floor/rogue/dirt/road,
 /area/rogue/indoors)
 "aM" = (
-/obj/item/rogueweapon/stoneaxe,
-/turf/open/floor/rogue/dirt/road,
-/area/rogue/outdoors)
+/mob/living/simple_animal/hostile/retaliate/rogue/swine,
+/turf/open/floor/rogue/hay,
+/area/rogue/indoors)
 "aP" = (
 /obj/structure/table/wood{
 	icon_state = "longtable_mid";
@@ -300,6 +300,10 @@
 /obj/item/reagent_containers/powder/ozium,
 /turf/open/floor/rogue/blocks/newstone/alt,
 /area/rogue/indoors)
+"im" = (
+/mob/living/simple_animal/hostile/retaliate/rogue/trufflepig,
+/turf/open/floor/rogue/hay,
+/area/rogue/indoors)
 "jh" = (
 /obj/machinery/light/rogue/smelter/great,
 /turf/open/floor/rogue/ruinedwood,
@@ -323,6 +327,10 @@
 /obj/machinery/light/rogue/smelter,
 /turf/open/floor/rogue/ruinedwood,
 /area/rogue/indoors)
+"jN" = (
+/obj/item/rogueweapon/stoneaxe/woodcut,
+/turf/open/floor/rogue/grass,
+/area/rogue/outdoors)
 "km" = (
 /obj/structure/table/wood{
 	icon_state = "longtable"
@@ -445,6 +453,12 @@
 /obj/item/clothing/gloves/roguetown/leather,
 /turf/open/floor/rogue/dirt/road,
 /area/rogue/indoors)
+"ov" = (
+/obj/structure/handcart{
+	dir = 4
+	},
+/turf/open/floor/rogue/grass,
+/area/rogue/outdoors)
 "oz" = (
 /turf/closed,
 /area)
@@ -665,6 +679,10 @@
 /obj/item/rogueweapon/mace/cudgel,
 /turf/open/floor/rogue/dirt/road,
 /area/rogue/indoors)
+"wQ" = (
+/obj/item/rogueweapon/stoneaxe,
+/turf/open/floor/rogue/grass,
+/area/rogue/outdoors)
 "xa" = (
 /obj/structure/stairs{
 	dir = 1
@@ -734,11 +752,9 @@
 /turf/open/floor/rogue/hay,
 /area/rogue/indoors)
 "CJ" = (
-/obj/structure/handcart{
-	dir = 4
-	},
-/turf/open/floor/rogue/cobblerock,
-/area/rogue/outdoors)
+/mob/living/simple_animal/hostile/retaliate/rogue/swine/hog,
+/turf/open/floor/rogue/hay,
+/area/rogue/indoors)
 "CL" = (
 /obj/machinery/light/rogue/wallfire/candle/r,
 /turf/open/floor/rogue/dirt/road,
@@ -1117,9 +1133,9 @@
 /turf/open/floor/rogue/ruinedwood/herringbone,
 /area/rogue/indoors)
 "RN" = (
-/obj/item/rogueweapon/stoneaxe/woodcut,
-/turf/open/floor/rogue/dirt/road,
-/area/rogue/outdoors)
+/mob/living/simple_animal/hostile/retaliate/rogue/swine/hog,
+/turf/closed,
+/area)
 "RR" = (
 /obj/structure/table/wood{
 	icon_state = "longtable"
@@ -1414,7 +1430,7 @@ oz
 oz
 oz
 oz
-oz
+RN
 oz
 oz
 oz
@@ -1627,12 +1643,12 @@ Og
 Og
 Og
 Og
-Th
-Th
-Th
-Th
-Th
-Th
+Og
+Og
+Og
+Og
+Og
+Og
 Th
 Th
 Th
@@ -1679,12 +1695,12 @@ Td
 QM
 Td
 bp
-hp
-hp
-hp
-hp
-hp
-hp
+Td
+Td
+Ck
+Td
+Td
+Og
 OL
 OL
 OL
@@ -1731,12 +1747,12 @@ Td
 Td
 Td
 bp
-hp
-hp
-hp
-hp
-hp
-hp
+im
+Td
+CJ
+Td
+aM
+Og
 OL
 OL
 OL
@@ -1785,10 +1801,10 @@ Og
 Og
 Og
 Og
-hp
-hp
-hp
-hp
+hu
+hu
+hu
+Og
 OL
 OL
 OL
@@ -1837,8 +1853,8 @@ qQ
 NY
 Ck
 bp
-hp
-hp
+HA
+HA
 HA
 HA
 OL
@@ -1941,9 +1957,9 @@ Og
 Og
 Og
 Og
-CJ
-RN
-aM
+al
+BJ
+BJ
 HA
 OL
 OL
@@ -3239,9 +3255,9 @@ HA
 HA
 BJ
 BJ
-HA
-HA
-HA
+ov
+jN
+wQ
 HA
 HA
 HA
@@ -3343,11 +3359,11 @@ Dm
 Vf
 HA
 zp
-HA
-HA
-HA
-HA
-HA
+hp
+hp
+hp
+hp
+hp
 hp
 OL
 OL
@@ -3393,14 +3409,14 @@ Dm
 wM
 Dm
 Dm
-HA
-HA
-HA
-HA
-HA
-HA
-HA
-HA
+hp
+hp
+hp
+hp
+hp
+hp
+hp
+hp
 OL
 OL
 OL
@@ -3445,14 +3461,14 @@ Dm
 MR
 Dm
 Dm
-HA
-HA
-HA
-HA
-HA
-HA
 hp
-HA
+hp
+hp
+hp
+hp
+hp
+hp
+hp
 OL
 OL
 OL
@@ -3497,14 +3513,14 @@ Dm
 Wy
 Dm
 CL
-HA
-HA
-HA
 hp
-HA
-HA
-HA
-HA
+hp
+hp
+hp
+hp
+hp
+hp
+hp
 OL
 OL
 OL

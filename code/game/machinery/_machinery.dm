@@ -31,7 +31,7 @@
 
 /obj/machinery/Initialize()
 	if(!armor)
-		armor = list("blunt" = 25, "slash" = 25, "stab" = 25,  "piercing" = 10, "fire" = 50, "acid" = 70)
+		armor = ARMOR_MACHINERY
 	. = ..()
 	GLOB.machines += src
 

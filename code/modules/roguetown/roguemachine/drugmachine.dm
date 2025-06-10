@@ -9,12 +9,14 @@
 	name = "PURITY"
 	desc = "You want to destroy your life."
 	icon = 'icons/roguetown/misc/machines.dmi'
-	icon_state = "streetvendor1"
+	icon_state = "purity"
 	density = TRUE
 	blade_dulling = DULLING_BASH
 	max_integrity = 0
 	anchored = TRUE
 	layer = BELOW_OBJ_LAYER
+	light_outer_range = 6
+	light_color = "#ff13d8ff"
 	var/list/held_items = list()
 	var/locked = FALSE
 	var/budget = 0
@@ -67,10 +69,10 @@
 	. = ..()
 	if(!ishuman(usr))
 		return
+	var/mob/living/carbon/human/human_mob = usr
 	if(href_list["buy"])
 		if(!usr.canUseTopic(src, BE_CLOSE) || locked)
 			return
-		var/mob/M = usr
 		var/O = text2path(href_list["buy"])
 		if(held_items[O]["PRICE"])
 			var/tax_amt = FLOOR(SStreasury.tax_value * held_items[O]["PRICE"], 1)
@@ -82,11 +84,13 @@
 				recent_payments += held_items[O]["PRICE"]
 				if(!(drugrade_flags & DRUGRADE_NOTAX))
 					SStreasury.give_money_treasury(tax_amt, "purity import tax")
+					record_featured_stat(FEATURED_STATS_TAX_PAYERS, human_mob, tax_amt)
+					GLOB.azure_round_stats[STATS_TAXES_COLLECTED] += tax_amt
 			else
 				say("Not enough!")
 				return
 		var/obj/item/I = new O(get_turf(src))
-		M.put_in_hands(I)
+		human_mob.put_in_hands(I)
 	if(href_list["change"])
 		if(!usr.canUseTopic(src, BE_CLOSE) || locked)
 			return

@@ -117,6 +117,16 @@
 	pixel_x = rand(-9, 9)
 	update_icon_state()
 	updateinfolinks()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/sigsweet,
+		/datum/crafting_recipe/roguetown/survival/sigdry,
+		/datum/crafting_recipe/roguetown/survival/rocknutdry,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
 
 /obj/item/paper/update_icon_state()
 	if(mailer)
@@ -326,7 +336,8 @@
 		((text)) : Decreases the <font size = \"1\">size</font> of the text.<br>
 		* item : An unordered list item.<br>
 		&nbsp;&nbsp;* item: An unordered list child item.<br>
-		--- : Adds a horizontal rule.
+		--- : Adds a horizontal rule.<br>
+		-=FFFFFFtext=- : Adds a specific <font color = '#FFFFFF'>colour</font> to text.
 	</BODY></HTML>"}, "window=paper_help")
 
 

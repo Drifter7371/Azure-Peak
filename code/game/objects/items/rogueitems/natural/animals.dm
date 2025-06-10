@@ -11,6 +11,20 @@
 	drop_sound = 'sound/foley/dropsound/cloth_drop.ogg'
 	sellprice = 8
 
+/obj/item/natural/hide/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/woodshield,
+		/datum/crafting_recipe/roguetown/survival/book_crafting_kit,
+		/datum/crafting_recipe/roguetown/survival/tribalrags,
+		/datum/crafting_recipe/roguetown/survival/antlerhood,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+	)
+
 /obj/item/natural/fur
 	name = "fur"
 	icon_state = "wool1"
@@ -106,7 +120,7 @@
 /obj/item/natural/bone
 	name = "bone"
 	icon_state = "bone"
-	desc = "The meatless remains of the dead. Whether it came from an animal or a person it all looks the same now."
+	desc = "The meatless remains of the dead. Whether it came from an animal or a person, it all looks the same now."
 	blade_dulling = 0
 	max_integrity = 20
 	static_debris = null
@@ -118,12 +132,32 @@
 	slot_flags = ITEM_SLOT_MOUTH|ITEM_SLOT_HIP
 	bundletype = /obj/item/natural/bundle/bone
 
+/obj/item/natural/bone/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/recurvepartial,
+		/datum/crafting_recipe/roguetown/survival/longbowpartial,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
+
 /obj/item/natural/hide/cured
 	name = "cured leather"
 	icon_state = "leather"
 	desc = "A hide piece that has been cured and may now be worked."
 	sellprice = 7
 	bundletype = /obj/item/natural/bundle/curred_hide
+
+/obj/item/natural/hide/cured/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/heatershield,
+		/datum/crafting_recipe/roguetown/survival/collar,
+		/datum/crafting_recipe/roguetown/survival/bell_collar,
+		)
 
 /obj/item/natural/bundle/curred_hide
 	name = "bundle of cured leather"

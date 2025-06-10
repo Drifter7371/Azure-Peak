@@ -22,7 +22,7 @@ GLOBAL_LIST_INIT(wisdoms, world.file2list("strings/rt/wisdoms.txt"))
 	poursounds = list('sound/items/fillbottle.ogg')
 	experimental_onhip = TRUE
 	debris = list(/obj/item/natural/glass/shard = 1)
-	var/desc_uncorked = "An open bottle, hopefully a cork is close by."
+	var/desc_uncorked = "An open bottle. Hopefully the cork is nearby."
 	var/fancy		// for bottles with custom descriptors that you don't want to change when bottle manipulated
 
 /obj/item/reagent_containers/glass/bottle/update_icon(dont_fill=FALSE)
@@ -65,7 +65,7 @@ GLOBAL_LIST_INIT(wisdoms, world.file2list("strings/rt/wisdoms.txt"))
 /obj/item/reagent_containers/glass/bottle/rmb_self(mob/user)
 	. = ..()
 	closed = !closed
-	user.changeNext_move(CLICK_CD_RAPID)
+	user.changeNext_move(CLICK_CD_RAPID, override = TRUE)
 	if(closed)
 		reagent_flags = TRANSPARENT
 		reagents.flags = reagent_flags
@@ -83,7 +83,7 @@ GLOBAL_LIST_INIT(wisdoms, world.file2list("strings/rt/wisdoms.txt"))
 		spillable = TRUE
 		GLOB.weather_act_upon_list |= src
 		if(!fancy)
-			desc = "An open bottle, hopefully a cork is close by."
+			desc = "An open bottle. Hopefully a cork is nearby."
 	update_icon()
 
 /obj/item/reagent_containers/glass/bottle/Initialize()

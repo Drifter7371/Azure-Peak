@@ -23,7 +23,7 @@
 	cost = 4
 	spell_tier = 2 // Spellblade tier.
 
-	invocation = "Armatura Creetur!"
+	invocation = "Indue Armaturam Illi!" // Clothe them in armour.
 	invocation_type = "shout"
 	glow_color = GLOW_COLOR_METAL
 	glow_intensity = GLOW_INTENSITY_MEDIUM

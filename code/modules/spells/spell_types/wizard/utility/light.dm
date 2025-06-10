@@ -15,7 +15,7 @@
 	cost = 1
 	miracle = FALSE
 
-	invocation = "Fiat lux."
+	invocation = "Evoca Lucem." // Summon Light 
 	invocation_type = "whisper" //can be none, whisper, emote and shout
 
 	var/obj/item/item

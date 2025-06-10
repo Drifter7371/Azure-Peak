@@ -23,6 +23,9 @@
 
 	cmode_music = 'sound/music/combat_knight.ogg'
 
+/datum/outfit/job/roguetown/knight
+	job_bitflag = BITFLAG_GARRISON
+
 /datum/job/roguetown/knight/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
 	..()
 	if(ishuman(L))
@@ -188,11 +191,11 @@
 	H.change_stat("intelligence", 1)
 
 	H.adjust_blindness(-3)
-	var/weapons = list("Bastard Sword","Flail","Warhammer","Sabre")
+	var/weapons = list("Longsword","Flail","Warhammer","Sabre")
 	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 	H.set_blindness(0)
 	switch(weapon_choice)
-		if("Bastard Sword")
+		if("Longsword")
 			beltr = /obj/item/rogueweapon/sword/long
 		if("Flail")
 			beltr = /obj/item/rogueweapon/flail/sflail
@@ -266,11 +269,17 @@
 	H.change_stat("intelligence", 1)
 
 	H.adjust_blindness(-3)
-	var/weapons = list("Bastard Sword + Crossbow","Billhook + Recurve Bow","Grand Mace + Longbow", "Sabre + Recurve Bow")
+	var/weapons = list(
+		"Longsword + Crossbow",
+		"Billhook + Recurve Bow",
+		"Grand Mace + Longbow", 
+		"Sabre + Recurve Bow",
+		"Lance + Kite Shield"
+	)
 	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 	H.set_blindness(0)
 	switch(weapon_choice)
-		if("Bastard Sword + Crossbow")
+		if("Longsword + Crossbow")
 			beltl = /obj/item/rogueweapon/sword/long
 			beltr = /obj/item/quiver/bolts
 			backl = /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow
@@ -287,6 +296,10 @@
 			r_hand = /obj/item/rogueweapon/sword/sabre
 			beltr = /obj/item/quiver/arrows
 			beltl = /obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve
+		if("Lance + Kite Shield")
+			r_hand = /obj/item/rogueweapon/spear/lance
+			backl = /obj/item/rogueweapon/shield/tower/metal
+			H.mind.adjust_skillrank_up_to(/datum/skill/combat/shields, 2, TRUE) // Let them skip dummy hitting
 
 	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail
 	pants = /obj/item/clothing/under/roguetown/chainlegs

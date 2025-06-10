@@ -86,13 +86,13 @@
 
 /datum/outfit/job/roguetown/npc/skeleton/pre_equip(mob/living/carbon/human/H)
 	..()
-	H.STASTR = rand(14,16)
+	H.STASTR = 14
 	H.STASPD = 8
 	H.STACON = 4
 	H.STAEND = 15
 	H.STAINT = 1
 
-	var/skeletonclass = rand(1,11)
+	var/skeletonclass = rand(1,15)
 	if(skeletonclass < 4) // basic ass skele. Kinda sucks.
 		shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/aalloy
 		pants = /obj/item/clothing/under/roguetown/chainlegs/kilt/aalloy
@@ -114,33 +114,38 @@
 		else
 			r_hand = /obj/item/rogueweapon/knuckles/aknuckles
 		return
-	if(skeletonclass < 9) // Skeletal MAA Equal. Getting kinda up there in being dangerous.
+	if(skeletonclass < 10) // Skeletal MAA Equal. Getting kinda up there in being dangerous.
 		cloak = /obj/item/clothing/cloak/stabard/surcoat/guard // Ooo Spooky Old Dead MAA
 		head = /obj/item/clothing/head/roguetown/helmet/heavy/aalloy
 		armor = /obj/item/clothing/suit/roguetown/armor/plate/half/aalloy
 		shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/aalloy
 		wrists = /obj/item/clothing/wrists/roguetown/bracers/aalloy
-		pants = /obj/item/clothing/under/roguetown/platelegs/aalloy
+		pants = /obj/item/clothing/under/roguetown/chainlegs/kilt/aalloy
 		shoes = /obj/item/clothing/shoes/roguetown/boots/aalloy
-		neck = /obj/item/clothing/neck/roguetown/gorget/aalloy
+		neck = /obj/item/clothing/neck/roguetown/chaincoif/iron/aalloy
 		gloves = /obj/item/clothing/gloves/roguetown/chain/aalloy
 		l_hand = /obj/item/rogueweapon/shield/tower/metal/alloy
-		r_hand = /obj/item/rogueweapon/spear/aalloy
+		if(prob(33))
+			r_hand = /obj/item/rogueweapon/spear/aalloy
+		else if(prob(33))
+			r_hand = /obj/item/rogueweapon/sword/iron/short/gladius/agladius	// ave
+		else
+			r_hand = /obj/item/rogueweapon/flail/aflail
 		return
-	if(skeletonclass <= 10) // Skeletal Khopesh wielders(kinda spooky cultist sorta vibes idk?)
+	if(skeletonclass <= 13) // Skeletal Khopesh wielders(kinda spooky cultist sorta vibes idk?)
 		cloak = /obj/item/clothing/cloak/hierophant
 		mask = /obj/item/clothing/mask/rogue/facemask/aalloy
 		armor = /obj/item/clothing/suit/roguetown/armor/plate/half/aalloy
 		shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/aalloy
 		wrists = /obj/item/clothing/wrists/roguetown/bracers/aalloy
-		pants = /obj/item/clothing/under/roguetown/chainlegs/kilt/aalloy
+		pants = /obj/item/clothing/under/roguetown/platelegs/aalloy
 		shoes = /obj/item/clothing/shoes/roguetown/boots/aalloy
-		neck = /obj/item/clothing/neck/roguetown/gorget/aalloy
+		neck = /obj/item/clothing/neck/roguetown/zcross/aalloy
 		gloves = /obj/item/clothing/gloves/roguetown/chain/aalloy
 		r_hand = /obj/item/rogueweapon/sword/sabre/alloy
 		l_hand = /obj/item/rogueweapon/sword/sabre/alloy
 		return
-	if(skeletonclass == 11) // Withered Dread Knight
+	if(skeletonclass == 15) // Withered Dread Knight
 		cloak = /obj/item/clothing/cloak/tabard/blkknight
 		head = /obj/item/clothing/head/roguetown/helmet/heavy/guard/aalloy
 		armor = /obj/item/clothing/suit/roguetown/armor/plate/aalloy

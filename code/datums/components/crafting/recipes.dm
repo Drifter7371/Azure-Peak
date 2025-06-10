@@ -11,7 +11,7 @@
 	var/time = 0 //time in deciseconds
 	var/parts[] = list() //type paths of items that will be placed in the result
 	var/chem_catalysts[] = list() //like tools but for reagents
-	var/category = CAT_NONE //where it shows up in the crafting UI
+	var/category = "Misc" // Where it shows in the recipe books
 	var/subcategory = CAT_NONE
 	var/always_availible = FALSE //Set to FALSE if it needs to be learned first.
 	var/ontile = FALSE		//crafted on our tile instead of in front of us
@@ -52,38 +52,6 @@
 		<meta charset='UTF-8'>
 		<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'/>
 		<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
-
-		<style>
-			@import url('https://fonts.googleapis.com/css2?family=Charm:wght@700&display=swap');
-			body {
-				font-family: "Charm", cursive;
-				font-size: 1.2em;
-				text-align: center;
-				margin: 20px;
-				background-color: #f4efe6;
-				color: #3e2723;
-				background-color: rgb(31, 20, 24);
-				background:
-					url('book.png');
-				background-repeat: no-repeat;
-				background-attachment: fixed;
-				background-size: 100% 100%;
-
-			}
-			h1 {
-				text-align: center;
-				font-size: 1.5em;
-				border-bottom: 2px solid #3e2723;
-				padding-bottom: 10px;
-				margin-bottom: 20px;
-			}
-			.icon {
-				width: 96px;
-				height: 96px;
-				vertical-align: middle;
-				margin-right: 10px;
-			}
-		</style>
 		<body>
 		  <div>
 		    <h1>[name]</h1>

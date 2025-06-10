@@ -4,8 +4,6 @@
 	crate_name = "Gifts of Faith"
 	crate_type = /obj/structure/closet/crate/chest/merchant
 
-
-
 /datum/supply_pack/rogue/Iconoclast/coif/steel
 	name = "Steel Coif"
 	cost = 20
@@ -51,23 +49,25 @@
 	cost = 20
 	contains = list(/obj/item/clothing/head/roguetown/helmet/sallet)
 
-
 /datum/supply_pack/rogue/Iconoclast/visoredsallet
 	name = "Visored Sallet"
 	cost = 30
 	contains = list(/obj/item/clothing/head/roguetown/helmet/sallet/visored)
+
+/datum/supply_pack/rogue/Iconoclast/armet
+	name = "Armet"
+	cost = 40
+	contains = list(/obj/item/clothing/head/roguetown/helmet/heavy/knight/armet)
 
 /datum/supply_pack/rogue/Iconoclast/platechausses
 	name = "Plate Chausses"
 	cost = 40
 	contains = list(/obj/item/clothing/under/roguetown/platelegs)
 
-
 /datum/supply_pack/rogue/Iconoclast/boots
 	name = "Steel Boots"
 	cost = 10
 	contains = list(/obj/item/clothing/shoes/roguetown/boots/armor)
-
 
 /datum/supply_pack/rogue/Iconoclast/hauberk
 	name = "Hauberk"
@@ -79,22 +79,30 @@
 	cost = 20
 	contains = list(/obj/item/clothing/suit/roguetown/armor/chainmail)
 
-
 /datum/supply_pack/rogue/Iconoclast/Bevor
 	name = "Bevor"
 	cost = 20
 	contains = list(/obj/item/clothing/neck/roguetown/bevor)
-
 
 /datum/supply_pack/rogue/Iconoclast/gorget
 	name = "Gorget"
 	cost = 20
 	contains = list(/obj/item/clothing/neck/roguetown/gorget)
 
+/datum/supply_pack/rogue/Iconoclast/sgorget
+	name = "Steel Gorget"
+	cost = 30
+	contains = list(/obj/item/clothing/neck/roguetown/gorget/steel)
+
 /datum/supply_pack/rogue/Iconoclast/katar
 	name = "Katar"
 	cost = 20
 	contains = list(/obj/item/rogueweapon/katar)
+
+/datum/supply_pack/rogue/Iconoclast/knuckles
+	name = "Steel Knuckles"
+	cost = 20
+	contains = list(/obj/item/rogueweapon/knuckles)
 
 /datum/supply_pack/rogue/Iconoclast/mace
 	name = "Iron Mace"
@@ -125,7 +133,6 @@
 	name = "Kite Shield"
 	cost = 20
 	contains = list(/obj/item/rogueweapon/shield/tower/metal)
-
 
 /datum/supply_pack/rogue/Iconoclast/Tshield
 	name = "Tower Shield"

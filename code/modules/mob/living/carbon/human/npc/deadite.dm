@@ -1,9 +1,10 @@
 /mob/living/carbon/human/species/npc/deadite
 
-	aggressive=TRUE
+	aggressive = TRUE
 	mode = AI_IDLE
 	dodgetime = 8 
 	flee_in_pain = FALSE
+	ambushable = FALSE
 
 	wander = TRUE
 

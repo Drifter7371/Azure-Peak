@@ -37,7 +37,7 @@
 
 /datum/advclass/nightmaiden
 	name = "Bath Attendant"
-	tutorial = "Most would decry the humble bath maid as a desperate fool tempting others into bedsheets for money--only sometimes, you say! You work underneath your betters in the communal bathhouse, keeping it and the guests in turn as tidy as they please. Wash laundry, tend mild wounds, and deftly wash your patrons with soap, for this is your craft."
+	tutorial = "A fresh initiate, most would decry the humble bath maid as a desperate fool tempting others into bedsheets for money--only sometimes, you say! You work underneath your betters in the communal bathhouse, keeping it and the guests in turn as tidy as they please. Wash laundry, tend mild wounds, and deftly wash your patrons with soap, for this is your craft."
 	outfit = /datum/outfit/job/roguetown/nightmaiden/attendant
 	category_tags = list(CTAG_NIGHTMAIDEN)
 
@@ -160,7 +160,6 @@
 	head = /obj/item/lockpick/goldpin
 	if(prob(5))
 		head = /obj/item/lockpick/goldpin/silver
-	neck = /obj/item/storage/keyring
 	armor = /obj/item/clothing/suit/roguetown/shirt/dress/silkydress/random
 	shirt = /obj/item/clothing/suit/roguetown/armor/corset
 	belt = /obj/item/storage/belt/rogue/leather/cloth/lady
@@ -186,7 +185,7 @@
 	if(H.mind)
 		H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 3, TRUE)
-		H.mind.adjust_skillrank(/datum/skill/misc/lockpicking, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/lockpicking, 3, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/swimming, 3, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/athletics, 2, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/music, 4, TRUE)
@@ -199,7 +198,7 @@
 		H.change_stat("speed", 3)
 		H.change_stat("endurance", 2)
 		H.change_stat("perception", 1)
-	ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_KEENEARS, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_GOODLOVER, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_EMPATH, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_BEAUTIFUL, TRAIT_GENERIC)

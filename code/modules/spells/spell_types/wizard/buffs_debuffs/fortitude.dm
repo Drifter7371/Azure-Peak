@@ -9,6 +9,7 @@
 	recharge_time = 2 MINUTES
 	warnie = "spellwarning"
 	school = "transmutation"
+	overlay_state = "fortitude"
 	no_early_release = TRUE
 	movement_interrupt = FALSE
 	spell_tier = 2

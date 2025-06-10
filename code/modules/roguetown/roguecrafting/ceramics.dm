@@ -61,6 +61,30 @@
 	reqs = list(/obj/item/natural/clay = 6)
 	craftdiff = 3
 
+/datum/crafting_recipe/roguetown/ceramics/clay/teapot
+	name = "teapot"
+	result = list(/obj/item/natural/clay/rawteapot)
+	reqs = list(/obj/item/natural/clay = 2)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/ceramics/clay/teapot3
+	name = "teapot 3x"
+	result = list(/obj/item/natural/clay/rawteapot, /obj/item/natural/clay/rawteapot, /obj/item/natural/clay/rawteapot)
+	reqs = list(/obj/item/natural/clay = 6)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/ceramics/clay/teacup
+	name = "teacup"
+	result = list(/obj/item/natural/clay/rawteacup)
+	reqs = list(/obj/item/natural/clay = 1)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/ceramics/clay/teacup
+	name = "teacup 3x"
+	result = list(/obj/item/natural/clay/rawteacup, /obj/item/natural/clay/rawteacup, /obj/item/natural/clay/rawteacup)
+	reqs = list(/obj/item/natural/clay = 3)
+	craftdiff = 3
+
 /* 4 diff */
 
 	// '''Clay''' for making glass.

@@ -28,6 +28,11 @@
 		if(!any_additional_mail(M, H.real_name))
 			H.remove_status_effect(/datum/status_effect/ugotmail)
 
+/obj/structure/roguemachine/mail/examine()
+	. = ..()
+	. += span_info("Load a coin inside, then right click to send a letter.")
+	. += span_info("Left click with a piece of confession or paper to send a prewritten letter for free.")
+
 /obj/structure/roguemachine/mail/attack_right(mob/user)
 	. = ..()
 	if(.)

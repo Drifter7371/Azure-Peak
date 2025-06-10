@@ -7,12 +7,13 @@
 	category_tags = list(CTAG_ADVENTURER, CTAG_COURTAGENT)
 	traits_applied = list(TRAIT_OUTLANDER)
 	classes = list("Sorcerer" = "You are a learned mage and a scholar, having spent your life studying the arcane and its ways.", 
+					"Spellblade" = "You are skilled in both the arcyne art and swordsmanship. But you are not a master of either nor could you channel your magick in armor.",			
 					"Spellsinger" = "You belong to a school of bards renowned for their study of both the arcane and the arts.")
 
 /datum/outfit/job/roguetown/adventurer/mage/pre_equip(mob/living/carbon/human/H)
 	..()
 	H.adjust_blindness(-3)
-	var/classes = list("Sorcerer","Spellsinger")
+	var/classes = list("Sorcerer", ,"Spellblade", "Spellsinger")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 
 	switch(classchoice)
@@ -52,10 +53,61 @@
 			H.change_stat("intelligence", 3)
 			H.change_stat("perception", 2)
 			H.change_stat("speed", 1)
-			H.mind.adjust_spellpoints(21)
+			H.mind.adjust_spellpoints(18)
 			H.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/touch/prestidigitation)
 			ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
 			ADD_TRAIT(H, TRAIT_ARCYNE_T3, TRAIT_GENERIC)
+			switch(H.patron?.type)
+				if(/datum/patron/inhumen/zizo)
+					H.cmode_music = 'sound/music/combat_cult.ogg'
+		if("Spellblade") // They get a unique spell of air slash
+			to_chat(H, span_warning("You are skilled in both the arcyne art and the art of the blade. But you are not a master of either nor could you channel your magick in armor."))
+			head = /obj/item/clothing/head/roguetown/bucklehat
+			shoes = /obj/item/clothing/shoes/roguetown/boots
+			pants = /obj/item/clothing/under/roguetown/trou/leather
+			shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
+			gloves = /obj/item/clothing/gloves/roguetown/angle
+			belt = /obj/item/storage/belt/rogue/leather
+			neck = /obj/item/clothing/neck/roguetown/chaincoif
+			armor = /obj/item/clothing/suit/roguetown/armor/leather/heavy/coat
+			backl = /obj/item/storage/backpack/rogue/satchel
+			beltl = /obj/item/storage/belt/rogue/pouch/coins/poor
+			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
+			backpack_contents = list(/obj/item/flashlight/flare/torch = 1, /obj/item/recipe_book/survival = 1)
+			H.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/touch/prestidigitation)
+			H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/airblade)
+			H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/enchant_weapon)
+			H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/conjure_weapon)
+			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/swords, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/shields, 1, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/reading, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/magic/arcane, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/swimming, 1, TRUE)
+			H.change_stat("strength", 2) // Favoring a less speedy and more steady playstyle vs spellsinger
+			H.change_stat("intelligence", 1)
+			H.change_stat("constitution", 1)
+			H.change_stat("endurance", 1)
+			H.mind.adjust_spellpoints(12)
+			H.cmode_music = 'sound/music/combat_bard.ogg'
+			ADD_TRAIT(H, TRAIT_MAGEARMOR, TRAIT_GENERIC)
+			ADD_TRAIT(H, TRAIT_ARCYNE_T2, TRAIT_GENERIC)
+			var/weapons = list("Bastard Sword", "Falchion & Wooden Shield", "Messer & Wooden Shield") // Much smaller selection with only three swords. You will probably want to upgrade.
+			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+			switch(weapon_choice)
+				if("Bastard Sword")
+					beltr = /obj/item/rogueweapon/sword/long
+				if("Falchion & Wooden Shield")
+					beltr = /obj/item/rogueweapon/sword/falchion
+					backr = /obj/item/rogueweapon/shield/wood
+					H.mind.adjust_skillrank(/datum/skill/combat/shields, 1, TRUE)
+				if("Messer & Wooden Shield")
+					beltr = /obj/item/rogueweapon/sword/iron/messer
+					backr = /obj/item/rogueweapon/shield/wood
+					H.mind.adjust_skillrank(/datum/skill/combat/shields, 1, TRUE)
 			switch(H.patron?.type)
 				if(/datum/patron/inhumen/zizo)
 					H.cmode_music = 'sound/music/combat_cult.ogg'

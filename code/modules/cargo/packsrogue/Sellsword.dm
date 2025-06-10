@@ -4,18 +4,15 @@
 	crate_name = "Gifts of Coinspillers"
 	crate_type = /obj/structure/closet/crate/chest/merchant
 
-
 /datum/supply_pack/rogue/Sellsword/dridersword
 	name = "Old Ranesheni package..."
 	cost = 10
 	contains = list(/obj/item/rogueweapon/sword/sabre/shamshir)
 
-
 /datum/supply_pack/rogue/Sellsword/driderhead
 	name = "Desert Rider headdress"
 	cost = 5
 	contains = list(/obj/item/clothing/head/roguetown/roguehood/shalal)
-
 
 /datum/supply_pack/rogue/Sellsword/grenzelhofthat
 	name = "Grenzel Hat"
@@ -47,7 +44,6 @@
 	cost = 10
 	contains = list(/obj/item/clothing/wrists/roguetown/bracers)
 
-
 /datum/supply_pack/rogue/Sellsword/chaingauntlets
 	name = "Steel Chain Gauntlets"
 	cost = 10
@@ -57,7 +53,6 @@
 	name = "Steel Boots"
 	cost = 10
 	contains = list(/obj/item/clothing/shoes/roguetown/boots/armor)
-
 
 /datum/supply_pack/rogue/Sellsword/hauberk
 	name = "Hauberk"
@@ -74,6 +69,11 @@
 	cost = 20
 	contains =  list(/obj/item/clothing/suit/roguetown/armor/plate/half)
 
+/datum/supply_pack/rogue/Sellsword/flutedcuirass
+	name = "Fluted Cuirass"
+	cost = 30
+	contains = list(/obj/item/clothing/suit/roguetown/armor/plate/half/fluted)
+
 /datum/supply_pack/rogue/Sellsword/scalemail
 	name = "Scalemail"
 	cost = 20
@@ -84,24 +84,25 @@
 	cost = 20
 	contains = list(/obj/item/clothing/suit/roguetown/armor/gambeson/heavy)
 
-
 /datum/supply_pack/rogue/Sellsword/steelcuirass
 	name = "Blacksteel Cuirass"
 	cost = 50
 	contains = list(/obj/item/clothing/suit/roguetown/armor/plate/blacksteel_half_plate)
-
 
 /datum/supply_pack/rogue/Sellsword/Bevor
 	name = "Bevor"
 	cost = 20
 	contains = list(/obj/item/clothing/neck/roguetown/bevor)
 
-
 /datum/supply_pack/rogue/Sellsword/gorget
 	name = "Gorget"
 	cost = 20
 	contains = list(/obj/item/clothing/neck/roguetown/gorget)
 
+/datum/supply_pack/rogue/Sellsword/sgorget
+	name = "Steel Gorget"
+	cost = 30
+	contains = list(/obj/item/clothing/neck/roguetown/gorget/steel)
 
 /datum/supply_pack/rogue/Sellsword/kettle
 	name = "Kettle Helmet"
@@ -113,7 +114,6 @@
 	cost = 20
 	contains = list(/obj/item/clothing/head/roguetown/helmet/sallet)
 
-
 /datum/supply_pack/rogue/Sellsword/visoredsallet
 	name = "Visored Sallet"
 	cost = 30
@@ -124,14 +124,13 @@
 	cost = 30
 	contains = list(/obj/item/clothing/head/roguetown/helmet/heavy/volfplate)
 
-
 /datum/supply_pack/rogue/Sellsword/ssword
 	name = "Steel Sword"
 	cost = 20
 	contains = list(/obj/item/rogueweapon/sword)
 
-/datum/supply_pack/rogue/Sellsword/bsword
-	name = "Bastard Sword"
+/datum/supply_pack/rogue/Sellsword/lsword
+	name = "Longsword"
 	cost = 20
 	contains = list(/obj/item/rogueweapon/sword/long)
 
@@ -139,7 +138,6 @@
 	name = "Shalal Saber"
 	cost = 30
 	contains = list(/obj/item/rogueweapon/sword/long/marlin)
-
 
 /datum/supply_pack/rogue/Sellsword/billhook
 	name = "Billhook"
@@ -161,6 +159,11 @@
 	cost = 10
 	contains = list(/obj/item/rogueweapon/halberd/bardiche)
 
+/datum/supply_pack/rogue/Sellsword/glaive
+	name = "Glaive"
+	cost = 20
+	contains = list(/obj/item/rogueweapon/halberd/glaive)
+
 /datum/supply_pack/rogue/Sellsword/ebeak
 	name = "Eagle's Beak"
 	cost = 20
@@ -175,7 +178,6 @@
 	name = "Quiver of Bolts"
 	cost = 20
 	contains = list(/obj/item/quiver/bolts)
-
 
 /datum/supply_pack/rogue/Sellsword/crossbow
 	name = "Crossbow"

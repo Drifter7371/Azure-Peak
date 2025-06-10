@@ -81,7 +81,7 @@
 
 
 /datum/stew_recipe/tea
-	inputs = list(/obj/item/reagent_containers/food/snacks/grown/)
+	inputs = list(/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_ground)
 	output = /datum/reagent/consumable/caffeine/tea
 	cooktime = STEW_COOKING_TIME / 4
 

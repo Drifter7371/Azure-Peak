@@ -66,7 +66,7 @@
 
 /datum/skill/craft/traps
 	name = "Trapmaking"
-	desc = "Determines whether you can craft mantraps. That's it."
+	desc = "Determines whether you can craft mantraps and if you can spot and disable traps."
 	dreams = list(
 		"...you spin a quiet silver wire across a hallway, lying in wait for your prey. The monstrous pale volf approaches. This time, you are prepared...",
 		"...the gleam of the trap's sharp teeth catches the dim light as you conceal it beneath layers of brush and foliage. To the untrained eye, it's nothing more than a harmless patch of grass - but you know better..."
@@ -74,7 +74,7 @@
 
 /datum/skill/craft/cooking
 	name = "Cooking"
-	desc = "Increases cooking & ingredients preparation speed. -25% if none, 0% if Novice, +50% per level after."
+	desc = "Increases cooking & ingredients preparation speed. -25% if none, 0% if Novice, +50% per level after. At Journeyman you can ferment crops in a barrel."
 	dreams = list(
 		"...over a crackling campfire, a slab of fresh meat sizzles as it cooks, its scent filling the air. The simplest meals are often the most difficult to perfect...",
 		"...your knife bears down onto a wheel of cheese, and you cut away at the imperfections that lie on its skin. Next would be the eggs and the dough, and they'll roll together into a wonderful meal...",

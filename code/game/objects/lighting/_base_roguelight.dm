@@ -28,7 +28,7 @@
 	if(W==/datum/weather/rain)
 		START_PROCESSING(SSweather,src)
 
-/obj/machinery/light/rogue/OnCrafted(dirin)
+/obj/machinery/light/rogue/OnCrafted(dirin, user)
 	. = ..()
 	can_damage = TRUE
 	burn_out()

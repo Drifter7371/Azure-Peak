@@ -9,7 +9,7 @@
  */
 /obj/structure/bed
 	name = "bed"
-	desc = ""
+	desc = "A soft warm bed complete with sheets and pillows."
 	icon_state = "bed"
 	icon = 'icons/obj/objects.dmi'
 	anchored = TRUE

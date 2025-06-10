@@ -51,35 +51,13 @@
 	desc = "A steel helmet with gilded trim which protects the ears, nose, and eyes."
 	icon_state = "gildedsallet_visor"
 	item_state = "gildedsallet_visor"
-	flags_inv = HIDEFACE|HIDESNOUT|HIDEHAIR		//Normal visored-sallet hides hair. This one doesn't.
 	icon = 'modular_azurepeak/icons/clothing/donor_clothes.dmi'
 	mob_overlay_icon = 'modular_azurepeak/icons/clothing/onmob/donor_clothes.dmi'
 
-/obj/item/clothing/head/roguetown/helmet/sallet/visored/gilded/attackby(obj/item/W, mob/living/user, params)
-	if(istype(W, /obj/item/natural/cloth) && !detail_tag)
-		var/choice = input(user, "Choose a color.", "Orle") as anything in colorlist
-		user.visible_message(span_warning("[user] adds [W] to [src]."))
-		user.transferItemToLoc(W, src, FALSE, FALSE)
-		detail_color = colorlist[choice]
-		detail_tag = "_detail"
-		update_icon()
-		if(loc == user && ishuman(user))
-			var/mob/living/carbon/H = user
-			H.update_inv_head()
-
-/obj/item/clothing/head/roguetown/helmet/sallet/visored/gilded/update_icon()
-	cut_overlays()
-	if(get_detail_tag())
-		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
-		pic.appearance_flags = RESET_COLOR
-		if(get_detail_color())
-			pic.color = get_detail_color()
-		add_overlay(pic)
-
-//Zydras donator item - bathmatron padded dress
-/obj/item/clothing/suit/roguetown/armor/armordress/alt/zydrasdress //armor dress worn by Bathmatrons/Bathmasters
-	name = "padded silky dress"
-	desc = "A gorgeous black and gold dress with built-in padding for protection."
+//Zydras donator item - merchant dress
+/obj/item/clothing/suit/roguetown/shirt/dress/silkydress/zydrasdress //Recolored silky dress
+	name = "Gold-Black silky dress"
+	desc = "A gorgeous black and gold dress. It seems the padding was removed."
 	icon_state = "zydrasdress"
 	item_state = "zydrasdress"
 	sleevetype = "zydrasdress"

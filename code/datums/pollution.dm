@@ -1,6 +1,6 @@
 /obj/effect/abstract/pollution
 	icon = 'icons/effects/96x96.dmi'
-	icon_state = "smoke-static"
+	icon_state = "smoke"
 	pixel_x = -32
 	pixel_y = -32
 	anchored = TRUE
@@ -69,7 +69,7 @@
 		if(!(pollutant.pollutant_flags & POLLUTANT_BREATHE_ACT))
 			continue
 		var/amount = pollutants[type]
-		pollutant.breathe_act(victim, amount)
+		pollutant.breathe_act(victim, amount, total_amount)
 
 /// When a user smells this pollution
 /datum/pollution/proc/smell_act(mob/living/sniffer)
@@ -111,6 +111,8 @@
 		to_chat(sniffer, span_warning(smell_string))
 	else
 		to_chat(sniffer, span_notice(smell_string))
+
+	dominant_pollutant.on_smell(sniffer)
 
 /datum/pollution/proc/scrub_amount(amount_to_scrub, update_active = TRUE)
 	if(amount_to_scrub >= total_amount || !isopenturf(my_turf) || QDELING(my_turf))

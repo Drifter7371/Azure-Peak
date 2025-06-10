@@ -2,7 +2,7 @@
 	/// Name of the pollutant, if null will be treated as abstract and wont be initialized as singleton
 	var/name
 	/// Flags of the pollutant, determine whether it has an appearance, smell, touch act, breath act
-	var/pollutant_flags = NONE
+	var/pollutant_flags = POLLUTANT_SMELL // No flag results in runtime, so fix that.
 	/// Below are variables for appearance
 	/// What color will the pollutant be, can be left null
 	var/color
@@ -18,6 +18,7 @@
 	/// Scent of the smell
 	var/scent
 
+// This is not called in anyway that matter same w/ Vanderlin don't use it yet
 /datum/pollutant/proc/on_life(parent)
 	return
 
@@ -26,7 +27,7 @@
 	return
 
 ///When a carbon mob breathes in the pollutant
-/datum/pollutant/proc/breathe_act(mob/living/carbon/victim, amount)
+/datum/pollutant/proc/breathe_act(mob/living/carbon/victim, amount, total_amount)
 	return
 
 ///When a carbon mob smells scents this is called
@@ -34,13 +35,17 @@
 	return
 
 
-/datum/pollutant/fragrance/on_life(parent)
+/datum/pollutant/fragrance/on_smell(parent)
 	. = ..()
 	for(var/mob/living/carbon/human/H in view(1, parent))
 		if(!H)
 			continue
 		if(!considered_alive(H.mind))
 			continue
+		if(H.has_stress_event(/datum/stressevent/perfume))
+			continue
+	
+		H.add_stress(/datum/stressevent/perfume)
 
 ///Smoke coming from cigarettes and fires
 /datum/pollutant/smoke //and mirrors
@@ -99,3 +104,23 @@
 	name = "strawberry"
 	scent = "strawberries"
 	color = "#fc5a8d"
+
+/datum/pollutant/fragrance/cinnamon
+	name = "cinnamon"
+	scent = "cinnamon"
+	color = "#d2691e"
+
+/datum/pollutant/fragrance/frankincense
+	name = "frankincense"
+	scent = "frankincense"
+	color = "#dea670"
+
+/datum/pollutant/fragrance/sandalwood
+	name = "sandalwood"
+	scent = "sandalwood"
+	color = "#e9e1c2"
+
+/datum/pollutant/fragrance/myrrh
+	name = "myrrh"
+	scent = "myrrh"
+	color = "#9e8574"

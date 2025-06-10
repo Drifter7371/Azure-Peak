@@ -57,32 +57,6 @@
 	..()
 	. = 1
 
-/datum/reagent/medicine/gender_potion
-	name = "Gender Potion"
-	description = "Change the user's gender."
-	reagent_state = LIQUID
-	color = "#FF33FF"
-	taste_description = "organic scent"
-	overdose_threshold = 0
-	metabolization_rate = REAGENTS_METABOLISM * 5
-	alpha = 173
-
-/datum/reagent/medicine/gender_potion/on_mob_life(mob/living/carbon/M)
-	if(!istype(M) || M.stat == DEAD)
-		to_chat(M, span_warning("The potion can only be used on living things!"))
-		return
-	if(M.gender != MALE && M.gender != FEMALE)
-		to_chat(M, span_warning("The potion can only be used on gendered things!"))
-		return
-	if(M.gender == MALE)
-		M.gender = FEMALE
-		M.visible_message(span_boldnotice("[M] suddenly looks more feminine!"), span_boldwarning("You suddenly feel more feminine!"))
-	else
-		M.gender = MALE
-		M.visible_message(span_boldnotice("[M] suddenly looks more masculine!"), span_boldwarning("You suddenly feel more masculine!"))
-	M.regenerate_icons()
-	..()
-
 //Someone please remember to change this to actually do mana at some point?
 /datum/reagent/medicine/manapot
 	name = "Mana Potion"
@@ -252,7 +226,7 @@
 /datum/reagent/buff/endurance
 	name = "Endurance"
 	color = "#ffff00"
-	taste_description = "goat urine"
+	taste_description = "oversweetened milk"
 
 /datum/reagent/buff/endurance/on_mob_life(mob/living/carbon/M)
 	M.apply_status_effect(/datum/status_effect/buff/alch/endurancepot)
@@ -270,7 +244,7 @@
 /datum/reagent/buff/fortune
 	name = "Fortune"
 	color = "#ffff00"
-	taste_description = "pig urine"
+	taste_description = "sour lemons"
 	metabolization_rate = REAGENTS_METABOLISM * 0.05
 
 /datum/reagent/buff/fortune/on_mob_life(mob/living/carbon/M)

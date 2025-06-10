@@ -33,6 +33,9 @@
 	icon_state = "instrike"
 	item_d_type = "blunt"
 
+/datum/intent/flail/strike/matthiosflail
+	reach = 2
+
 /datum/intent/flail/strikerange
 	name = "ranged strike"
 	blade_class = BCLASS_BLUNT
@@ -60,6 +63,9 @@
 	attack_verb = list("smashes")
 	hitsound = list('sound/combat/hits/blunt/flailhit.ogg')
 	item_d_type = "blunt"
+
+/datum/intent/flail/strike/smash/matthiosflail
+	reach = 2
 
 /datum/intent/flail/strike/smash/militia
 	damfactor = 1.35
@@ -263,7 +269,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = null
 	minstr = 9
-	wbalance = -1
+	wbalance = WBALANCE_HEAVY
 	smeltresult = /obj/item/ingot/iron
 	associated_skill = /datum/skill/combat/polearms
 	anvilrepair = /datum/skill/craft/carpentry
@@ -281,6 +287,27 @@
 			if("wielded")
 				return list("shrink" = 0.6,"sx" = 5,"sy" = -3,"nx" = -5,"ny" = -2,"wx" = -5,"wy" = -1,"ex" = 3,"ey" = -2,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 7,"sturn" = -7,"wturn" = 16,"eturn" = -22,"nflip" = 8,"sflip" = 0,"wflip" = 8,"eflip" = 0)
 
+/obj/item/rogueweapon/flail/peasantwarflail/matthios
+	name = "Gilded Flail"
+	desc = "Weight of wealth in a deadly striking end."
+	icon_state = "matthiosflail"
+	sellprice = 250
+	smeltresult = /obj/item/ingot/steel
+	possible_item_intents = list(/datum/intent/flail/strike/matthiosflail)
+	gripped_intents = list(/datum/intent/flail/strike/matthiosflail, /datum/intent/flail/strike/smash/matthiosflail)
+	associated_skill = /datum/skill/combat/whipsflails
+	slot_flags = ITEM_SLOT_BACK
+	blade_dulling = DULLING_SHAFT_GRAND
+
+
+/obj/item/rogueweapon/flail/peasantwarflail/matthios/pickup(mob/living/user)
+	if(!HAS_TRAIT(user, TRAIT_COMMIE))
+		to_chat(user, "<font color='yellow'>UNWORTHY HANDS TOUCHING THIS FLAIL, CEASE OR BE PUNISHED!</font>")
+		user.adjust_fire_stacks(5)
+		user.IgniteMob()
+		user.Stun(40)
+	..()
+
 /obj/item/rogueweapon/flail/militia
 	name = "militia flail"
 	desc = "In another lyfe, this humble thresher was used to pound stalks into grain. Under a militiaman's grasp, however, it has found a new purpose: to humble overconfident bandits with crippling blows."
@@ -288,4 +315,4 @@
 	possible_item_intents = list(/datum/intent/flail/strike, /datum/intent/flail/strike/smash/militia)
 	force = 27
 	wdefense = 3
-	wbalance = -1
+	wbalance = WBALANCE_HEAVY

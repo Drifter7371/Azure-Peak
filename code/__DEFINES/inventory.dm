@@ -159,6 +159,7 @@
 #define HIDEEYES		(1<<6)	// Whether eyes and glasses are hidden
 #define HIDEFACE		(1<<7)	// Whether we appear as unknown.
 #define HIDEHAIR		(1<<8)
+#define HIDE_HEADTOP	(HIDEEARS | HIDEHAIR)
 #define HIDEFACIALHAIR	(1<<9)
 #define HIDENECK		(1<<10)
 #define HIDEBOOB		(1<<11)

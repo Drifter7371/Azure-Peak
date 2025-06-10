@@ -184,8 +184,26 @@
 	drop_sound = 'sound/items/gem.ogg'
 	sellprice = 20
 
+/obj/item/pearl/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/pearlcross,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+	)
+
 /obj/item/pearl/blue
 	name = "Blue pearl"
 	icon_state = "bpearl"
 	desc = "A beautiful blue pearl. A bounty of Abyssor. Can be strung up into amulets."
 	sellprice = 60
+
+/obj/item/pearl/blue/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/bpearlcross,
+		/datum/crafting_recipe/roguetown/survival/abyssoramulet
+		)

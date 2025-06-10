@@ -124,7 +124,7 @@
 
 /obj/item/flashlight/flare/torch
 	name = "torch"
-	desc = ""
+	desc = "A stick with enough fiber wrapped around the end to burn for a decent amount of time. Mind the rain."
 	w_class = WEIGHT_CLASS_NORMAL
 	light_outer_range = 5
 	force = 1

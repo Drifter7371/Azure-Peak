@@ -1,6 +1,6 @@
 /turf/open/floor/carpet
 	name = "carpet"
-	desc = ""
+	desc = "Plush fabric softens your step. Did you remember to wipe your shoes?"
 	icon = 'icons/turf/floors/carpet.dmi'
 	icon_state = "carpet"
 	broken_states = list("damaged")
@@ -13,6 +13,8 @@
 	clawfootstep = FOOTSTEP_SOFT_BAREFOOT
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 	tiled_dirt = FALSE
+
+	spread_chance = 15
 
 /turf/open/floor/carpet/examine(mob/user)
 	. = ..()

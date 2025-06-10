@@ -13,7 +13,7 @@
 
 	// CLASS ARCHETYPES
 	H.adjust_blindness(-3)
-	var/classes = list("Swordsman","Macebearer","Flailman")
+	var/classes = list("Swordsman","Macebearer","Flailman", "Foot Lancer")
 	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
 	H.set_blindness(0)
 	to_chat(H, span_warning("You are a Knight of Otava, well experienced in the use of your chosen arms."))
@@ -47,6 +47,9 @@
 		if("Flailman")
 			H.mind.adjust_skillrank(/datum/skill/combat/whipsflails, 2, TRUE)
 			beltl = /obj/item/rogueweapon/flail/sflail
+		if("Foot Lancer")
+			H.mind.adjust_skillrank(/datum/skill/combat/polearms, 1, TRUE)
+			r_hand = /obj/item/rogueweapon/spear/lance
 	wrists = /obj/item/clothing/wrists/roguetown/bracers
 	belt = /obj/item/storage/belt/rogue/leather
 	beltr = /obj/item/storage/belt/rogue/pouch/coins/poor

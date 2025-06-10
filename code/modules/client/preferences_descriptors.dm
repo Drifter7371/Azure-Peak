@@ -123,17 +123,19 @@
 	popup.open(FALSE)
 
 /datum/preferences/proc/has_descriptor_type_in_entries(descriptor_type)
-	for(var/datum/descriptor_entry/entry as anything in descriptor_entries)
-		if(entry.descriptor_type != descriptor_type)
-			continue
-		return TRUE
+	if(length(descriptor_entries))
+		for(var/datum/descriptor_entry/entry as anything in descriptor_entries)
+			if(entry.descriptor_type != descriptor_type)
+				continue
+			return TRUE
 	return FALSE
 
 /datum/preferences/proc/get_descriptor_entry_for_choice(choice_type)
-	for(var/datum/descriptor_entry/entry as anything in descriptor_entries)
-		if(entry.descriptor_choice_type != choice_type)
-			continue
-		return entry
+	if(length(descriptor_entries))
+		for(var/datum/descriptor_entry/entry as anything in descriptor_entries)
+			if(entry.descriptor_choice_type != choice_type)
+				continue
+			return entry
 	return null
 
 /datum/preferences/proc/apply_descriptors(mob/living/character)

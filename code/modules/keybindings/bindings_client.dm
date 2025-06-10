@@ -139,5 +139,3 @@
 
 /client/verb/disableInput()
 	set hidden = 1
-	if(isliving(mob))
-		mob.clear_typing_indicator()

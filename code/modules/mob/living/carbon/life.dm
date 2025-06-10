@@ -113,11 +113,11 @@
 			adjustOxyLoss(5)
 	if(isopenturf(loc))
 		var/turf/open/T = loc
-		if(reagents&& T.pollutants)
-			var/obj/effect/pollutant_effect/P = T.pollutants
-			for(var/datum/pollutant/X in P.pollute_list)
-				for(var/A in X.reagents_on_breathe)
-					reagents.add_reagent(A, X.reagents_on_breathe[A])
+		if(reagents && T.pollution)
+			T.pollution.breathe_act(src)
+			if(next_smell <= world.time)
+				next_smell = world.time + 30 SECONDS
+				T.pollution.smell_act(src)
 
 /mob/living/proc/handle_inwater()
 	ExtinguishMob()
@@ -127,7 +127,10 @@
 	if(!(mobility_flags & MOBILITY_STAND))
 		if(HAS_TRAIT(src, TRAIT_NOBREATH) || HAS_TRAIT(src, TRAIT_WATERBREATHING))
 			return TRUE
-		adjustOxyLoss(5)
+		if(stat == DEAD && client)
+			GLOB.azure_round_stats[STATS_PEOPLE_DROWNED]++
+		var/drown_damage = has_world_trait(/datum/world_trait/abyssor_rage) ? 10 : 5
+		adjustOxyLoss(drown_damage)
 		emote("drown")
 
 /mob/living/carbon/human/handle_inwater()
@@ -152,6 +155,11 @@
 		bodypart_pain = min(bodypart_pain, limb.max_pain_damage)
 		. += bodypart_pain
 	.
+
+/mob/living/carbon/human/get_complex_pain()
+	. = ..()
+	if(physiology)
+		. *= physiology.pain_mod
 
 ///////////////
 // BREATHING //

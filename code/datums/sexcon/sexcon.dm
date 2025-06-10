@@ -116,7 +116,7 @@
 	user.emote("sexmoanhvy", forced = TRUE)
 	user.playsound_local(user, 'sound/misc/mat/end.ogg', 100)
 	last_ejaculation_time = world.time
-	SSticker.cums++
+	GLOB.azure_round_stats[STATS_PLEASURES]++
 
 /datum/sex_controller/proc/after_intimate_climax()
 	if(user == target)
@@ -599,7 +599,7 @@
 /datum/sex_controller/proc/get_generic_force_adjective()
 	switch(force)
 		if(SEX_FORCE_LOW)
-			return pick(list("gently", "carefully", "tenderly", "gingerly", "delicately", "lazingly"))
+			return pick(list("gently", "carefully", "tenderly", "gingerly", "delicately", "lazily"))
 		if(SEX_FORCE_MID)
 			return pick(list("firmly", "vigorously", "eagerly", "steadily", "intently"))
 		if(SEX_FORCE_HIGH)

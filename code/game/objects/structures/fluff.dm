@@ -13,7 +13,7 @@
 
 /obj/structure/fluff/pillow
 	name = "pillows"
-	desc = ""
+	desc = "Soft plush pillows. Resting your head on one is so relaxing."
 	icon = 'icons/roguetown/misc/structure.dmi'
 	icon_state = "pillow"
 	density = FALSE
@@ -25,7 +25,10 @@
 	color = CLOTHING_BLUE
 
 /obj/structure/fluff/pillow/green
-	color = CLOTHING_GREEN
+	color = CLOTHING_DARK_GREEN
+
+/obj/structure/fluff/pillow/brown
+	color = CLOTHING_BROWN
 
 /obj/structure/fluff/pillow/magenta
 	color = CLOTHING_MAGENTA
@@ -38,7 +41,7 @@
 
 /obj/structure/fluff/drake_statue //Ash drake status spawn on either side of the necropolis gate in lavaland.
 	name = "drake statue"
-	desc = ""
+	desc = "Possibly the only time you'll ever see its likeness up close and live to tell the tale."
 	icon = 'icons/effects/64x64.dmi'
 	icon_state = "drake_statue"
 	pixel_x = -16
@@ -55,7 +58,7 @@
 
 /obj/structure/fluff/paper/stack
 	name = "dense stack of papers"
-	desc = ""
+	desc = "You can already feel your eyes glazing over and the boredom creeping in."
 	icon_state = "paperstack"
 
 /obj/structure/fluff/divine
@@ -228,7 +231,7 @@
 
 /obj/structure/fluff/railing/fence
 	name = "palisade"
-	desc = ""
+	desc = "A rudimentary barrier that might keep the monsters at bay."
 	icon = 'icons/roguetown/misc/structure.dmi'
 	attacked_sound = 'sound/misc/woodhit.ogg'
 	destroy_sound = 'sound/misc/treefall.ogg'
@@ -837,23 +840,11 @@
 	pixel_x = -32
 	pixel_y = -16
 
-/obj/structure/fluff/statue/femalestatue/Initialize()
-	. = ..()
-	var/matrix/M = new
-	M.Scale(0.7,0.7)
-	src.transform = M
-
 /obj/structure/fluff/statue/femalestatue1
 	icon = 'icons/roguetown/misc/ay.dmi'
 	icon_state = "2"
 	pixel_x = -32
 	pixel_y = -16
-
-/obj/structure/fluff/statue/femalestatue1/Initialize()
-	. = ..()
-	var/matrix/M = new
-	M.Scale(0.7,0.7)
-	src.transform = M
 
 /obj/structure/fluff/statue/femalestatue2
 	icon = 'icons/roguetown/misc/ay.dmi'
@@ -861,23 +852,11 @@
 	pixel_x = -32
 	pixel_y = -16
 
-/obj/structure/fluff/statue/femalestatue2/Initialize()
-	. = ..()
-	var/matrix/M = new
-	M.Scale(0.7,0.7)
-	src.transform = M
-
 /obj/structure/fluff/statue/femalestatue/zizo
 	icon = 'icons/roguetown/misc/ay.dmi'
 	icon_state = "4"
 	pixel_x = -32
 	pixel_y = -16
-
-/obj/structure/fluff/statue/femalestatue/zizo/Initialize()
-	. = ..()
-	var/matrix/M = new
-	M.Scale(0.7,0.7)
-	src.transform = M
 
 /obj/structure/fluff/statue/scare
 	name = "scarecrow"
@@ -927,17 +906,15 @@
 	icon_state = "spidercore"
 
 /obj/structure/fluff/statue/spider/attackby(obj/item/W, mob/user, params)
-	if(istype(W, /obj/item/reagent_containers/food/snacks/rogue/honey))
+	if(istype(W, /obj/item/reagent_containers/food/snacks/rogue/honey/spider))
 		if(user.mind)
 			if(user.mind.special_role == "Dark Elf")
 				playsound(loc,'sound/misc/eat.ogg', rand(30,60), TRUE)
-				if(SSticker.mode)
-					var/datum/game_mode/chaosmode/C = SSticker.mode
-					C.delfcontrib += 1
-					if(C.delfcontrib >= C.delfgoal)
-						say("Well done, the brood will grow...",language = /datum/language/elvish)
-					else
-						say("Please bring me [C.delfgoal-C.delfcontrib] more honeys, children!",language = /datum/language/elvish)
+				SSmapping.retainer.delf_contribute += 1
+				if(SSmapping.retainer.delf_contribute >= SSmapping.retainer.delf_goal)
+					say("YOU HAVE DONE WELL, MY CHILD.",language = /datum/language/elvish)
+				else
+					say("BRING ME [SSmapping.retainer.delf_goal - SSmapping.retainer.delf_contribute] MORE. I HUNGER.",language = /datum/language/elvish)
 				qdel(W)
 				return TRUE
 	..()
@@ -990,6 +967,7 @@
 					if(player.mind)
 						if(player.mind.has_antag_datum(/datum/antagonist/bandit))
 							var/datum/antagonist/bandit/bandit_players = player.mind.has_antag_datum(/datum/antagonist/bandit)
+							GLOB.azure_round_stats[STATS_SHRINE_VALUE] += W.get_real_price()
 							bandit_players.favor += donatedamnt
 							bandit_players.totaldonated += donatedamnt
 							to_chat(player, ("<font color='yellow'>[user.name] donates [donatedamnt] to the shrine! You now have [bandit_players.favor] favor.</font>"))
@@ -1020,6 +998,7 @@
 	dir = NORTH
 	buckle_requires_restraints = 1
 	buckle_prevents_pull = 1
+	var/divine = TRUE
 
 /obj/structure/fluff/psycross/post_buckle_mob(mob/living/M)
 	..()
@@ -1052,6 +1031,12 @@
 	icon_state = "psycrosscrafted"
 	max_integrity = 80
 	chance2hear = 10
+
+/obj/structure/fluff/psycross/zizocross
+	name = "inverted cross"
+	desc = "An unholy symbol. Blasphemy for most, reverence for few."
+	icon_state = "invertedcross"
+	divine = FALSE
 
 /obj/structure/fluff/psycross/attackby(obj/item/W, mob/user, params)
 	if(user.mind)

@@ -14,7 +14,7 @@
 	name = "meat spike"
 	icon = 'icons/obj/kitchen.dmi'
 	icon_state = "spike"
-	desc = ""
+	desc = "A slender curved hook designed for suspending corpses. Found in kitchens, butcheries, and dungeons alike."
 	density = TRUE
 	anchored = TRUE
 	buckle_lying = 0
@@ -46,7 +46,7 @@
 			if(user.pulling != L)
 				return
 			playsound(src.loc, 'sound/blank.ogg', 25, TRUE)
-			L.visible_message(span_danger("[user] slams [L] onto the meat spike!"), span_danger("[user] slams you onto the meat spike!"), span_hear("I hear a squishy wet noise."))
+			L.visible_message(span_danger("[user] slams [L] onto the meat spike!"), span_danger("[user] slams you onto the meat spike!"), span_hear("You hear a squishy wet noise."))
 			L.forceMove(drop_location())
 			L.emote("scream")
 			L.add_splatter_floor()
@@ -83,12 +83,12 @@
 
 		else
 			M.visible_message(span_warning("[M] struggles to break free from [src]!"),\
-			span_notice("I struggle to break free from [src], exacerbating your wounds! (Stay still for two minutes.)"),\
-			span_hear("I hear a wet squishing noise.."))
+			span_notice("I struggle to break free from [src], exacerbating my wounds! (Stay still for two minutes.)"),\
+			span_hear("I hear a wet squishing noise..."))
 			M.adjustBruteLoss(30)
 			if(!do_after(M, 1200, target = src))
 				if(M && M.buckled)
-					to_chat(M, span_warning("I fail to free yourself!"))
+					to_chat(M, span_warning("I fail to free myself!"))
 				return
 		if(!M.buckled)
 			return

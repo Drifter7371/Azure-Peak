@@ -63,6 +63,12 @@
 		var/command = macroset[key]
 		winset(src, "[name]-[REF(key)]", "parent=[name];name=[key];command=[command]")
 
+/client/proc/ensure_keys_set(datum/preferences/prefs_override = prefs)
+	if(SSinput.initialized)
+		full_macro_assert(prefs_override)
+
+/client/proc/full_macro_assert(datum/preferences/prefs_override = prefs)
+	INVOKE_ASYNC(src, PROC_REF(set_macros), prefs_override)
 
 /client/proc/set_macros(datum/preferences/prefs_override = prefs)
 	set waitfor = FALSE

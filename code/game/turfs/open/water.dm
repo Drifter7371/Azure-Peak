@@ -117,6 +117,11 @@
 	for(var/obj/structure/S in src)
 		if(S.obj_flags & BLOCK_Z_OUT_DOWN)
 			return
+	if(istype(AM, /obj/item/reagent_containers/food/snacks/fish))
+		var/obj/item/reagent_containers/food/snacks/fish/F = AM
+		SEND_GLOBAL_SIGNAL(COMSIG_GLOBAL_FISH_RELEASED, F.type, F.rarity_rank)
+		F.visible_message("<span class='warning'>[F] dives into \the [src] and disappears!</span>")
+		qdel(F)
 	if(isliving(AM) && !AM.throwing)
 		var/mob/living/L = AM
 		if(!(L.mobility_flags & MOBILITY_STAND) || water_level == 3)
@@ -274,10 +279,27 @@
 	wash_in = TRUE
 	water_reagent = /datum/reagent/water/gross
 
+/turf/open/water/bloody
+	name = "blood"
+	desc = "Is that... a river of blood? EVIL!"
+	icon = 'icons/turf/roguefloor.dmi'
+	icon_state = "dirtW2"
+	water_level = 2
+	water_color = "#880808"
+	slowdown = 3
+	wash_in = TRUE
+	water_reagent = /datum/reagent/blood
+
 /turf/open/water/swamp/Initialize()
 	icon_state = "dirt"
 	dir = pick(GLOB.cardinals)
 	water_color = pick("#705a43")
+	.  = ..()
+
+/turf/open/water/bloody/Initialize()
+	icon_state = "dirt"
+	dir = pick(GLOB.cardinals)
+	water_color = pick("#880808")
 	.  = ..()
 
 /turf/open/water/swamp/Entered(atom/movable/AM, atom/oldLoc)
@@ -362,7 +384,7 @@
 
 /turf/open/water/river
 	name = "river"
-	desc = "Crystal clear water! Flowing swiflty along the river."
+	desc = "A river of crystal clear water flows swiftly along the contours of the land."
 	icon = 'icons/turf/roguefloor.dmi'
 	icon_state = "rivermove"
 	water_level = 3

@@ -1,4 +1,5 @@
 /datum/job/roguetown/butcher
+// IF YOU'RE READING THIS, THIS VERSION OF BUTCHER IS UNUSED!! YOU'RE LOOKIKG FOR "tbutcher.dm"!!!!!
 	title = "Butcher"
 	flag = BUTCHER
 	department_flag = PEASANTS

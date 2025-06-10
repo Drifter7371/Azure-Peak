@@ -3,19 +3,9 @@
 	crate_name = "merchant guild's crate"
 	crate_type = /obj/structure/closet/crate/chest/merchant
 
-
-/datum/supply_pack/rogue/food/wineb
-	name = "Wine"
-	cost = 45
-	contains = list(
-					/obj/item/reagent_containers/glass/bottle/rogue/wine,
-					/obj/item/reagent_containers/glass/bottle/rogue/wine,
-					/obj/item/reagent_containers/glass/bottle/rogue/wine,
-				)
-
 /datum/supply_pack/rogue/food/meat
 	name = "Dry Meat"
-	cost = 15
+	cost = 18
 	contains = list(
 					/obj/item/reagent_containers/food/snacks/rogue/meat/coppiette,
 					/obj/item/reagent_containers/food/snacks/rogue/meat/coppiette,
@@ -23,6 +13,18 @@
 					/obj/item/reagent_containers/food/snacks/rogue/meat/coppiette,
 					/obj/item/reagent_containers/food/snacks/rogue/meat/coppiette,
 				)
+
+/datum/supply_pack/rogue/food/hardtack
+	name = "Hardtacks"
+	cost = 15
+	contains = list(
+					/obj/item/reagent_containers/food/snacks/rogue/crackerscooked,
+					/obj/item/reagent_containers/food/snacks/rogue/crackerscooked,
+					/obj/item/reagent_containers/food/snacks/rogue/crackerscooked,
+					/obj/item/reagent_containers/food/snacks/rogue/crackerscooked,
+					/obj/item/reagent_containers/food/snacks/rogue/crackerscooked,
+				)
+
 
 /datum/supply_pack/rogue/food/raisinbreads
 	name = "Raisin Bread"
@@ -47,6 +49,48 @@
 					/obj/item/reagent_containers/food/snacks/egg,
 				)
 
+/datum/supply_pack/rogue/food/coffee
+	name = "Coffee Beans"
+	cost = 25
+	contains = list(
+					/obj/item/reagent_containers/food/snacks/grown/coffeebeans,
+					/obj/item/reagent_containers/food/snacks/grown/coffeebeans,
+					/obj/item/reagent_containers/food/snacks/grown/coffeebeans,
+					/obj/item/reagent_containers/food/snacks/grown/coffeebeans,
+					/obj/item/reagent_containers/food/snacks/grown/coffeebeans,
+					/obj/item/reagent_containers/food/snacks/grown/coffeebeans,
+					/obj/item/reagent_containers/food/snacks/grown/coffeebeans,
+					/obj/item/reagent_containers/food/snacks/grown/coffeebeans,
+				)
+
+/datum/supply_pack/rogue/food/tea
+	name = "Tea Leaves"
+	cost = 25
+	contains = list(
+					/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_dry,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_dry,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_dry,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_dry,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_dry,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_dry,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_dry,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/tealeaves_dry,
+				)
+
+/datum/supply_pack/rogue/food/rosa
+	name = "Dried Rosa Petals"
+	cost = 20
+	contains = list(
+					/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried, 
+					/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried,
+					/obj/item/reagent_containers/food/snacks/grown/rogue/rosa_petals_dried,
+				)
+
 /datum/supply_pack/rogue/food/pepper
 	name = "Pepper"
 	cost = 30
@@ -65,9 +109,9 @@
 	name = "Honey"
 	cost = 40
 	contains = list(
-					/obj/item/reagent_containers/food/snacks/rogue/honey,
-					/obj/item/reagent_containers/food/snacks/rogue/honey,
-					/obj/item/reagent_containers/food/snacks/rogue/honey,
+					/obj/item/reagent_containers/food/snacks/rogue/honey/spider,
+					/obj/item/reagent_containers/food/snacks/rogue/honey/spider,
+					/obj/item/reagent_containers/food/snacks/rogue/honey/spider,
 				)
 
 /datum/supply_pack/rogue/food/eel
@@ -99,7 +143,7 @@
 
 /datum/supply_pack/rogue/food/clownfish
 	name = "Clownfish"
-	cost = 140
+	cost = 40
 	contains = list(
 					/obj/item/reagent_containers/food/snacks/fish/clownfish,
 					/obj/item/reagent_containers/food/snacks/fish/clownfish,

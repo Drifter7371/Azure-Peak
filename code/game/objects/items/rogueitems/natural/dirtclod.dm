@@ -43,6 +43,14 @@
 /obj/item/natural/dirtclod/Initialize()
 	icon_state = "clod[rand(1,2)]"
 	..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/wickercloak,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
 
 /obj/structure/fluff/clodpile
 	name = "dirt pile"

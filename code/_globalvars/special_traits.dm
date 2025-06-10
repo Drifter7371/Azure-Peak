@@ -49,11 +49,11 @@ GLOBAL_LIST_INIT(special_traits, build_special_traits())
 	apply_prefs_special(character, player)
 	apply_prefs_virtue(character, player)
 	if(player.prefs.loadout)
-		character.mind.special_items[player.prefs.loadout.name] += player.prefs.loadout.path
+		character.mind.special_items[player.prefs.loadout::name] += player.prefs.loadout.path
 	if(player.prefs.loadout2)
-		character.mind.special_items[player.prefs.loadout2.name] += player.prefs.loadout2.path
+		character.mind.special_items[player.prefs.loadout2::name] += player.prefs.loadout2.path
 	if(player.prefs.loadout3)
-		character.mind.special_items[player.prefs.loadout3.name] += player.prefs.loadout3.path
+		character.mind.special_items[player.prefs.loadout3::name] += player.prefs.loadout3.path
 
 /proc/apply_prefs_virtue(mob/living/carbon/human/character, client/player)
 	if (!player)

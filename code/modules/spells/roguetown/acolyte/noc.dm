@@ -13,7 +13,7 @@
 	sound = 'sound/magic/churn.ogg'
 	spell_tier = 2 // Combat spell
 	invocation = "Obcaeco!"
-	invocation_type = "whisper"
+	invocation_type = "shout"
 	associated_skill = /datum/skill/magic/arcane
 	antimagic_allowed = TRUE
 	recharge_time = 15 SECONDS

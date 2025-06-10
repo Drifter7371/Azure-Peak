@@ -91,3 +91,38 @@
 					/obj/item/seeds/potato,
 					/obj/item/seeds/potato,
 				)
+
+/datum/supply_pack/rogue/seeds/poppy
+	name = "Poppy"
+	cost = 15
+	contains = list(
+					/obj/item/seeds/poppy,
+					/obj/item/seeds/poppy,
+					/obj/item/seeds/poppy,
+					/obj/item/seeds/poppy,
+					/obj/item/seeds/poppy,
+				)
+
+
+/datum/supply_pack/rogue/seeds/coffee
+	name = "Coffee"
+	cost = 15
+	contains = list(
+					/obj/item/seeds/coffee,
+					/obj/item/seeds/coffee,
+					/obj/item/seeds/coffee,
+					/obj/item/seeds/coffee,
+					/obj/item/seeds/coffee,
+				)
+
+
+/datum/supply_pack/rogue/seeds/tea
+	name = "Tea"
+	cost = 15
+	contains = list(
+					/obj/item/seeds/tea,
+					/obj/item/seeds/tea,
+					/obj/item/seeds/tea,
+					/obj/item/seeds/tea,
+					/obj/item/seeds/tea,
+				)

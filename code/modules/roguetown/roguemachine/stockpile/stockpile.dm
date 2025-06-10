@@ -113,18 +113,21 @@
 				if(sound == TRUE)
 					playsound(loc, 'sound/misc/hiss.ogg', 100, FALSE, -1)
 				if(nopay)
+					SStreasury.economic_output += R.export_price * B.amount // Still count
 					say("Stockpile is full, no payment.")
 				else
 					var/amt = R.payout_price * B.amount
+					SStreasury.economic_output += R.export_price * B.amount
 					if(!SStreasury.give_money_account(amt, H, "+[amt] from [R.name] bounty") && message == TRUE)
 						say("No account found. Submit your fingers to a Meister for inspection.")
 			continue
+		// Bloc to replace old vault mechanics
 		else if(istype(I,R.item_type))
 			if(!R.check_item(I))
 				continue
 			var/amt = R.get_payout_price(I)
-			var/nopay = !R.transport_item && R.held_items[stockpile_index] >= R.stockpile_limit // Check whether it is overflowed BEFORE nopaying them
-			if(!R.transport_item)
+			var/nopay = !R.mint_item && R.held_items[stockpile_index] >= R.stockpile_limit // Check whether it is overflowed BEFORE nopaying them
+			if(!R.mint_item)
 				R.held_items[stockpile_index] += 1 //stacked logs need to check for multiple
 				qdel(I)
 				if(message == TRUE)
@@ -132,22 +135,19 @@
 				if(sound == TRUE)
 					playsound(loc, 'sound/misc/hiss.ogg', 100, FALSE, -1)
 			else
-				var/area/A = GLOB.areas_by_type[R.transport_item]
-				if(!A && message == TRUE)
-					say("Couldn't find where to send the submission.")
-					return
-				I.submitted_to_stockpile = TRUE
-				var/list/turfs = list()
-				for(var/turf/T in A)
-					turfs += T
-				var/turf/T = pick(turfs)
-				I.forceMove(T)
+				var/mint_amt = round(SStreasury.mint_multiplier * I.get_real_price())
+				SStreasury.minted += mint_amt
+				SStreasury.give_money_treasury(mint_amt, "Minting - [I.name]", FALSE)
+				qdel(I) // Eaten to be minted!
 				if(sound == TRUE)
 					playsound(loc, 'sound/misc/hiss.ogg', 100, FALSE, -1)
 					playsound(loc, 'sound/misc/disposalflush.ogg', 100, FALSE, -1)
+			var/true_value = I.get_real_price()
 			if(nopay)
+				SStreasury.economic_output += true_value // Still count as economic output hah
 				say("Stockpile is full, no payment.")
 			else if(amt)
+				SStreasury.economic_output += true_value
 				if(!SStreasury.give_money_account(amt, H, "+[amt] from [R.name] bounty") && message == TRUE)
 					say("No account found. Submit your fingers to a Meister for inspection.")
 			return

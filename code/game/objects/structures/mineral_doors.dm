@@ -12,7 +12,6 @@
 	icon_state = "metal"
 	max_integrity = 1000
 	integrity_failure = 0.5
-	armor = list("blunt" = 10, "slash" = 5, "stab" = 7, "piercing" = 0, "fire" = 50, "acid" = 50)
 	CanAtmosPass = ATMOS_PASS_DENSITY
 
 	var/ridethrough = FALSE
@@ -59,7 +58,7 @@
 	/// The required role of the resident
 	var/resident_role
 	/// The requied advclass of the resident
-	var/resident_advclass
+	var/list/resident_advclass
 
 
 /obj/structure/mineral_door/onkick(mob/user)
@@ -164,7 +163,7 @@
 		var/datum/advclass/advclass = SSrole_class_handler.get_advclass_by_name(human.advjob)
 		if(!advclass)
 			return FALSE
-		if(advclass.type != resident_advclass)
+		if(!(advclass.type in resident_advclass))
 			return FALSE
 	var/alert = alert(user, "Is this my home?", "Home", "Yes", "No")
 	if(alert != "Yes")
@@ -298,7 +297,7 @@
 	if(!windowed)
 		set_opacity(FALSE)
 	flick("[base_state]opening",src)
-	sleep(10)
+	sleep(2)
 	density = FALSE
 	door_opened = TRUE
 	layer = OPEN_DOOR_LAYER
@@ -319,7 +318,7 @@
 	if(!silent)
 		playsound(src, closeSound, 100)
 	flick("[base_state]closing",src)
-	sleep(10)
+	sleep(2)
 	density = TRUE
 	if(!windowed)
 		set_opacity(TRUE)
@@ -547,6 +546,8 @@
 						var/mob/living/carbon/human/H = user
 						message_admins("[H.real_name]([key_name(user)]) successfully lockpicked [src.name] & [locked ? "unlocked" : "locked"] it. [ADMIN_JMP(src)]")
 						log_admin("[H.real_name]([key_name(user)]) successfully lockpicked [src.name].")
+						record_featured_stat(FEATURED_STATS_CRIMINALS, user)
+						GLOB.azure_round_stats[STATS_LOCKS_PICKED]++
 						var/obj/effect/track/structure/new_track = new(get_turf(src))
 						new_track.handle_creation(user)
 					lock_toggle(user)
@@ -788,7 +789,7 @@
 		to_chat(user, span_warning("The door doesn't lock from this side."))
 
 /obj/structure/mineral_door/wood/donjon
-	desc = "dungeon door"
+	desc = "A solid metal door with a slot to peek through."
 	icon_state = "donjondir"
 	base_state = "donjon"
 	keylock = TRUE
@@ -934,33 +935,48 @@
 	resident_key_amount = 2
 
 /obj/structure/mineral_door/wood/towner/blacksmith
-	resident_advclass = /datum/advclass/blacksmith
+	resident_advclass = list(/datum/advclass/blacksmith)
 	lockid = "towner_blacksmith"
 
 /obj/structure/mineral_door/wood/towner/cheesemaker
-	resident_advclass = /datum/advclass/cheesemaker
+	resident_advclass = list(/datum/advclass/cheesemaker)
 	lockid = "towner_cheesemaker"
 
 /obj/structure/mineral_door/wood/towner/miner
-	resident_advclass = /datum/advclass/miner
+	resident_advclass = list(/datum/advclass/miner)
 	lockid = "towner_miner"
 
 /obj/structure/mineral_door/wood/towner/seamstress
-	resident_advclass = /datum/advclass/seamstress
+	resident_advclass = list(/datum/advclass/seamstress)
 	lockid = "towner_seamstress"
 
 /obj/structure/mineral_door/wood/towner/woodcutter
-	resident_advclass = /datum/advclass/woodcutter
+	resident_advclass = list(/datum/advclass/woodcutter)
 	lockid = "towner_woodcutter"
 
 /obj/structure/mineral_door/wood/towner/fisher
-	resident_advclass = /datum/advclass/fisher
+	resident_advclass = list(/datum/advclass/fisher)
 	lockid = "towner_fisher"
 
 /obj/structure/mineral_door/wood/towner/hunter
-	resident_advclass = /datum/advclass/hunter
+	resident_advclass = list(/datum/advclass/hunter)
 	lockid = "towner_hunter"
 
 /obj/structure/mineral_door/wood/towner/witch
-	resident_advclass = /datum/advclass/witch
+	resident_advclass = list(/datum/advclass/witch)
 	lockid = "towner_witch"
+
+/obj/structure/mineral_door/wood/bath
+	locked = TRUE
+	keylock = TRUE
+	grant_resident_key = TRUE
+	resident_key_type = /obj/item/roguekey/bath
+	resident_role = /datum/job/roguetown/nightmaiden
+	lockid = null //Will be randomized
+
+/obj/structure/mineral_door/wood/bath/bathmaid
+	icon_state = "woodwindow"
+	resident_advclass = list(/datum/advclass/nightmaiden)
+
+/obj/structure/mineral_door/wood/bath/courtesan
+	resident_advclass = list(/datum/advclass/nightmaiden/concubine, /datum/advclass/nightmaiden/courtesan)

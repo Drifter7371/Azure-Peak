@@ -7,6 +7,7 @@
 	spawn_positions = 0
 	min_pq = null //no pq
 	max_pq = null
+	announce_latejoin = FALSE
 
 	tutorial = ""
 
@@ -39,7 +40,7 @@
 			qdel(O)
 		H.regenerate_limb(BODY_ZONE_R_ARM)
 		H.regenerate_limb(BODY_ZONE_L_ARM)
-		H.remove_all_languages()
+		//H.remove_all_languages()	- We let them speak. For now.
 		H.base_intents = list(INTENT_HELP, INTENT_DISARM, INTENT_GRAB, /datum/intent/simple/claw)
 		H.update_a_intents()
 		H.ambushable = FALSE
@@ -68,8 +69,13 @@
 	if(prob(50))
 		wrists = /obj/item/clothing/wrists/roguetown/bracers
 	belt = /obj/item/storage/belt/rogue/leather
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/light
+	if(prob(50))
+		armor = /obj/item/clothing/suit/roguetown/armor/chainmail/aalloy
+	neck = /obj/item/clothing/neck/roguetown/coif
 	if(prob(40))
-		armor = /obj/item/clothing/suit/roguetown/armor/chainmail/iron
+		neck = /obj/item/clothing/neck/roguetown/chaincoif/iron/aalloy
+	head = /obj/item/clothing/head/roguetown/helmet/leather
 	if(prob(10))
 		head = /obj/item/clothing/head/roguetown/helmet
 	if(prob(10))
@@ -78,13 +84,18 @@
 		head = /obj/item/clothing/head/roguetown/helmet/horned
 	if(prob(10))
 		head = /obj/item/clothing/head/roguetown/helmet/kettle
-	if(prob(50))
-		beltr = /obj/item/rogueweapon/sword
-		if(should_wear_femme_clothes(H))
-			beltr = /obj/item/rogueweapon/sword/sabre
+	beltr = /obj/item/rogueweapon/stoneaxe/woodcut/aaxe
+	if(prob(40))
+		beltr = /obj/item/rogueweapon/sword/iron/short/ashort
+	if(prob(20))
+		beltr = /obj/item/rogueweapon/sword/sabre/alloy
+	if(prob(10))
+		beltr = /obj/item/rogueweapon/mace/warhammer/alloy
 	H.STASTR = 10
 	H.STASPD = rand(7,10)
 	H.STAINT = 1
+	if(prob(2))	//hehe funni skelington.......
+		H.STAINT = 20
 	H.STACON = 3
 	var/datum/antagonist/new_antag = new /datum/antagonist/skeleton()
 	H.mind.add_antag_datum(new_antag)

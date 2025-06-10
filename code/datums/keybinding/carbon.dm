@@ -374,3 +374,29 @@
 	description = "Select the sixth action."
 	category = CATEGORY_CARBON
 	action_taken = 6
+
+/datum/keybinding/carbon/actions/action_7
+	hotkey_keys = list("Alt7")
+	name = "action_7"
+	full_name = "Action 7"
+	description = "Select the seventh action."
+	category = CATEGORY_CARBON
+	action_taken = 7
+
+	
+/datum/keybinding/carbon/actions/action_8
+	hotkey_keys = list("Alt8")
+	name = "action_8"
+	full_name = "Action 8"
+	description = "Select the eighth action."
+	category = CATEGORY_CARBON
+	action_taken = 8
+
+	
+/datum/keybinding/carbon/actions/action_9
+	hotkey_keys = list("Alt9")
+	name = "action_9"
+	full_name = "Action 9"
+	description = "Select the ninth action."
+	category = CATEGORY_CARBON
+	action_taken = 9

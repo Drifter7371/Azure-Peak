@@ -65,7 +65,7 @@
 	dodgetime = 30
 	aggressive = 1
 	eat_forever = TRUE
-	rot_type = null
+	
 
 /obj/effect/decal/remains/fox
 	name = "remains"

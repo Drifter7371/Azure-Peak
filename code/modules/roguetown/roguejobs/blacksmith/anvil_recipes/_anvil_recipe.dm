@@ -1,6 +1,7 @@
 /datum/anvil_recipe
 	abstract_type = /datum/anvil_recipe
 	var/name
+	var/category = "Misc"
 	var/list/additional_items = list()
 	var/material_quality = 0 // Quality of the bar(s) used. Accumulated per added ingot.
 	var/num_of_materials = 1 // Total number of materials used. Quality divided among them.
@@ -144,6 +145,7 @@
 			modifier = 1.3
 			I.polished = 4
 			I.AddComponent(/datum/component/metal_glint)
+			GLOB.azure_round_stats[STATS_MASTERWORKS_FORGED]++
 
 	if(!modifier) // Sanity.
 		return
@@ -167,38 +169,6 @@
 		<meta charset='UTF-8'>
 		<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'/>
 		<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
-
-		<style>
-			@import url('https://fonts.googleapis.com/css2?family=Charm:wght@700&display=swap');
-			body {
-				font-family: "Charm", cursive;
-				font-size: 1.2em;
-				text-align: center;
-				margin: 20px;
-				background-color: #f4efe6;
-				color: #3e2723;
-				background-color: rgb(31, 20, 24);
-				background:
-					url('book.png');
-				background-repeat: no-repeat;
-				background-attachment: fixed;
-				background-size: 100% 100%;
-
-			}
-			h1 {
-				text-align: center;
-				font-size: 1.5em;
-				border-bottom: 2px solid #3e2723;
-				padding-bottom: 10px;
-				margin-bottom: 20px;
-			}
-			.icon {
-				width: 96px;
-				height: 96px;
-				vertical-align: middle;
-				margin-right: 10px;
-			}
-		</style>
 		<body>
 		  <div>
 		    <h1>[name]</h1>

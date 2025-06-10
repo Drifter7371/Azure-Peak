@@ -5,7 +5,7 @@
 	icon = 'icons/roguetown/maniac/clothing.dmi'
 	mob_overlay_icon = 'icons/roguetown/maniac/clothing_mob.dmi'
 	icon_state = "cyberdeck"
-	armor = list("blunt" = 25, "slash" = 25, "stab" = 25, "piercing" = 0, "fire" = 0, "acid" = 0)
+	armor = ARMOR_CLOTHING
 	tint = TINT_BLIND //it covers ya eyes
 
 /obj/item/clothing/head/roguetown/cyberdeck/equipped(mob/living/carbon/human/user, slot)

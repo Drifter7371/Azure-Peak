@@ -47,9 +47,11 @@
 	list_reagents = list(/datum/reagent/consumable/nutriment = 5)
 	cooked_type = /obj/item/reagent_containers/food/snacks/rogue/truffles/cooked
 	fried_type = /obj/item/reagent_containers/food/snacks/rogue/truffles/cooked
+	cooked_smell = /datum/pollutant/food/truffles
 	color = "#ab7d6f"
 	tastes = list("mushroom" = 1)
 	sellprice = 5
+
 /obj/item/reagent_containers/food/snacks/rogue/truffles/cooked
 	eat_effect = /datum/status_effect/buff/foodbuff
 	bonus_reagents = list(/datum/reagent/consumable/nutriment = 2)
@@ -93,16 +95,22 @@
 	see_in_dark = 6
 	move_to_delay = 7
 	animal_species = /mob/living/simple_animal/hostile/retaliate/rogue/trufflepig
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/fatty = 4,
+	botched_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/fatty = 1,
+					/obj/item/reagent_containers/food/snacks/fat = 1,
+					/obj/item/natural/hide = 1)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/fatty = 2,
 						/obj/item/reagent_containers/food/snacks/fat = 2,
-						/obj/item/natural/hide = 2)
+						/obj/item/natural/hide = 1)
+	perfect_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/fatty = 4, // Prev standard. Butcher has use and
+					/obj/item/reagent_containers/food/snacks/fat = 2,
+					/obj/item/natural/hide = 2)
 	base_intents = list(/datum/intent/simple/headbutt)
 	health = 80
 	maxHealth = 80
 	food_type = list(/obj/item/reagent_containers/food/snacks/rogue/truffles)
 	footstep_type = FOOTSTEP_MOB_SHOE
 	pooptype = /obj/item/natural/poo/horse
-	faction = list("goats")
+	faction = list("pigs")
 	attack_verb_continuous = "bites"
 	attack_verb_simple = "bites"
 	melee_damage_lower = 8
@@ -165,7 +173,7 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/trufflepig/attackby(obj/item/O, mob/user, params)
 	if(istype(O, /obj/item/reagent_containers/food/snacks/rogue/truffles))
 		visible_message("<span class='notice'>The pig munches the truffles, looking happy.</span>")
-		hangry_meter = 0
+		hangry_meter = 0 //Satisfies him fully
 		playsound(src,'sound/misc/eat.ogg', rand(30,60), TRUE)
 		qdel(O)
 	if(istype(O, /obj/item/reagent_containers/food/snacks/rogue/toxicshrooms))
@@ -178,6 +186,17 @@
 		visible_message("<span class='notice'>The pig shivers.</span>")
 		sleep(10)
 		death()
+	if(istype(O, /obj/item/reagent_containers/food/snacks/grown/potato/rogue))
+		if(hangry_meter > 2)
+			hangry_meter -= 2 //Only really a way to unblock him
+			visible_message("<span class='notice'>The pig munches the potato, looking partially satisfied.</span>")
+			playsound(src,'sound/misc/eat.ogg', rand(30,60), TRUE)
+			qdel(O)
+			return
+		if(hangry_meter <= 2)//Is this abysmal code- absolutely - does it work for what it's meant to be - yes
+			visible_message("<span class='notice'>The pig munches the potato, completely indifferent.</span>")
+			playsound(src,'sound/misc/eat.ogg', rand(30,60), TRUE)
+			qdel(O)
 	else
 		return ..()
 

@@ -77,7 +77,7 @@
 				switch(++hole_size)
 					if(MEDIUM_HOLE)
 						visible_message(span_notice("\The [user] cuts into \the [src] some more."))
-						to_chat(user, span_info("I could probably fit myself through that hole now. Although climbing through would be much faster if you made it even bigger."))
+						to_chat(user, span_info("I could probably fit myself through that hole now. Although climbing through would be much faster if it was even bigger."))
 						climbable = TRUE
 					if(LARGE_HOLE)
 						visible_message(span_notice("\The [user] completely cuts through \the [src]."))

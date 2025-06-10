@@ -79,10 +79,13 @@
 	color = "#a32121"
 
 /obj/structure/curtain/blue
-	color = "#007fff"
+	color = CLOTHING_BLUE
 
 /obj/structure/curtain/green
-	color = "#428138"
+	color = CLOTHING_DARK_GREEN
+
+/obj/structure/curtain/brown
+	color = CLOTHING_BROWN
 
 /obj/structure/curtain/purple
 	color = "#8747b1"

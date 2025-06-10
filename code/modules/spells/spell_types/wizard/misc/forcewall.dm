@@ -30,7 +30,7 @@
 	desc = "A wall of pure arcyne force."
 	name = "Arcyne Wall"
 	icon = 'icons/effects/effects.dmi'
-	icon_state = "forcefield"
+	icon_state = "arcynewall"
 	break_sound = 'sound/combat/hits/onstone/stonedeath.ogg'
 	attacked_sound = list('sound/combat/hits/onstone/wallhit.ogg', 'sound/combat/hits/onstone/wallhit2.ogg', 'sound/combat/hits/onstone/wallhit3.ogg')
 	opacity = 0

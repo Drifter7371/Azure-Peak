@@ -244,10 +244,13 @@
 
 /datum/component/rot/corpse/goblin/process()
 	var/amt2add = 10 //1 second
+	var/time_elapsed = last_process ? (world.time - last_process)/10 : 1
 	if(last_process)
 		amt2add = ((world.time - last_process)/10) * amt2add
 	last_process = world.time
 	amount += amt2add
+	if(has_world_trait(/datum/world_trait/pestra_mercy))
+		amount -= 5 * time_elapsed
 	var/mob/living/carbon/C = parent
 	if(!C)
 		qdel(src)
@@ -269,7 +272,7 @@
 			if(B.rotted)
 				var/turf/open/T = C.loc
 				if(istype(T))
-					T.add_pollutants(/datum/pollutant/rot, 1)
+					T.pollute_turf(/datum/pollutant/rot, 1)
 	if(should_update)
 		if(amount > 20 MINUTES)
 			C.update_body()

@@ -80,6 +80,11 @@
 /obj/structure/chair/bench/couchablack/r
 	icon_state = "couchablackaright"
 
+/obj/structure/chair/bench/couchamagenta
+	icon_state = "couchamagentaleft"
+
+/obj/structure/chair/bench/couchamagenta/r
+	icon_state = "couchamagentaright"
 
 /obj/structure/chair/bench/couch/Initialize()
 	. = ..()
@@ -245,7 +250,7 @@
 
 /obj/structure/chair/stool/rogue
 	name = "stool"
-	desc = ""
+	desc = "Three stubby legs nailed to the underside of a small round seat. Stable, if simple."
 	icon_state = "barstool"
 	icon = 'icons/roguetown/misc/structure.dmi'
 	item_chair = /obj/item/chair/stool/bar/rogue
@@ -256,6 +261,7 @@
 
 /obj/item/chair/stool/bar/rogue
 	name = "stool"
+	desc = "Three stubby legs nailed to the underside of a small round seat. Stable, if simple."
 	icon_state = "baritem"
 	icon = 'icons/roguetown/misc/structure.dmi'
 	origin_type = /obj/structure/chair/stool/rogue
@@ -296,6 +302,8 @@
 		rotcomp.HandRot(rotcomp,user,ROTATION_CLOCKWISE)
 
 /obj/structure/bed/rogue/shit
+	name = "straw bed"
+	desc = "A rough bed of straw. It's scratchy, and probably hides lots of bugs, but at least it's dry and warm."
 	icon_state = "shitbed"
 	sleepy = 1
 

@@ -2,7 +2,7 @@
 
 /obj/structure/well
 	name = "well"
-	desc = ""
+	desc = "Far down inside the dark hole, water laps the walls of smooth brickwork."
 	icon = 'icons/roguetown/misc/structure.dmi'
 	icon_state = "well"
 	anchored = TRUE
@@ -58,7 +58,7 @@
 
 /obj/structure/well/fountain
 	name = "water fountain"
-	desc = ""
+	desc = "A slightly more civilized alternative to drinking straight from a river."
 	icon = 'icons/roguetown/misc/64x64.dmi'
 	icon_state = "fountain"
 	layer = BELOW_MOB_LAYER

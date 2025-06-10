@@ -21,11 +21,16 @@
 	skill_min = SKILL_LEVEL_EXPERT
 	preop_sound = 'sound/surgery/organ2.ogg'
 	success_sound = 'sound/surgery/organ1.ogg'
+	possible_locs = list(BODY_ZONE_CHEST)
 
-/datum/surgery_step/infuse_lux/validate_target(mob/user, mob/living/target, target_zone, datum/intent/intent)
+/datum/surgery_step/infuse_lux/validate_target(mob/user, mob/living/carbon/target, target_zone, datum/intent/intent)
 	. = ..()
 	if(target.stat < DEAD)
 		to_chat(user, "They're not dead!")
+		return FALSE
+	var/obj/item/organ/heart/H = target.getorganslot(ORGAN_SLOT_HEART)
+	if(!H)
+		to_chat(user, "[target] is missing their heart!")
 		return FALSE
 	if(target.mind && !target.mind.active)
 		to_chat(user, "[target]'s heart is inert. Maybe it will respond later?")
@@ -67,6 +72,7 @@
 	target.grab_ghost(force = TRUE) // even suicides
 	target.emote("breathgasp")
 	target.Jitter(100)
+	GLOB.azure_round_stats[STATS_LUX_REVIVALS]++
 	target.update_body()
 	target.visible_message(span_notice("[target] is dragged back from Necra's hold!"), span_green("I awake from the void."))
 	qdel(tool)

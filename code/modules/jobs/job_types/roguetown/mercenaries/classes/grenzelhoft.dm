@@ -41,7 +41,14 @@
 			H.change_stat("constitution", 3)
 			H.change_stat("perception", 1)
 			H.change_stat("speed", -1)		//They get heavy armor now + sword option; so lower speed.
-			r_hand = /obj/item/rogueweapon/greatsword/grenz
+			var/weapons = list("Zweihander", "Kriegmesser & Buckler")
+			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+			switch(weapon_choice)
+				if("Zweihander")
+					r_hand = /obj/item/rogueweapon/greatsword/grenz
+				if("Kriegmesser & Buckler") // Buckler cuz they have no shield skill.
+					r_hand = /obj/item/rogueweapon/sword/long/kriegmesser
+					l_hand = /obj/item/rogueweapon/shield/buckler
 		if("Halberdier")
 			H.set_blindness(0)
 			to_chat(H, span_warning("You're an experienced soldier skilled in the use of polearms and axes. Your equals make up the bulk of the mercenary guild's forces."))
@@ -63,7 +70,14 @@
 			H.change_stat("constitution", 2)
 			H.change_stat("perception", -1)
 			H.change_stat("speed", 1)
-			r_hand = /obj/item/rogueweapon/halberd
+			var/weapons = list("Halberd", "Partizan")
+			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+			switch(weapon_choice)
+				if("Halberd")
+					r_hand = /obj/item/rogueweapon/halberd
+				if("Partizan")
+					r_hand = /obj/item/rogueweapon/spear/partizan
+
 
 	//General gear regardless of class.
 	wrists = /obj/item/clothing/wrists/roguetown/bracers

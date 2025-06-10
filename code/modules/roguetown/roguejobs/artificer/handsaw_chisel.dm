@@ -34,6 +34,7 @@
 	throwforce = 2
 	possible_item_intents = list(/datum/intent/stab)
 	sharpness = IS_SHARP
+	wlength = WLENGTH_SHORT
 	dropshrink = 0.9
 	w_class = WEIGHT_CLASS_SMALL
 	wdefense = 0

@@ -19,6 +19,20 @@
 	var/lumber = /obj/item/grown/log/tree/small //These are solely for lumberjack calculations
 	var/lumber_amount = 1
 
+/obj/item/grown/log/tree/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/woodstaff,
+		/datum/crafting_recipe/roguetown/survival/quarterstaff,
+		/datum/crafting_recipe/roguetown/survival/recurvepartial,
+		/datum/crafting_recipe/roguetown/survival/longbowpartial,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
+
 /obj/item/grown/log/tree/attacked_by(obj/item/I, mob/living/user) //This serves to reward woodcutting
 	user.changeNext_move(CLICK_CD_MELEE)
 	var/skill_level = user.mind.get_skill_level(/datum/skill/labor/lumberjacking)
@@ -72,6 +86,60 @@
 	smeltresult = /obj/item/rogueore/coal
 	lumber_amount = 0
 
+/obj/item/grown/log/tree/small/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/stoneaxe,
+		/datum/crafting_recipe/roguetown/survival/stonehammer,
+		/datum/crafting_recipe/roguetown/survival/stonepick,
+		/datum/crafting_recipe/roguetown/survival/stonehoe,
+		/datum/crafting_recipe/roguetown/survival/woodspade,
+		/datum/crafting_recipe/roguetown/survival/woodhammer,
+		/datum/crafting_recipe/roguetown/survival/stonesword,
+		/datum/crafting_recipe/roguetown/survival/woodclub,
+		/datum/crafting_recipe/roguetown/survival/fishingcage,
+		/datum/crafting_recipe/roguetown/survival/rod,
+		/datum/crafting_recipe/roguetown/survival/bowpartial,
+		/datum/crafting_recipe/roguetown/survival/recurvepartial,
+		/datum/crafting_recipe/roguetown/survival/longbowpartial,
+		/datum/crafting_recipe/roguetown/survival/billhook,
+		/datum/crafting_recipe/roguetown/survival/goedendag,
+		/datum/crafting_recipe/roguetown/survival/woodsword,
+		/datum/crafting_recipe/roguetown/survival/woodshield,
+		/datum/crafting_recipe/roguetown/survival/spoon,
+		/datum/crafting_recipe/roguetown/survival/fork,
+		/datum/crafting_recipe/roguetown/survival/platter,
+		/datum/crafting_recipe/roguetown/survival/rollingpin,
+		/datum/crafting_recipe/roguetown/survival/woodbucket,
+		/datum/crafting_recipe/roguetown/survival/woodcup,
+		/datum/crafting_recipe/roguetown/survival/woodtray,
+		/datum/crafting_recipe/roguetown/survival/woodbowl,
+		/datum/crafting_recipe/roguetown/survival/pipe,
+		/datum/crafting_recipe/roguetown/survival/mantrap,
+		/datum/crafting_recipe/roguetown/survival/paperscroll,
+		/datum/crafting_recipe/roguetown/survival/boneaxe,
+		/datum/crafting_recipe/roguetown/survival/prosthetic/woodleftarm,
+		/datum/crafting_recipe/roguetown/survival/prosthetic/woodrightarm,
+		/datum/crafting_recipe/roguetown/survival/prosthetic/woodleftleft,
+		/datum/crafting_recipe/roguetown/survival/prosthetic/woodrightleg,
+		/datum/crafting_recipe/roguetown/survival/tarot_deck,
+		/datum/crafting_recipe/roguetown/survival/heatershield,
+		/datum/crafting_recipe/roguetown/survival/woodshaft,
+		/datum/crafting_recipe/roguetown/survival/peasantry/thresher/whetstone,
+		/datum/crafting_recipe/roguetown/survival/peasantry/shovel/whetstone,
+		/datum/crafting_recipe/roguetown/survival/peasantry/hoe/whetstone,
+		/datum/crafting_recipe/roguetown/survival/peasantry/pitchfork/whetstone,
+		/datum/crafting_recipe/roguetown/survival/peasantry/peasantwarflail,
+		/datum/crafting_recipe/roguetown/survival/peasantry/waraxe,
+		/datum/crafting_recipe/roguetown/survival/peasantry/warspear_hoe,
+		/datum/crafting_recipe/roguetown/survival/peasantry/warspear_pitchfork,
+		/datum/crafting_recipe/roguetown/survival/peasantry/scythe,)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
+
 /obj/item/grown/log/tree/small/attackby(obj/item/I, mob/living/user, params)
 	if(item_flags & IN_STORAGE)
 		return
@@ -104,17 +172,40 @@
 	smeltresult = /obj/item/rogueore/coal
 	lumber_amount = 0
 
+/obj/item/grown/log/tree/bowpartial/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/bow,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
+
 /obj/item/grown/log/tree/bowpartial/recurve
 	name = "recurve bowstave"
 	desc = "An incomplete recurve bow, waiting to be strung."
 	icon = 'icons/roguetown/items/64x.dmi'
 	icon_state = "recurve_bowstave"
 
+/obj/item/grown/log/tree/bowpartial/recurve/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/recurvebow,
+		)
+
 /obj/item/grown/log/tree/bowpartial/longbow
 	name = "long bowstave"
 	desc = "An incomplete longbow, waiting to be strung."
 	icon = 'icons/roguetown/items/64x.dmi'
 	icon_state = "long_bowstave"
+
+/obj/item/grown/log/tree/bowpartial/longbow/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/longbow,
+		)
 
 /obj/item/grown/log/tree/stick
 	name = "stick"
@@ -153,6 +244,28 @@
 /obj/item/grown/log/tree/stick/Initialize()
 	icon_state = "stick[rand(1,2)]"
 	..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/fishingcage,
+		/datum/crafting_recipe/roguetown/survival/woodspade,
+		/datum/crafting_recipe/roguetown/survival/stonetongs,
+		/datum/crafting_recipe/roguetown/survival/stoneknife,
+		/datum/crafting_recipe/roguetown/survival/broom,
+		/datum/crafting_recipe/roguetown/survival/woodcross,
+		/datum/crafting_recipe/roguetown/survival/dye_brush,
+		/datum/crafting_recipe/roguetown/survival/peasantry/thresher,
+		/datum/crafting_recipe/roguetown/survival/peasantry/shovel,
+		/datum/crafting_recipe/roguetown/survival/peasantry/hoe,
+		/datum/crafting_recipe/roguetown/survival/peasantry/pitchfork,
+		/datum/crafting_recipe/roguetown/survival/wickercloak,
+		/datum/crafting_recipe/roguetown/survival/torch,
+		/datum/crafting_recipe/roguetown/survival/stonearrow,
+		/datum/crafting_recipe/roguetown/survival/stonearrow_five,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
 
 /obj/item/grown/log/tree/stick/attack_self(mob/living/user)
 	user.visible_message(span_warning("[user] snaps [src]."))
@@ -238,6 +351,17 @@
 	gripped_intents = null
 	slot_flags = ITEM_SLOT_MOUTH|ITEM_SLOT_HIP
 	lumber_amount = 0
+
+/obj/item/grown/log/tree/stake/Initialize()
+	. = ..()
+	var/static/list/slapcraft_recipe_list = list(
+		/datum/crafting_recipe/roguetown/survival/whetstone,
+		)
+
+	AddElement(
+		/datum/element/slapcrafting,\
+		slapcraft_recipes = slapcraft_recipe_list,\
+		)
 
 /////////////
 // Planks //

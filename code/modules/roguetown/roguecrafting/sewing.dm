@@ -72,6 +72,29 @@
 				/obj/item/natural/fibers = 1)
 	craftdiff = 1
 
+/datum/crafting_recipe/roguetown/sewing/clothbedsheet
+	name = "bedsheet, cloth (1 fibers, 2 cloth)"
+	result = list(/obj/item/bedsheet/rogue/cloth)
+	reqs = list(/obj/item/natural/cloth = 2,
+				/obj/item/natural/fibers = 1)
+	craftdiff = 1
+
+/datum/crafting_recipe/roguetown/sewing/fabricbedsheet // cloth bedsheet's fancier looking cousin
+	name = "bedsheet, fabric (1 fibers, 2 cloth, 1 silk)"
+	result = list(/obj/item/bedsheet/rogue/fabric)
+	reqs = list(/obj/item/natural/cloth = 2,
+				/obj/item/natural/fibers = 1,
+				/obj/item/natural/silk = 1)
+	craftdiff = 1
+
+/datum/crafting_recipe/roguetown/sewing/doublefabricbedsheet
+	name = "bedsheet, double fabric (2 fibers, 4 cloth), 2 silk"
+	result = list(/obj/item/bedsheet/rogue/fabric_double)
+	reqs = list(/obj/item/natural/cloth = 4,
+				/obj/item/natural/fibers = 2,
+				/obj/item/natural/silk = 2)
+	craftdiff = 1
+
 /datum/crafting_recipe/roguetown/sewing/brimmed
 	name = "brimmed hat (2 fibers, 1 cloth)"
 	result = list(/obj/item/clothing/head/roguetown/brimmed)
@@ -343,11 +366,11 @@
 	craftdiff = 3
 
 /datum/crafting_recipe/roguetown/sewing/stabard/guard
-	name = "surcoat, guard"
+	name = "surcoat, guard (1 fibers, 3 cloth)"
 	result = list(/obj/item/clothing/cloak/stabard/guard)
 
 /datum/crafting_recipe/roguetown/sewing/stabard/bog
-	name = "surcoat, bog"
+	name = "surcoat, bog (1 fibers, 3 cloth)"
 	result = list(/obj/item/clothing/cloak/stabard/bog)
 
 /datum/crafting_recipe/roguetown/sewing/robe
@@ -715,7 +738,7 @@
 
 /datum/crafting_recipe/roguetown/sewing/winterdress
 	name = "winter dress (2 fibers, 4 cloth, 2 silk)"
-	result = list(/obj/item/clothing/suit/roguetown/armor/gambeson/heavy/winterdress)
+	result = list(/obj/item/clothing/suit/roguetown/armor/armordress/winterdress)
 	reqs = list(/obj/item/natural/cloth = 4,
 				/obj/item/natural/fibers = 2,
 				/obj/item/natural/silk = 2)
@@ -1072,3 +1095,10 @@
 	tools = list(/obj/item/needle)
 	craftdiff = 6
 	sellprice = 20
+
+/datum/crafting_recipe/roguetown/sewing/beekeeper
+	name = "beekeeper's hood (4 fibers, 3 cloth)"
+	result = list(/obj/item/clothing/head/roguetown/beekeeper)
+	reqs = list(/obj/item/natural/cloth = 3,
+				/obj/item/natural/fibers = 4)
+	craftdiff = 2

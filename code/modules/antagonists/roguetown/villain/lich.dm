@@ -42,8 +42,7 @@
 	var/STAPER = 10
 
 /datum/antagonist/lich/on_gain()
-	var/datum/game_mode/C = SSticker.mode
-	C.liches |= owner
+	SSmapping.retainer.liches |= owner
 	. = ..()
 	owner.special_role = name
 	skele_look()
@@ -123,7 +122,6 @@
 	H.mind.adjust_skillrank(/datum/skill/craft/crafting, 1, TRUE)
 	H.mind.adjust_skillrank(/datum/skill/misc/medicine, 3, TRUE)
 	H.mind.adjust_spellpoints(27)
-
 	// Give it decent combat stats to make up for loss of 2 extra lives
 	H.change_stat("strength", 3)
 	H.change_stat("intelligence", 5)
@@ -139,6 +137,7 @@
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/fetch)
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/diagnose/secular)
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/minion_order)
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/gravemark)
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/suicidebomb)
 	H.ambushable = FALSE
 
@@ -242,7 +241,6 @@
 	set_stats()
 	skele_look()
 	equip_and_traits()
-
 	// Delete the old body if it still exists
 	if (!QDELETED(old_body))
 		qdel(old_body)

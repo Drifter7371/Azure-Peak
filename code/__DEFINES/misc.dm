@@ -15,41 +15,42 @@
 #define ISDIAGONALDIR(d) (d&(d-1))
 
 //Human Overlays Indexes/////////
-#define MUTATIONS_LAYER			49		//mutations. Tk headglows, cold resistance glow, etc
-#define CLOAK_BEHIND_LAYER		48
-#define HANDS_BEHIND_LAYER		47
-#define BELT_BEHIND_LAYER		46
-#define BACK_BEHIND_LAYER		45
-#define BODY_BEHIND_LAYER		44		//certain mutantrace features (tail when looking south) that must appear behind the body parts
-#define BODY_UNDER_LAYER		43		// Things under the bodyparts but above the "behind body" layer
-#define BODYPARTS_LAYER			42		//Initially "AUGMENTS", this was repurposed to be a catch-all bodyparts flag
-#define BODY_ADJ_LAYER			41		//certain mutantrace features (snout, body markings) that must appear above the body parts
-#define BODY_LAYER				40		//underwear, undershirts, socks, eyes, lips(makeup)
-#define FRONT_MUTATIONS_LAYER	39		//mutations that should appear above body, body_adj and bodyparts layer (e.g. laser eyes)
-#define DAMAGE_LAYER			38		//damage indicators (cuts and burns)
-#define LEG_PART_LAYER			37
-#define PANTS_LAYER				36
-#define SHOES_LAYER				35
-#define LEG_DAMAGE_LAYER		34
-#define LEGSLEEVE_LAYER			33
-#define SHOESLEEVE_LAYER		32
-#define SHIRT_LAYER				31
-#define WRISTS_LAYER			30
-#define ARMOR_LAYER				29
-#define TABARD_LAYER			28
-#define BELT_LAYER				27		//only when looking south
-#define UNDER_CLOAK_LAYER		26
-#define HANDS_PART_LAYER		25
-#define GLOVES_LAYER			24
-#define ARM_DAMAGE_LAYER		23
-#define SHIRTSLEEVE_LAYER		22
-#define WRISTSLEEVE_LAYER		21
-#define ARMORSLEEVE_LAYER		20
-#define GLOVESLEEVE_LAYER		19
-#define RING_LAYER				18
-#define GLASSES_LAYER			17
-#define NECK_LAYER				16
-#define CLOAK_LAYER				15		//only when looking north or west/east
+#define MUTATIONS_LAYER			50		//mutations. Tk headglows, cold resistance glow, etc
+#define CLOAK_BEHIND_LAYER		49
+#define HANDS_BEHIND_LAYER		48
+#define BELT_BEHIND_LAYER		47
+#define BACK_BEHIND_LAYER		46
+#define BODY_BEHIND_LAYER		45		//certain mutantrace features (tail when looking south) that must appear behind the body parts
+#define BODY_UNDER_LAYER		44		// Things under the bodyparts but above the "behind body" layer
+#define BODYPARTS_LAYER			43		//Initially "AUGMENTS", this was repurposed to be a catch-all bodyparts flag
+#define BODY_ADJ_LAYER			42		//certain mutantrace features (snout, body markings) that must appear above the body parts
+#define BODY_LAYER				41		//underwear, undershirts, socks, eyes, lips(makeup)
+#define FRONT_MUTATIONS_LAYER	40		//mutations that should appear above body, body_adj and bodyparts layer (e.g. laser eyes)
+#define DAMAGE_LAYER			39		//damage indicators (cuts and burns)
+#define LEG_PART_LAYER			38
+#define PANTS_LAYER				37
+#define SHOES_LAYER				36
+#define LEG_DAMAGE_LAYER		35
+#define LEGSLEEVE_LAYER			34
+#define SHOESLEEVE_LAYER		33
+#define SHIRT_LAYER				32
+#define WRISTS_LAYER			31
+#define ARMOR_LAYER				30
+#define TABARD_LAYER			29
+#define BELT_LAYER				28		//only when looking south
+#define UNDER_CLOAK_LAYER		27
+#define HANDS_PART_LAYER		26
+#define GLOVES_LAYER			25
+#define ARM_DAMAGE_LAYER		24
+#define SHIRTSLEEVE_LAYER		23
+#define WRISTSLEEVE_LAYER		22
+#define ARMORSLEEVE_LAYER		21
+#define GLOVESLEEVE_LAYER		20
+#define RING_LAYER				19
+#define GLASSES_LAYER			18
+#define NECK_LAYER				17
+#define CLOAK_LAYER				16		//only when looking north or west/east
+#define HOOD_LAYER				15
 #define HAIR_LAYER				14		//TODO: make part of head layer?
 #define MASK_LAYER				13
 #define HAIREXTRA_LAYER			12
@@ -64,7 +65,7 @@
 #define HALO_LAYER				3		//blood cult ascended halo, because there's currently no better solution for adding/removing
 #define FIRE_LAYER				2		//If you're on fire
 #define TURF_LAYER				1		//If you're on fire
-#define TOTAL_LAYERS			49		//KEEP THIS UP-TO-DATE OR SHIT WILL BREAK ;_;
+#define TOTAL_LAYERS			50		//KEEP THIS UP-TO-DATE OR SHIT WILL BREAK ;_;
 
 #define BACK_CLOAK_SOUTH_LAYER		(BODY_BEHIND_LAYER+1)
 

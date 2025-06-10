@@ -21,6 +21,7 @@
 	skill_min = SKILL_LEVEL_JOURNEYMAN
 	preop_sound = 'sound/surgery/organ2.ogg'
 	success_sound = 'sound/surgery/organ1.ogg'
+	possible_locs = list(BODY_ZONE_CHEST)
 
 /datum/surgery_step/extract_lux/validate_target(mob/user, mob/living/target, target_zone, datum/intent/intent)
 	. = ..()
@@ -35,7 +36,8 @@
 	return TRUE
 
 /datum/surgery_step/extract_lux/success(mob/user, mob/living/target, target_zone, obj/item/tool, datum/intent/intent)
-	target.emote("painscream")
+	if (!target.has_status_effect(/datum/status_effect/buff/ozium))
+		target.emote("painscream")
 	if(target.has_status_effect(/datum/status_effect/debuff/devitalised))
 		display_results(user, target, span_notice("You cannot draw lux from [target]; they have none left to give."),
 		"[user] extracts lux from [target]'s innards.",
@@ -46,5 +48,8 @@
 			"[user] extracts lux from [target]'s innards.",
 			"[user] extracts lux from [target]'s innards.")
 		new /obj/item/reagent_containers/lux(target.loc)
+		SEND_SIGNAL(user, COMSIG_LUX_EXTRACTED, target)
+		//record_featured_stat(FEATURED_STATS_CRIMINALS, user)	- This.. isn't normally criminal.
+		GLOB.azure_round_stats[STATS_LUX_HARVESTED]++
 		target.apply_status_effect(/datum/status_effect/debuff/devitalised)
 	return TRUE

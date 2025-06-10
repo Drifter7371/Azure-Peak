@@ -11,7 +11,6 @@
 	throw_range = 7
 	attack_verb = list("banned")
 	max_integrity = 200
-	armor = list("blunt" = 0, "slash" = 0, "stab" = 0, "piercing" = 0, "fire" = 100, "acid" = 70)
 	resistance_flags = FIRE_PROOF
 
 	grid_height = 32

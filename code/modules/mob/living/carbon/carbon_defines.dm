@@ -89,3 +89,4 @@
 /// Amount of remaining vitae that can be drained from this mob
 	var/vitae_pool = 8000
 
+	var/next_smell = 0

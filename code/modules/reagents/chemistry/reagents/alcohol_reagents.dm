@@ -2138,7 +2138,7 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	quality = DRINK_NICE
 
 /datum/reagent/consumable/ethanol/beer/rtoper
-	name = "Rockhill Toper"
+	name = "Lirvas Toper"
 	boozepwr = 40
 	taste_description = "overwhelming tartness"
 	color = "#e0a400"

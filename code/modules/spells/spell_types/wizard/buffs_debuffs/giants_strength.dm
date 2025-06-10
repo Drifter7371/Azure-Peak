@@ -10,8 +10,9 @@
 	recharge_time = 2 MINUTES
 	warnie = "spellwarning"
 	school = "transmutation"
+	overlay_state = "giants_strength"
 	spell_tier = 2
-	invocation = "Vis Gigantis"
+	invocation = "Vis Gigantis." // Vis - Strength. Gigantis - Singular possessive form.
 	invocation_type = "whisper"
 	glow_color = GLOW_COLOR_BUFF
 	glow_intensity = GLOW_INTENSITY_LOW
@@ -32,11 +33,11 @@
 	playsound(get_turf(spelltarget), 'sound/magic/haste.ogg', 80, TRUE, soundping = TRUE)
 
 	if(spelltarget != user)
-		user.visible_message("[user] mutters an incantation and [spelltarget] 's skin hardens like stone.")
+		user.visible_message("[user] mutters an incantation and [spelltarget] 's muscles strengthen and grow.")
 		to_chat(user, span_notice("With another person as a conduit, my spell's duration is doubled."))
 		spelltarget.apply_status_effect(/datum/status_effect/buff/giants_strength/other)
 	else
-		user.visible_message("[user] mutters an incantation and their skin hardens.")
+		user.visible_message("[user] mutters an incantation and their muscles strengthen and grow.")
 		spelltarget.apply_status_effect(/datum/status_effect/buff/giants_strength)
 
 	return TRUE

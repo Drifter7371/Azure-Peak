@@ -1,6 +1,6 @@
 /obj/machinery/tanningrack
 	name = "drying rack"
-	desc = "A rack for drying meats or preparing and curing hides into leather. It can be moved with the help of a wooden stake."
+	desc = "A rack for drying meats or scraping hides into leather. It can be moved with the help of a wooden stake."
 	icon = 'icons/roguetown/misc/structure.dmi'
 	icon_state = "dryrack"
 	var/obj/item/natural/hide/hide

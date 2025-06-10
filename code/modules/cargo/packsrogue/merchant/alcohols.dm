@@ -9,12 +9,12 @@
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer)
 
 /datum/supply_pack/rogue/alcohol/zagul
-	name = "Zagul Brew"
+	name = "Zagul Lager"
 	cost = 15
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/zagul)
 
 /datum/supply_pack/rogue/alcohol/blackgoat
-	name = "Jackberry Mix"
+	name = "Blackgoat Beer"
 	cost = 20
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/blackgoat)
 
@@ -29,7 +29,7 @@
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/hagwoodbitter)
 
 /datum/supply_pack/rogue/alcohol/elfbeer
-	name = "Elvish Beer"
+	name = "Elvish Aurorian Beer"
 	cost = 20
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/aurorian)
 
@@ -55,7 +55,7 @@
 
 /datum/supply_pack/rogue/alcohol/wineraneshen
 	name = "Ranesheni Wine"
-	cost = 20
+	cost = 15
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/wine)
 
 /datum/supply_pack/rogue/alcohol/winegrenzel
@@ -85,7 +85,7 @@
 
 //AZURE DRINKS
 /datum/supply_pack/rogue/alcohol/jagdtrunk
-	name = "Jagdtrunk"
+	name = "Jagdtrunk Herbal Schnapps"
 	cost = 80
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/jagdtrunk)
 
@@ -95,37 +95,37 @@
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/apfelweinheim)
 
 /datum/supply_pack/rogue/alcohol/rtoper
-	name = "Rockhill Toper"
+	name = "Rockhill Toper (Lirvas Beer)"
 	cost = 20
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/rtoper)
 
 /datum/supply_pack/rogue/alcohol/nred
-	name = "Norwandine Red"
+	name = "Norwandine Red Ale"
 	cost = 20
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/nred)
 
 /datum/supply_pack/rogue/alcohol/gronnmead
-	name = "Ragnars Brew"
+	name = "Ragnars Mead"
 	cost = 25
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/gronnmead)
 
 /datum/supply_pack/rogue/alcohol/avarmead
-	name = "Zögiin Bal"
+	name = "Zögiin Bal (Avar Mead)"
 	cost = 20
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/avarmead)
 
 /datum/supply_pack/rogue/alcohol/avarrice
-	name = "Makkolir"
+	name = "Makkolir (Avar Rice Wine)"
 	cost = 30
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/avarrice)
 
 /datum/supply_pack/rogue/alcohol/saigamilk
-	name = "Bökhiin Arkhi"
+	name = "Bökhiin Arkhi (Saiga Milk Drink)"
 	cost = 100
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/saigamilk)
 
 /datum/supply_pack/rogue/alcohol/kgunlager
-	name = "Yamaguchi Pale"
+	name = "Yamaguchi Pale (Kazengun Plumwine)"
 	cost = 50
 	contains = list(/obj/item/reagent_containers/glass/bottle/rogue/beer/kgunlager)
 

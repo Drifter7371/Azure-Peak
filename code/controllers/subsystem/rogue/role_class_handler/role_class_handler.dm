@@ -38,7 +38,7 @@ SUBSYSTEM_DEF(role_class_handler)
 	var/list/sorted_class_categories = list()
 
 
-		/// Whether bandits have been injected in the game
+	/// Whether bandits have been injected in the game
 	var/bandits_in_round = FALSE
 
 	/// Assoc list of class registers to keep track of what townies and migrant parties are and message listeners

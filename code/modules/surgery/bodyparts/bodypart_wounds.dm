@@ -222,6 +222,8 @@
 	for(var/wound_type in shuffle(attempted_wounds))
 		var/datum/wound/applied = add_wound(wound_type, silent, crit_message)
 		if(applied)
+			if(user?.client)
+				GLOB.azure_round_stats[STATS_CRITS_MADE]++
 			return applied
 	return FALSE
 
@@ -266,11 +268,16 @@
 		if(prob(used))
 			if((zone_precise == BODY_ZONE_PRECISE_STOMACH) && !resistance)
 				attempted_wounds += /datum/wound/slash/disembowel
-			attempted_wounds += /datum/wound/artery
+			if(HAS_TRAIT(owner, TRAIT_CRITICAL_WEAKNESS))
+				attempted_wounds += /datum/wound/artery/chest
+			else
+				attempted_wounds += /datum/wound/artery
 
 	for(var/wound_type in shuffle(attempted_wounds))
 		var/datum/wound/applied = add_wound(wound_type, silent, crit_message)
 		if(applied)
+			if(user?.client)
+				GLOB.azure_round_stats[STATS_CRITS_MADE]++
 			return applied
 	return FALSE
 
@@ -378,6 +385,8 @@
 	for(var/wound_type in shuffle(attempted_wounds))
 		var/datum/wound/applied = add_wound(wound_type, silent, crit_message)
 		if(applied)
+			if(user?.client)
+				GLOB.azure_round_stats[STATS_CRITS_MADE]++
 			return applied
 	return FALSE
 
@@ -387,14 +396,21 @@
 		return FALSE
 	if(owner && ((owner.status_flags & GODMODE) || HAS_TRAIT(owner, TRAIT_PIERCEIMMUNE)))
 		return FALSE
+	if(istype(embedder, /obj/item/natural/worms/leech))
+		GLOB.azure_round_stats[STATS_LEECHES_EMBEDDED]++
 	LAZYADD(embedded_objects, embedder)
 	embedder.is_embedded = TRUE
 	embedder.forceMove(src)
 	if(owner)
 		embedder.add_mob_blood(owner)
-		if(!silent)
-			owner.emote("embed")
+		if (!silent)
 			playsound(owner, 'sound/combat/newstuck.ogg', 100, vary = TRUE)
+			if (owner.has_status_effect(/datum/status_effect/buff/ozium))
+				owner.emote ("exhales")
+			if (owner.has_status_effect(/datum/status_effect/buff/drunk) && !owner.has_status_effect(/datum/status_effect/buff/ozium))
+				owner.emote("pain")
+			if (!owner.has_status_effect(/datum/status_effect/buff/drunk) && !owner.has_status_effect(/datum/status_effect/buff/ozium))
+				owner.emote("embed")
 		if(crit_message)
 			owner.next_attack_msg += " <span class='userdanger'>[embedder] runs through [owner]'s [src]!</span>"
 		update_disabled()
@@ -523,6 +539,8 @@
 		returned_flags |= SURGERY_DISLOCATED
 	if(has_wound(/datum/wound/fracture))
 		returned_flags |= SURGERY_BROKEN
+	if(has_wound(/datum/wound/slash/vein))
+		returned_flags |= SURGERY_CUTVEIN
 	for(var/datum/wound/puncture/drilling/drilling in wounds)
 		if(drilling.is_sewn())
 			continue

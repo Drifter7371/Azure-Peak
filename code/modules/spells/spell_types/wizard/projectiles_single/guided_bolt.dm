@@ -8,7 +8,7 @@
 	overlay_state = "force_dart"
 	sound = list('sound/magic/vlightning.ogg')
 	active = FALSE
-	releasedrain = 15
+	releasedrain = 20
 	chargedrain = 1
 	chargetime = 3
 	recharge_time = 4 SECONDS // This has to be aimed unlike Arcyne Bolt.

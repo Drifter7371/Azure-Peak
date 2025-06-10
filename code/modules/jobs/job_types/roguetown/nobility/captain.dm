@@ -36,6 +36,7 @@
 	belt = /obj/item/storage/belt/rogue/leather/plaquesilver
 	cloak = /obj/item/clothing/cloak/stabard
 	id = /obj/item/scomstone/garrison
+	job_bitflag = BITFLAG_ROYALTY | BITFLAG_GARRISON
 
 /datum/job/roguetown/captain/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
 	. = ..()
@@ -123,7 +124,7 @@
 		"Battle Axe",
 		"Greataxe",
 		"Estoc",
-		"Bastard Sword & Shield",
+		"Longsword & Shield",
 		"Flail & Shield",
 		"Sabre & Shield",
 		)
@@ -143,7 +144,7 @@
 		if("Estoc")
 			r_hand = /obj/item/rogueweapon/estoc
 			backl = /obj/item/gwstrap
-		if("Bastard Sword & Shield")
+		if("Longsword & Shield")
 			beltr = /obj/item/rogueweapon/sword/long
 			backl = /obj/item/rogueweapon/shield/tower/metal
 		if("Flail & Shield")
@@ -219,15 +220,16 @@
 	H.verbs |= list(/mob/living/carbon/human/proc/request_outlaw, /mob/proc/haltyell, /mob/living/carbon/human/mind/proc/setorders)
 	H.adjust_blindness(-3)
 	var/weapons = list(
-		"Bastard Sword & Recurve Bow",
+		"Longsword & Recurve Bow",
 		"Mace & Crossbow",
 		"Spear & Shield",
 		"Sabre & Shield",
+		"Lance + Kite Shield"
 		)
 	var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 	H.set_blindness(0)
 	switch(weapon_choice)
-		if("Bastard Sword & Recurve Bow")
+		if("Longsword & Recurve Bow")
 			r_hand = /obj/item/rogueweapon/sword/long
 			beltr = /obj/item/quiver/arrows
 			backl = /obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve
@@ -240,6 +242,9 @@
 			backl = /obj/item/rogueweapon/shield/tower/metal
 		if("Sabre & Shield")
 			beltr = /obj/item/rogueweapon/sword/sabre
+			backl = /obj/item/rogueweapon/shield/tower/metal
+		if("Lance + Kite Shield")
+			r_hand = /obj/item/rogueweapon/spear/lance
 			backl = /obj/item/rogueweapon/shield/tower/metal
 	var/helmets = list(
 		"Pigface Bascinet" 	= /obj/item/clothing/head/roguetown/helmet/bascinet/pigface,
@@ -329,6 +334,7 @@
 		recruit.say(accept_message, forced = "[name]")
 	if(new_role)
 		recruit.job = new_role
+		SEND_SIGNAL(SSdcs, COMSIG_GLOB_ROLE_CONVERTED, recruiter, recruit, new_role)
 	return TRUE
 
 /obj/effect/proc_holder/spell/self/convertrole/guard

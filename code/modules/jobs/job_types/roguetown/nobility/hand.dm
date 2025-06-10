@@ -36,6 +36,7 @@
 	shoes = /obj/item/clothing/shoes/roguetown/boots
 	belt = /obj/item/storage/belt/rogue/leather/steel
 	beltr = /obj/item/rogueweapon/sword/rapier/dec
+	job_bitflag = BITFLAG_ROYALTY
 
 /datum/job/roguetown/hand/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
 	. = ..()
@@ -138,6 +139,7 @@
 	H.change_stat("perception", 2)
 	H.change_stat("speed", 3)
 	H.change_stat("intelligence", 2)
+	H.grant_language(/datum/language/thievescant)
 	ADD_TRAIT(H, TRAIT_NOBLE, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)

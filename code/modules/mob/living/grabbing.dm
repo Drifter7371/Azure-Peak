@@ -17,7 +17,8 @@
 	var/mob/living/carbon/grabbee
 	var/list/dependents = list()
 	var/handaction
-	var/bleed_suppressing = 0.5 //multiplier for how much we suppress bleeding, can accumulate so two grabs means 25% bleeding
+	var/bleed_suppressing = 0.25 //multiplier for how much we suppress bleeding, can accumulate so two grabs means 50% less bleeding; each grab being 25% basically.
+	var/chokehold = FALSE
 
 /atom/movable //reference to all obj/item/grabbing
 	var/list/grabbedby = list()
@@ -171,8 +172,16 @@
 
 	if(user.cmode && !M.cmode)
 		combat_modifier += 0.3
+	
 	else if(!user.cmode && M.cmode)
 		combat_modifier -= 0.3
+
+	if(sublimb_grabbed == BODY_ZONE_PRECISE_NECK && grab_state > 0) //grabbing aggresively the neck
+		if(user && (M.dir == turn(get_dir(M,user), 180))) //is behind the grabbed
+			chokehold = TRUE
+
+	if(chokehold)
+		combat_modifier += 0.15
 
 	switch(user.used_intent.type)
 		if(/datum/intent/grab/upgrade)
@@ -180,8 +189,12 @@
 				to_chat(user, span_warning("Can't get a grip!"))
 				return FALSE
 			user.rogfat_add(rand(7,15))
-			M.grippedby(user)
+			if(M.grippedby(user))			//Aggro grip
+				bleed_suppressing = 0.5		//Better bleed suppression
 		if(/datum/intent/grab/choke)
+			if(user.buckled)
+				to_chat(user, span_warning("I can't do this while buckled!"))
+				return FALSE
 			if(limb_grabbed && grab_state > 0) //this implies a carbon victim
 				if(iscarbon(M) && M != user)
 					user.rogfat_add(rand(1,3))
@@ -189,27 +202,66 @@
 					if(get_location_accessible(C, BODY_ZONE_PRECISE_NECK))
 						if(prob(25))
 							C.emote("choke")
-						C.adjustOxyLoss(user.STASTR)
-					C.visible_message(span_danger("[user] [pick("chokes", "strangles")] [C]!"), \
-									span_userdanger("[user] [pick("chokes", "strangles")] me!"), span_hear("I hear a sickening sound of pugilism!"), COMBAT_MESSAGE_RANGE, user)
-					to_chat(user, span_danger("I [pick("choke", "strangle")] [C]!"))
+						var/choke_damage = user.STASTR * 0.75 // To stop strength-maxing entirely.
+						if(chokehold)
+							choke_damage *= 1.2		//Slight bonus
+						if(C.pulling == user && C.grab_state >= GRAB_AGGRESSIVE)
+							choke_damage *= 0.95	//Slight malice
+						C.adjustOxyLoss(choke_damage)
+						C.visible_message(span_danger("[user] [pick("chokes", "strangles")] [C][chokehold ? " with a chokehold" : ""]!"), \
+								span_userdanger("[user] [pick("chokes", "strangles")] me[chokehold ? " with a chokehold" : ""]!"), span_hear("I hear a sickening sound of pugilism!"), COMBAT_MESSAGE_RANGE, user)
+						to_chat(user, span_danger("I [pick("choke", "strangle")] [C][chokehold ? " with a chokehold" : ""]!"))
+					else
+						to_chat(user, span_warning("I can't reach [C]'s throat!"))
+					user.changeNext_move(CLICK_CD_MELEE)	//Stops spam for choking.
+		if(/datum/intent/grab/hostage)
+			if(user.buckled)
+				to_chat(user, span_warning("I can't do this while buckled!"))
+				return FALSE
+			if(limb_grabbed && grab_state > GRAB_PASSIVE) //this implies a carbon victim
+				if(ishuman(M) && M != user)
+					var/mob/living/carbon/human/H = M
+					var/mob/living/carbon/human/U = user
+					if(U.cmode)
+						if(H.cmode)
+							to_chat(U, "<span class='warning'>[H] is too prepared for combat to be taken hostage.</span>")
+							return
+						to_chat(U, "<span class='warning'>I take [H] hostage.</span>")
+						to_chat(H, "<span class='danger'>[U] takes us hostage!</span>")
+
+						U.swap_hand() // Swaps hand to weapon so you can attack instantly if hostage decides to resist
+
+						U.hostage = H
+						H.hostagetaker = U
 		if(/datum/intent/grab/twist)
+			if(user.buckled)
+				to_chat(user, span_warning("I can't do this while buckled!"))
+				return FALSE
 			if(limb_grabbed && grab_state > 0) //this implies a carbon victim
 				if(iscarbon(M))
 					user.rogfat_add(rand(3,8))
 					twistlimb(user)
 		if(/datum/intent/grab/twistitem)
+			if(user.buckled)
+				to_chat(user, span_warning("I can't do this while buckled!"))
+				return FALSE
 			if(limb_grabbed && grab_state > 0) //this implies a carbon victim
 				if(ismob(M))
 					user.rogfat_add(rand(3,8))
 					twistitemlimb(user)
 		if(/datum/intent/grab/remove)
+			if(user.buckled)
+				to_chat(user, span_warning("I can't do this while buckled!"))
+				return FALSE
 			user.rogfat_add(rand(3,13))
 			if(isitem(sublimb_grabbed))
 				removeembeddeditem(user)
 			else
 				user.stop_pulling()
 		if(/datum/intent/grab/shove)
+			if(user.buckled)
+				to_chat(user, span_warning("I can't do this while buckled!"))
+				return FALSE
 			if(!(user.mobility_flags & MOBILITY_STAND))
 				to_chat(user, span_warning("I must stand.."))
 				return
@@ -418,6 +470,11 @@
 	name = "choke"
 	desc = ""
 	icon_state = "inchoke"
+
+/datum/intent/grab/hostage
+	name = "hostage"
+	desc = ""
+	icon_state = "inhostage"
 
 /datum/intent/grab/shove
 	name = "shove"
@@ -628,7 +685,9 @@
 							var/datum/antagonist/vampirelord/lesser/new_antag = new /datum/antagonist/vampirelord/lesser()
 							new_antag.sired = TRUE
 							C.mind.add_antag_datum(new_antag)
-							sleep(20)
+							sleep(10 SECONDS)
 							C.fully_heal()
+							C.rogstam = C.maxrogstam
+							C.update_health_hud()
 					if("No")
 						to_chat(user, span_warning("I decide [C] is unworthy."))

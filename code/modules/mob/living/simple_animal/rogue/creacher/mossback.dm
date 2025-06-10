@@ -43,7 +43,7 @@
 	attack_sound = list('sound/combat/wooshes/blunt/wooshhuge (1).ogg','sound/combat/wooshes/blunt/wooshhuge (2).ogg','sound/combat/wooshes/blunt/wooshhuge (3).ogg')
 	dodgetime = 0
 	aggressive = 1
-	rot_type = null
+	
 //	stat_attack = UNCONSCIOUS
 
 	can_have_ai = FALSE //disable native ai
