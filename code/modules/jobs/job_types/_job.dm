@@ -127,6 +127,12 @@
 	/// This job is immune to species-based swapped gender locks
 	var/immune_to_genderswap = FALSE
 
+	/// Jobs that are obsfuscated on actor screen
+	var/obsfuscated_job = FALSE
+
+	///Jobs that are hidden from actor screen
+	var/hidden_job = FALSE
+
 
 /*
 	How this works, its CTAG_DEFINE = amount_to_attempt_to_role
@@ -217,10 +223,11 @@
 	if(cmode_music)
 		H.cmode_music = cmode_music
 
-	if(H.mind.special_role == "Court Agent" || H.mind.assigned_role == "Bandit" || H.mind.assigned_role == "Wretch") //For obfuscating Court Agents & Bandits in Actors list
-		GLOB.actors_list[H.mobid] = "[H.real_name] as Adventurer<BR>"
-	else
-		GLOB.actors_list[H.mobid] = "[H.real_name] as [H.mind.assigned_role]<BR>"
+	if (!hidden_job)
+		if (obsfuscated_job)
+			GLOB.actors_list[H.mobid] = "[H.real_name] as Adventurer<BR>"
+		else
+			GLOB.actors_list[H.mobid] = "[H.real_name] as [H.mind.assigned_role]<BR>"
 
 /client/verb/set_mugshot()
 	set category = "OOC"

@@ -90,7 +90,7 @@
 		return TRUE
 
 /obj/item/quiver/examine(mob/user)
-	. = ..()
+	..()
 	if(arrows.len)
 		. += span_notice("[arrows.len] inside.")
 	. += span_notice("Click on the ground to pick up ammos on the floor.")
@@ -102,50 +102,51 @@
 		icon_state = "quiver0"
 
 /obj/item/quiver/arrows/Initialize()
-	. = ..()
+	..()
 	for(var/i in 1 to max_storage)
 		var/obj/item/ammo_casing/caseless/rogue/arrow/iron/A = new()
 		arrows += A
 	update_icon()
 
 /obj/item/quiver/bolts/Initialize()
-	. = ..()
+	..()
 	for(var/i in 1 to max_storage)
 		var/obj/item/ammo_casing/caseless/rogue/bolt/A = new()
 		arrows += A
 	update_icon()
+
 /obj/item/quiver/Wbolts/Initialize()
-	. = ..()
+	..()
 	for(var/i in 1 to max_storage)
 		var/obj/item/ammo_casing/caseless/rogue/bolt/water/A = new()
 		arrows += A
 	update_icon()
-/*
-/obj/item/quiver/Parrows/Initialize()
-	. = ..()
+
+/obj/item/quiver/bolts/paalloy/Initialize()
+	..()
 	for(var/i in 1 to max_storage)
-		var/obj/item/ammo_casing/caseless/rogue/arrow/poison/A = new()
+		var/obj/item/ammo_casing/caseless/rogue/bolt/paalloy/A = new()
 		arrows += A
 	update_icon()
 
-/obj/item/quiver/Pbolts/Initialize()
-	. = ..()
-	for(var/i in 1 to max_storage)
-		var/obj/item/ammo_casing/caseless/rogue/bolt/poison/A = new()
-		arrows += A
-	update_icon()
-*/
 /obj/item/quiver/Warrows/Initialize()
-	. = ..()
+	..()
 	for(var/i in 1 to max_storage)
 		var/obj/item/ammo_casing/caseless/rogue/arrow/water/A = new()
 		arrows += A
 	update_icon()
 
 /obj/item/quiver/bodkin/Initialize()
-	. = ..()
+	..()
 	for(var/i in 1 to max_storage)
 		var/obj/projectile/bullet/reusable/arrow/steel/A = new()
+		arrows += A
+	update_icon()
+
+/obj/item/quiver/paalloy/Initialize()
+	..()
+	for(var/i in 1 to max_storage)
+		var/obj/item/ammo_casing/caseless/rogue/arrow/steel/paalloy/A = new()
 		arrows += A
 	update_icon()
 
@@ -202,16 +203,23 @@
 		icon_state = "javelinbag0"
 
 /obj/item/quiver/javelin/iron/Initialize()
-	. = ..()
+	..()
 	for(var/i in 1 to max_storage)
 		var/obj/item/ammo_casing/caseless/rogue/javelin/A = new()
 		arrows += A
 	update_icon()
 
 /obj/item/quiver/javelin/steel/Initialize()
-	. = ..()
+	..()
 	for(var/i in 1 to max_storage)
 		var/obj/item/ammo_casing/caseless/rogue/javelin/steel/A = new()
+		arrows += A
+	update_icon()
+
+/obj/item/quiver/javelin/paalloy/Initialize()
+	..()
+	for(var/i in 1 to max_storage)
+		var/obj/item/ammo_casing/caseless/rogue/javelin/steel/paalloy/A = new()
 		arrows += A
 	update_icon()
 
@@ -277,5 +285,12 @@
 	. = ..()
 	for(var/i in 1 to max_storage)
 		var/obj/item/ammo_casing/caseless/rogue/sling_bullet/iron/A = new()
+		arrows += A
+	update_icon()
+
+/obj/item/quiver/sling/paalloy/Initialize()
+	. = ..()
+	for(var/i in 1 to max_storage)
+		var/obj/item/ammo_casing/caseless/rogue/sling_bullet/paalloy/A = new()
 		arrows += A
 	update_icon()

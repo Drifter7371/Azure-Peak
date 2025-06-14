@@ -15,6 +15,8 @@
 	min_pq = 20
 	max_pq = null
 
+	obsfuscated_job = TRUE
+
 	advclass_cat_rolls = list(CTAG_WRETCH = 20)
 	PQ_boost_divider = 10
 	round_contrib_points = 2
