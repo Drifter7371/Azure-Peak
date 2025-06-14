@@ -1,0 +1,433 @@
+/datum/job/roguetown/warden_scoutmaster
+	title = "Warden Scoutmaster"
+	flag = SERGEANT
+	department_flag = GARRISON
+	faction = "Station"
+	total_positions = 1
+	spawn_positions = 1
+	allowed_sexes = list(MALE, FEMALE)
+	allowed_races = RACES_ALL_KINDS
+	allowed_ages = list(AGE_ADULT, AGE_MIDDLEAGED, AGE_OLD)
+	tutorial = "You are the most experienced of the Crown's Scouting Troop, leading the Wardens in maintaining order and attending to threats and crimes below the court's attention. \
+				See to those under your command and fill in the gaps knights leave in their wake. Obey the orders of your Marshal and the Crown."
+	display_order = JDO_SERGEANT
+	whitelist_req = TRUE
+	round_contrib_points = 3
+	
+	give_bank_account = 50
+	min_pq = 6
+	max_pq = null
+	cmode_music = 'sound/music/combat_guard_bog.ogg'
+
+/datum/outfit/job/roguetown/bogguardsman
+	head = /obj/item/clothing/head/roguetown/helmet/bascinet/antler
+	armor = /obj/item/clothing/suit/roguetown/armor/leather/hide/warden
+	cloak = /obj/item/clothing/cloak/wardencloak
+	shoes = /obj/item/clothing/shoes/roguetown/boots/leather
+	belt = /obj/item/storage/belt/rogue/leather
+	backr = /obj/item/storage/backpack/rogue/satchel
+	wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
+	id = /obj/item/scomstone/garrison
+	job_bitflag = BITFLAG_GARRISON
+
+/datum/job/roguetown/bogguardsman/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
+	..()
+	if(ishuman(L))
+		var/mob/living/carbon/human/H = L
+		H.advsetup = 1
+		H.invisibility = INVISIBILITY_MAXIMUM
+		H.become_blind("advsetup")
+
+/datum/advclass/bogguardsman/elite_ranger
+	name = "Elite Ranger"
+	tutorial = "You are an elite ranger, once a hunter who had volunteered within the wardens, now the head of the troop."
+	outfit = /datum/outfit/job/roguetown/bogguardsman/ranger
+	category_tags = list(CTAG_WARDEN)
+
+/datum/outfit/job/roguetown/bogguardsman/ranger/pre_equip(mob/living/carbon/human/H)
+	..()
+	neck = /obj/item/clothing/neck/roguetown/coif
+	gloves = /obj/item/clothing/gloves/roguetown/leather
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
+	pants = /obj/item/clothing/under/roguetown/trou/leather
+	backl = /obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve
+	beltr = /obj/item/quiver/arrows
+	beltl = /obj/item/rogueweapon/huntingknife/idagger/steel
+	backpack_contents = list(/obj/item/storage/keyring/guard = 1, /obj/item/flashlight/flare/torch/lantern = 1)
+	if(H.mind)
+		H.mind.adjust_skillrank(/datum/skill/combat/bows, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/slings, 4, TRUE) 
+		H.mind.adjust_skillrank(/datum/skill/combat/crossbows, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 3, TRUE) // buffed to hold their own as a """command""" role.
+		H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/axes, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/athletics, 5, TRUE) // Buffed to match Sergeant.
+		H.mind.adjust_skillrank(/datum/skill/misc/climbing, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/swimming, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/medicine, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/tanning, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/tracking, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/crafting, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/riding, 1, TRUE)	
+		H.change_stat("perception", 2) //8 points weighted, same as Sergeant. They get temp buffs in the woods instead of in the city.
+		H.change_stat("endurance", 2)
+		H.change_stat("speed", 2)
+		H.verbs |= /mob/proc/haltyell
+	ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_WOODSMAN, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_OUTDOORSMAN, TRAIT_GENERIC)
+  ADD_TRAIT(H, TRAIT_STEELHEARTED, TRAIT_GENERIC)
+	H.set_blindness(0)
+
+/datum/advclass/bogguardsman/Elite_Forester
+	name = "Elite Forester"
+	tutorial = "You are an elite forester, a woodsman who volunteered and excelled within the wardens, you lead by this example to this dae."
+	outfit = /datum/outfit/job/roguetown/bogguardsman/elite_forester
+	category_tags = list(CTAG_WARDEN)
+
+/datum/outfit/job/roguetown/bogguardsman/elite_forester/pre_equip(mob/living/carbon/human/H)
+	..()
+	neck = /obj/item/clothing/neck/roguetown/chaincoif/iron
+	gloves = /obj/item/clothing/gloves/roguetown/chain/iron
+	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail/iron
+	pants = /obj/item/clothing/under/roguetown/chainlegs/iron
+	backl = /obj/item/gwstrap
+	beltr = /obj/item/rogueweapon/stoneaxe/woodcut/wardenpick
+	beltl = /obj/item/rogueweapon/huntingknife
+	r_hand = /obj/item/rogueweapon/spear
+	backpack_contents = list(/obj/item/storage/keyring/guard = 1, /obj/item/flashlight/flare/torch/lantern = 1)
+	if(H.mind)
+		H.mind.adjust_skillrank(/datum/skill/combat/axes, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/polearms, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/shields, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/slings, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/bows, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/crossbows, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/athletics, 5, TRUE) // Buffed to match Sergeant.
+		H.mind.adjust_skillrank(/datum/skill/misc/climbing, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 3, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/swimming, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/medicine, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/tanning, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/tracking, 4, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/craft/crafting, 2, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/misc/riding, 1, TRUE)
+		H.change_stat("perception", 1) //7 points weighted, same as MAA. They get temp buffs in the woods instead of in the city.
+		H.change_stat("constitution", 1)
+		H.change_stat("endurance", 2)
+		H.change_stat("strength", 2)
+		H.verbs |= /mob/proc/haltyell
+	ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_WOODSMAN, TRAIT_GENERIC)
+	ADD_TRAIT(H, TRAIT_OUTDOORSMAN, TRAIT_GENERIC)
+  ADD_TRAIT(H, TRAIT_STEELHEARTED, TRAIT_GENERIC)
+
+
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/order/movemovemove)
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/order/takeaim)
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/order/onfeet)
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/order/hold)
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/order/focustarget)
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/convertrole/bog) // Conscripts into a Warden.
+	H.verbs |= list(/mob/living/carbon/human/proc/request_outlaw, /mob/proc/haltyell, /mob/living/carbon/human/mind/proc/setorders)
+/obj/effect/proc_holder/spell/invoked/order
+	name = ""
+	range = 1
+	associated_skill = /datum/skill/misc/athletics
+	devotion_cost = 0
+	chargedrain = 1
+	chargetime = 15
+	releasedrain = 80 // This is quite costy. Shouldn't be able to really spam them right off the cuff, combined with having to type out an order. Should prevent VERY occupied officers from ALSO ordering
+	recharge_time = 2 MINUTES
+	miracle = FALSE
+	sound = 'sound/magic/inspire_02.ogg'
+
+
+/obj/effect/proc_holder/spell/invoked/order/movemovemove
+	name = "Move! Move! Move!"
+	overlay_state = "movemovemove"
+
+/obj/effect/proc_holder/spell/invoked/order/movemovemove/cast(list/targets, mob/living/user)
+	. = ..()
+	if(isliving(targets[1]))
+		var/mob/living/target = targets[1]
+		var/msg = user.mind.movemovemovetext
+		if(!msg)
+			to_chat(user, span_alert("I must say something to give an order!"))
+			return
+		if(user.job == "Sergeant")
+			if(!target.job == "Man at Arms")
+				to_chat(user, span_alert("I cannot order one not of my ranks!"))
+				return
+		if(user.job == "Knight Captain")
+			if(!(target.job in list("Knight", "Squire")))
+				to_chat(user, span_alert("I cannot order one not of my ranks!"))
+				return		
+		if(target == user)
+			to_chat(user, span_alert("I cannot order myself!"))
+			return
+		user.say("[msg]")
+		target.apply_status_effect(/datum/status_effect/buff/order/movemovemove)
+		return TRUE
+	revert_cast()
+	return FALSE
+
+/datum/status_effect/buff/order/movemovemove/nextmove_modifier()
+	return 0.85
+
+/datum/status_effect/buff/order/movemovemove
+	id = "movemovemove"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/order/movemovemove
+	effectedstats = list("speed" = 5)
+	duration = 1 MINUTES
+
+/atom/movable/screen/alert/status_effect/buff/order/movemovemove
+	name = "Move! Move! Move!"
+	desc = "My officer has ordered me to move quickly!"
+	icon_state = "buff"
+
+/datum/status_effect/buff/order/movemovemove/on_apply()
+	. = ..()
+	to_chat(owner, span_blue("My officer orders me to move!"))
+
+/obj/effect/proc_holder/spell/invoked/order/takeaim
+	name = "Take aim!"
+	overlay_state = "takeaim"
+
+/datum/status_effect/buff/order/takeaim
+	id = "takeaim"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/order/takeaim
+	effectedstats = list("perception" = 5)
+	duration = 1 MINUTES
+
+/atom/movable/screen/alert/status_effect/buff/order/takeaim
+	name = "Take aim!"
+	desc = "My officer has ordered me to take aim!"
+	icon_state = "buff"
+
+/datum/status_effect/buff/order/takeaim/on_apply()
+	. = ..()
+	to_chat(owner, span_blue("My officer orders me to take aim!"))
+
+/obj/effect/proc_holder/spell/invoked/order/takeaim/cast(list/targets, mob/living/user)
+	. = ..()
+	if(isliving(targets[1]))
+		var/mob/living/target = targets[1]
+		var/msg = user.mind.takeaimtext
+		if(!msg)
+			to_chat(user, span_alert("I must say something to give an order!"))
+			return
+		if(user.job == "Sergeant")
+			if(!target.job == "Man at Arms")
+				to_chat(user, span_alert("I cannot order one not of my ranks!"))
+				return
+		if(user.job == "Knight Captain")
+			if(!(target.job in list("Knight", "Squire")))
+				to_chat(user, span_alert("I cannot order one not of my ranks!"))
+				return		
+		if(target == user)
+			to_chat(user, span_alert("I cannot order myself!"))
+			return
+		user.say("[msg]")
+		target.apply_status_effect(/datum/status_effect/buff/order/takeaim)
+		return TRUE
+	revert_cast()
+	return FALSE
+
+
+
+/obj/effect/proc_holder/spell/invoked/order/onfeet
+	name = "On your feet!"
+	overlay_state = "onfeet"
+
+/obj/effect/proc_holder/spell/invoked/order/onfeet/cast(list/targets, mob/living/user)
+	. = ..()
+	if(isliving(targets[1]))
+		var/mob/living/target = targets[1]
+		var/msg = user.mind.onfeettext
+		if(!msg)
+			to_chat(user, span_alert("I must say something to give an order!"))
+			return
+		if(user.job == "Sergeant")
+			if(!target.job == "Man at Arms")
+				to_chat(user, span_alert("I cannot order one not of my ranks!"))
+				return
+		if(user.job == "Knight Captain")
+			if(!(target.job in list("Knight", "Squire")))
+				to_chat(user, span_alert("I cannot order one not of my ranks!"))
+				return		
+		if(target == user)
+			to_chat(user, span_alert("I cannot order myself!"))
+			return
+		user.say("[msg]")
+		target.apply_status_effect(/datum/status_effect/buff/order/onfeet)
+		if(!(target.mobility_flags & MOBILITY_STAND))
+			target.SetUnconscious(0)
+			target.SetSleeping(0)
+			target.SetParalyzed(0)
+			target.SetImmobilized(0)
+			target.SetStun(0)
+			target.SetKnockdown(0)
+			target.set_resting(FALSE)
+		return TRUE
+	revert_cast()
+	return FALSE
+
+/datum/status_effect/buff/order/onfeet
+	id = "onfeet"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/order/onfeet
+	duration = 30 SECONDS
+
+/atom/movable/screen/alert/status_effect/buff/order/onfeet
+	name = "On your feet!"
+	desc = "My officer has ordered me to my feet!"
+	icon_state = "buff"
+
+/datum/status_effect/buff/order/onfeet/on_apply()
+	. = ..()
+	to_chat(owner, span_blue("My officer orders me to my feet!"))
+	ADD_TRAIT(owner, TRAIT_NOPAIN, TRAIT_GENERIC)
+
+/datum/status_effect/buff/order/onfeet/on_remove()
+	REMOVE_TRAIT(owner, TRAIT_NOPAIN, TRAIT_GENERIC)
+	. = ..()
+
+
+/obj/effect/proc_holder/spell/invoked/order/hold
+	name = "Hold!"
+	overlay_state = "hold"
+
+
+/obj/effect/proc_holder/spell/invoked/order/hold/cast(list/targets, mob/living/user)
+	. = ..()
+	if(isliving(targets[1]))
+		var/mob/living/target = targets[1]
+		var/msg = user.mind.holdtext
+		if(!msg)
+			to_chat(user, span_alert("I must say something to give an order!"))
+			return
+		if(user.job == "Sergeant")
+			if(!target.job == "Man at Arms")
+				to_chat(user, span_alert("I cannot order one not of my ranks!"))
+				return
+		if(user.job == "Knight Captain")
+			if(!(target.job in list("Knight", "Squire")))
+				to_chat(user, span_alert("I cannot order one not of my ranks!"))
+				return		
+		if(target == user)
+			to_chat(user, span_alert("I cannot order myself!"))
+			return
+		user.say("[msg]")
+		target.apply_status_effect(/datum/status_effect/buff/order/hold)
+		return TRUE
+	revert_cast()
+	return FALSE
+
+
+/datum/status_effect/buff/order/hold
+	id = "hold"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/order/hold
+	effectedstats = list("endurance" = 2, "constitution" = 2)
+	duration = 1 MINUTES
+
+/atom/movable/screen/alert/status_effect/buff/order/hold
+	name = "Hold!"
+	desc = "My officer has ordered me to hold!"
+	icon_state = "buff"
+
+/datum/status_effect/buff/order/hold/on_apply()
+	. = ..()
+	to_chat(owner, span_blue("My officer orders me to hold!"))
+
+#define TARGET_FILTER "target_marked"
+
+/obj/effect/proc_holder/spell/invoked/order/focustarget
+	name = "Focus target!"
+	overlay_state = "focustarget"
+
+
+/obj/effect/proc_holder/spell/invoked/order/focustarget/cast(list/targets, mob/living/user)
+	. = ..()
+	if(isliving(targets[1]))
+		var/mob/living/target = targets[1]
+		var/msg = user.mind.focustargettext
+		if(!msg)
+			to_chat(user, span_alert("I must say something to give an order!"))
+			return
+		if(target == user)
+			to_chat(user, span_alert("I cannot order myself to be killed!"))
+			return
+		if(HAS_TRAIT(target, TRAIT_CRITICAL_WEAKNESS))
+			to_chat(user, span_alert("They are already vulnerable!"))
+			return	
+		user.say("[msg]")
+		target.apply_status_effect(/datum/status_effect/debuff/order/focustarget)
+		return TRUE
+	revert_cast()
+	return FALSE
+
+/datum/status_effect/debuff/order/focustarget
+	id = "focustarget"
+	alert_type = /atom/movable/screen/alert/status_effect/debuff/order/focustarget
+	effectedstats = list("fortune" = -2)
+	duration = 1 MINUTES
+	var/outline_colour = "#69050a"
+
+/atom/movable/screen/alert/status_effect/debuff/order/focustarget
+	name = "Targetted"
+	desc = "A officer has marked me for death!"
+	icon_state = "targetted"
+
+/datum/status_effect/debuff/order/focustarget/on_apply()
+	. = ..()
+	var/filter = owner.get_filter(TARGET_FILTER)
+	to_chat(owner, span_alert("I have been marked for death by a officer!"))
+	ADD_TRAIT(owner, TRAIT_CRITICAL_WEAKNESS, TRAIT_GENERIC)
+	if (!filter)
+		owner.add_filter(TARGET_FILTER, 2, list("type" = "outline", "color" = outline_colour, "alpha" = 200, "size" = 1))
+	return TRUE
+
+/datum/status_effect/debuff/order/focustarget/on_remove()
+	. = ..()
+	REMOVE_TRAIT(owner, TRAIT_CRITICAL_WEAKNESS, TRAIT_GENERIC)
+	owner.remove_filter(TARGET_FILTER)
+
+
+/obj/effect/proc_holder/spell/invoked/order/focustarget
+	name = "Focus target!"
+	overlay_state = "focustarget"
+
+
+#undef TARGET_FILTER
+
+
+/mob/living/carbon/human/mind/proc/setorders()
+	set name = "Rehearse Orders"
+	set category = "Voice of Command"
+	mind.movemovemovetext = input("Send a message.", "Move! Move! Move!") as text|null
+	if(!mind.movemovemovetext)
+		to_chat(src, "I must rehearse something for this order...")
+		return
+	mind.holdtext = input("Send a message.", "Hold!") as text|null
+	if(!mind.holdtext)
+		to_chat(src, "I must rehearse something for this order...")
+		return
+	mind.takeaimtext = input("Send a message.", "Take aim!") as text|null
+	if(!mind.takeaimtext)
+		to_chat(src, "I must rehearse something for this order...")
+		return
+	mind.onfeettext = input("Send a message.", "On your feet!") as text|null
+	if(!mind.onfeettext)
+		to_chat(src, "I must rehearse something for this order...")
+		return
+	mind.focustargettext = input("Send a message.", "Focus Target!") as text|null
+	if(!mind.focustargettext)
+		to_chat(src, "I must rehearse something for this order...")
+		return
