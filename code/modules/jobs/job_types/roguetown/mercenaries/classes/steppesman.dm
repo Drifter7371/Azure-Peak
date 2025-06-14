@@ -15,7 +15,7 @@
 	//Universal gear
 	belt = /obj/item/storage/belt/rogue/leather/black
 	pants = /obj/item/clothing/under/roguetown/heavy_leather_pants
-	shirt = /obj/item/clothing/suit/roguetown/shirt/robe/chokha
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy/chargah
 	backr = /obj/item/storage/backpack/rogue/satchel
 	backpack_contents = list(/obj/item/roguekey/mercenary, /obj/item/flashlight/flare/torch, /obj/item/rogueweapon/huntingknife/idagger/steel, /obj/item/storage/belt/rogue/pouch/coins/poor, /obj/item/rogueweapon/whip/nagaika)
 
@@ -41,7 +41,7 @@
 			head = /obj/item/clothing/head/roguetown/helmet			//Needs a unique helmet + mask combo at some point. 
 			mask = /obj/item/clothing/mask/rogue/facemask			//See above. Trying to emulate a Cuman/Mongolic looking metal face-mask.
 			gloves = /obj/item/clothing/gloves/roguetown/chain
-			armor = /obj/item/clothing/suit/roguetown/armor/plate/half
+			armor = /obj/item/clothing/suit/roguetown/armor/plate/scale/steppe	//Scale armor w/ better durability & unique sprite
 			cloak = /obj/item/clothing/cloak/raincloak/furcloak
 			wrists = /obj/item/clothing/wrists/roguetown/bracers
 			beltr = /obj/item/rogueweapon/shield/wood
@@ -67,7 +67,7 @@
 			shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 			head = /obj/item/clothing/head/roguetown/helmet
 			gloves = /obj/item/clothing/gloves/roguetown/leather
-			armor = /obj/item/clothing/suit/roguetown/armor/leather/studded
+			armor = /obj/item/clothing/suit/roguetown/armor/leather/heavy/coat/steppe
 			cloak = /obj/item/clothing/cloak/raincloak/furcloak
 			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
 			beltr = /obj/item/quiver/javelin/iron
@@ -94,7 +94,7 @@
 			shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 			head = /obj/item/clothing/head/roguetown/papakha	//No helm
 			gloves = /obj/item/clothing/gloves/roguetown/leather
-			armor = /obj/item/clothing/suit/roguetown/armor/leather/studded
+			armor = /obj/item/clothing/suit/roguetown/armor/leather/heavy/coat/steppe
 			cloak = /obj/item/clothing/cloak/volfmantle			//Crazed man, gives the look.
 			wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
 			beltr = /obj/item/rogueweapon/shield/buckler		//Doesn't get good shield skill + no armor, so they get this to compensate for no parry on whip.

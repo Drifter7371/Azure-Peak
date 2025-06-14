@@ -70,6 +70,7 @@
 	max_blade_int = 100
 	minstr = 8
 	wdefense = 1
+	demolition_mod = 1.25
 	w_class = WEIGHT_CLASS_BULKY
 	wlength = WLENGTH_SHORT
 	pickup_sound = 'sound/foley/equip/rummaging-03.ogg'
@@ -374,6 +375,7 @@
 	associated_skill = /datum/skill/combat/axes
 	blade_dulling = DULLING_SHAFT_WOOD
 	wdefense = 6
+	demolition_mod = 1.5
 
 /obj/item/rogueweapon/greataxe/getonmobprop(tag)
 	. = ..()

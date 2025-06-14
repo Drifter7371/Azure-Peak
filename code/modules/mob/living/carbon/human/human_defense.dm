@@ -43,7 +43,7 @@
 		if(used.blocksound)
 			playsound(loc, get_armor_sound(used.blocksound, blade_dulling), 100)
 		var/intdamage = damage
-		if(intdamfactor)
+		if(intdamfactor != 1)
 			intdamage *= intdamfactor
 		if(d_type == "blunt")
 			if(used.armor?.getRating("blunt") > 0)

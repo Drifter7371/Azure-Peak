@@ -151,7 +151,7 @@ GLOBAL_VAR_INIT(rpg_loot_items, FALSE)
 	var/wbalance = WBALANCE_NORMAL
 	var/wdefense = 0 //better at defending
 	var/minstr = 0  //for weapons
-	var/intdamage_factor = 0	//%-age of our raw damage that is dealt to armor or weapon on hit / parry.
+	var/intdamage_factor = 1	//%-age of our raw damage that is dealt to armor or weapon on hit / parry.
 
 	var/sleeved = null
 	var/sleevetype = null

@@ -13,10 +13,19 @@
 		/datum/sprite_accessory/face_detail/brows/dark,
 		/datum/sprite_accessory/face_detail/scar,
 		/datum/sprite_accessory/face_detail/scart,
+		/datum/sprite_accessory/face_detail/slashedeye_r,
+		/datum/sprite_accessory/face_detail/slashedeye_l,
+		/datum/sprite_accessory/face_detail/mangled,
 		/datum/sprite_accessory/face_detail/burnface_r,
 		/datum/sprite_accessory/face_detail/burnface_l,
 		/datum/sprite_accessory/face_detail/deadeye_r,
 		/datum/sprite_accessory/face_detail/deadeye_l,
+		/datum/sprite_accessory/face_detail/tattoo_lips,
+		/datum/sprite_accessory/face_detail/tattoo_eye_r,
+		/datum/sprite_accessory/face_detail/tattoo_eye_l,
+		/datum/sprite_accessory/face_detail/burneye_r,
+		/datum/sprite_accessory/face_detail/burneye_l,
+		/datum/sprite_accessory/face_detail/scarhead,
 		)
 
 /datum/customizer/bodypart_feature/accessory
@@ -37,6 +46,12 @@
 		/datum/sprite_accessory/accessory/eyepierce/alt,
 		/datum/sprite_accessory/accessory/choker,
 		/datum/sprite_accessory/accessory/chokere,
+		/datum/sprite_accessory/accessory/harlequin,
+		/datum/sprite_accessory/accessory/warpaint_blue,
+		/datum/sprite_accessory/accessory/warpaint_red,
+		/datum/sprite_accessory/accessory/warpaint_green,
+		/datum/sprite_accessory/accessory/warpaint_purple,
+		/datum/sprite_accessory/accessory/warpaint_black,
 		)
 
 /datum/customizer/bodypart_feature/accessory

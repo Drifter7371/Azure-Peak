@@ -7,6 +7,8 @@
 		added = round(-10+ (added*-40))
 		if(HAS_TRAIT(src, TRAIT_MISSING_NOSE))
 			added = round(added * 0.5, 1)
+		if(HAS_TRAIT(src, TRAIT_MONK_ROBE))
+			added = round(added * 1.25, 1)
 		if(rogfat >= 1)
 			rogfat_add(added)
 		else

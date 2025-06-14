@@ -386,12 +386,14 @@
 /datum/status_effect/buff/abyssal/on_apply()
 	. = ..()
 	var/filter = owner.get_filter(ABYSSAL_FILTER)
+	ADD_TRAIT(owner, TRAIT_STRENGTH_UNCAPPED, TRAIT_MIRACLE)
 	if (!filter)
 		owner.add_filter(ABYSSAL_FILTER, 2, list("type" = "outline", "color" = outline_colour, "alpha" = 180, "size" = 1))
 	to_chat(owner, span_warning("My limbs swell with otherworldly power!"))
 
 /datum/status_effect/buff/abyssal/on_remove()
 	. = ..()
+	REMOVE_TRAIT(owner, TRAIT_STRENGTH_UNCAPPED, TRAIT_MIRACLE)
 	owner.remove_filter(ABYSSAL_FILTER)
 	to_chat(owner, span_warning("the strange power fades"))
 

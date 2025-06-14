@@ -113,6 +113,7 @@
 	hitsound = list('sound/combat/hits/bladed/genslash (1).ogg', 'sound/combat/hits/bladed/genslash (2).ogg', 'sound/combat/hits/bladed/genslash (3).ogg')
 	item_d_type = "slash"
 	misscost = 10
+	intent_intdamage_factor = 0.25
 
 /datum/intent/rend/reach
 	name = "long rend"
@@ -133,7 +134,7 @@
 	hitsound = list('sound/combat/hits/bladed/genstab (1).ogg', 'sound/combat/hits/bladed/genstab (2).ogg', 'sound/combat/hits/bladed/genstab (3).ogg')
 	item_d_type = "stab"
 	no_early_release = TRUE
-	intdamage_factor = 0.6
+	intent_intdamage_factor = 0.1
 
 /datum/intent/partizan/peel
 	name = "armor peel"
@@ -173,7 +174,6 @@
 	chargetime = 4 SECONDS
 	damfactor = 4 // 80 damage on hit. It is gonna hurt.
 	reach = 3 // Yep! 3 tiles
-	intdamage_factor = 2 // 4 hits to break coat of plate normally.
 
 /datum/intent/lance/onehand
 	chargetime = 5 SECONDS

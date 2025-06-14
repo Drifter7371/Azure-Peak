@@ -292,7 +292,7 @@
 	craftdiff = 0
 
 /datum/anvil_recipe/armor/iron/boot
-	name = "Plated Boots"
+	name = "Light plated Boots"
 	req_bar = /obj/item/ingot/iron
 	created_item = /obj/item/clothing/shoes/roguetown/boots/armor/iron
 	createditem_num = 1
@@ -640,6 +640,13 @@
 	req_bar = /obj/item/ingot/steel
 	additional_items = list(/obj/item/ingot/steel)
 	created_item = /obj/item/clothing/head/roguetown/helmet/heavy/knight/armet
+	craftdiff = 3
+
+/datum/anvil_recipe/armor/steel/slittedkettle
+	name = "Slitted Kettle (+1 Steel)"
+	req_bar = /obj/item/ingot/steel
+	additional_items = list(/obj/item/ingot/steel)
+	created_item = /obj/item/clothing/head/roguetown/helmet/heavy/knight/skettle
 	craftdiff = 3
 
 /datum/anvil_recipe/armor/steel/savoyard

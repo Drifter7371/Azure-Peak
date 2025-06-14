@@ -79,6 +79,8 @@
 		/datum/body_marking/socklonger,
 		/datum/body_marking/tips,
 		/datum/body_marking/nose,
+		/datum/body_marking/bangs,
+		/datum/body_marking/bun,
 	)
 	descriptor_choices = list(
 		/datum/descriptor_choice/height,

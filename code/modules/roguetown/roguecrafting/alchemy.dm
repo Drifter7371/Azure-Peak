@@ -102,6 +102,17 @@
 	craftdiff = 5
 	verbage_simple = "mix"
 
+/datum/crafting_recipe/roguetown/alchemy/revival_potion_spider
+	name = "Revival potion"
+	category = "Table"
+	result = list(/obj/item/reagent_containers/glass/bottle/revival = 1)
+	reqs = list(/obj/item/reagent_containers/food/snacks/eoran_aril/auric = 1,
+	 			/obj/item/alch/viscera = 2,
+				/obj/item/reagent_containers/glass/bottle/alchemical,
+				/obj/item/reagent_containers/spidervenom_inert = 3)
+	craftdiff = 5
+	verbage_simple = "mix"
+
 /// bottle craft
 
 /datum/crafting_recipe/roguetown/alchemy/glassbottles

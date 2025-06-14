@@ -31,6 +31,41 @@
 	layer = BODY_LAYER
 	icon_state = "scar2"
 
+/datum/sprite_accessory/face_detail/slashedeye_r
+	name = "Slashed Eye (r)"
+	icon_state = "slashedeye_r"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/face_detail/slashedeye_r
+	name = "Slashed Eye (r)"
+	icon_state = "slashedeye_r"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/face_detail/slashedeye_l
+	name = "Slashed Eye (l)"
+	icon_state = "slashedeye_l"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/face_detail/mangled
+	name = "Mangled Jaw"
+	icon_state = "mangled"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/face_detail/tattoo_lips
+	name = "Tattoo (Lips)"
+	icon_state = "tattoo_lips"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/face_detail/tattoo_eye_r
+	name = "Tattoo (r Eye)"
+	icon_state = "tattoo_eye_r"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/face_detail/tattoo_eye_l
+	name = "Tattoo (l Eye)"
+	icon_state = "tattoo_eye_l"
+	layer = BODY_LAYER
+
 /datum/sprite_accessory/face_detail/burnface_r
 	name = "Burns (r)"
 	icon_state = "burnface_r"
@@ -41,6 +76,16 @@
 	icon_state = "burnface_l"
 	layer = BODY_LAYER
 
+/datum/sprite_accessory/face_detail/burneye_r
+	name = "Burned Eye (r)"
+	icon_state = "burneye_r"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/face_detail/burneye_l
+	name = "Burned Eye (l)"
+	icon_state = "burneye_l"
+	layer = BODY_LAYER
+
 /datum/sprite_accessory/face_detail/deadeye_r
 	name = "Dead Eye (r)"
 	icon_state = "deadeye_r"
@@ -49,6 +94,11 @@
 /datum/sprite_accessory/face_detail/deadeye_l
 	name = "Dead Eye (l)"
 	icon_state = "deadeye_l"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/face_detail/scarhead
+	name = "Scarred Head"
+	icon_state = "scarhead"
 	layer = BODY_LAYER
 
 /datum/sprite_accessory/accessory
@@ -95,3 +145,33 @@
 	name = "Neckband (E)"
 	icon_state = "chokere"
 	layer = BODY_LAYER
+
+/datum/sprite_accessory/accessory/harlequin
+	name = "Harlequin"
+	icon_state = "harlequin"
+	layer = BODY_LAYER
+
+/datum/sprite_accessory/accessory/warpaint_blue
+	name = "Warpaint (Blue)"
+	icon_state = "warpaint_blue"
+	layer = BODY_FRONT_LAYER
+
+/datum/sprite_accessory/accessory/warpaint_red
+	name = "Warpaint (Red)"
+	icon_state = "warpaint_red"
+	layer = BODY_FRONT_LAYER
+
+/datum/sprite_accessory/accessory/warpaint_green
+	name = "Warpaint (Green)"
+	icon_state = "warpaint_green"
+	layer = BODY_FRONT_LAYER
+
+/datum/sprite_accessory/accessory/warpaint_purple
+	name = "Warpaint (Purple)"
+	icon_state = "warpaint_purple"
+	layer = BODY_FRONT_LAYER
+
+/datum/sprite_accessory/accessory/warpaint_black
+	name = "Warpaint (Black)"
+	icon_state = "warpaint_black"
+	layer = BODY_FRONT_LAYER

@@ -1,33 +1,28 @@
 // Noc Spells
+// Blindness is a cancerous spells and should not be available to everyone.
+// But I am not nuking it from Acolyte yet so it will be unavailable to mage.
+// I repathed it to avoid it becoming available to mages again.
 /obj/effect/proc_holder/spell/invoked/blindness
 	name = "Blindness"
 	desc = "Direct a mote of living darkness to temporarily blind another."
 	overlay_state = "blindness"
 	clothes_req = FALSE
 	releasedrain = 30
-	chargedrain = 5
-	chargetime = 5
+	chargedrain = 0
+	chargetime = 0
 	range = 7
 	warnie = "sydwarning"
 	movement_interrupt = FALSE
 	sound = 'sound/magic/churn.ogg'
 	spell_tier = 2 // Combat spell
-	invocation = "Obcaeco!"
-	invocation_type = "shout"
-	associated_skill = /datum/skill/magic/arcane
-	antimagic_allowed = TRUE
-	recharge_time = 15 SECONDS
-	cost = 3
-
-/obj/effect/proc_holder/spell/invoked/blindness/miracle
-	req_items = list(/obj/item/clothing/neck/roguetown/psicross)
-	chargedrain = 0
-	chargetime = 0
 	invocation = "Noc blinds thee of thy sins!"
 	invocation_type = "shout" //can be none, whisper, emote and shout
 	associated_skill = /datum/skill/magic/holy
 	devotion_cost = 15
+	recharge_time = 15 SECONDS
+	req_items = list(/obj/item/clothing/neck/roguetown/psicross)
 	miracle = TRUE
+	cost = 3
 
 /obj/effect/proc_holder/spell/invoked/blindness/cast(list/targets, mob/user = usr)
 	if(isliving(targets[1]))

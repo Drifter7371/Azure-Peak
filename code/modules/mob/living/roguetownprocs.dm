@@ -338,10 +338,15 @@
 					if(dam2take)
 						if(!user.mind)
 							dam2take = dam2take * 0.25
-						if(dam2take > 0 && intenty.masteritem?.intdamage_factor)
-							dam2take = dam2take * intenty.masteritem?.intdamage_factor
-						if(dam2take > 0 && intenty.intdamage_factor)
-							dam2take = dam2take * intenty.intdamage_factor
+						if(dam2take > 0 && (intenty.masteritem?.intdamage_factor != 1 || intenty.intent_intdamage_factor != 1))
+							var/higher_intfactor = max(intenty.masteritem?.intdamage_factor, intenty.intent_intdamage_factor)
+							var/lowest_intfactor = min(intenty.masteritem?.intdamage_factor, intenty.intent_intdamage_factor)
+							var/used_intfactor
+							if(lowest_intfactor < 1)	//Our intfactor multiplier can be either 0 to 1, or 1 to whatever.
+								used_intfactor = lowest_intfactor
+							if(higher_intfactor > 1)	//Make sure to keep your weapon and intent intfactors consistent to avoid problems here!
+								used_intfactor = higher_intfactor
+							dam2take *= used_intfactor
 						used_weapon.take_damage(max(dam2take,1), BRUTE, used_weapon.d_type)
 					return TRUE
 				else
@@ -646,8 +651,15 @@
 			if(dam2take)
 				if(!user.mind)
 					dam2take = dam2take * 0.25
-				if(dam2take > 0 && IU.intdamage_factor != 0)
-					dam2take = dam2take * IU.intdamage_factor
+				if(dam2take > 0 && (user.used_intent.masteritem?.intdamage_factor != 1 || user.used_intent.intent_intdamage_factor != 1))
+					var/higher_intfactor = max(user.used_intent.masteritem?.intdamage_factor, user.used_intent.intent_intdamage_factor)
+					var/lowest_intfactor = min(user.used_intent.masteritem?.intdamage_factor, user.used_intent.intent_intdamage_factor)
+					var/used_intfactor
+					if(lowest_intfactor < 1)	//Our intfactor multiplier can be either 0 to 1, or 1 to whatever.
+						used_intfactor = lowest_intfactor
+					if(higher_intfactor > 1)	//Make sure to keep your weapon and intent intfactors consistent to avoid problems here!
+						used_intfactor = higher_intfactor
+					dam2take *= used_intfactor
 				IS.take_damage(max(dam2take,1), BRUTE, IU.d_type)
 
 			user.visible_message(span_warning("<b>[user]</b> clips [src]'s weapon!"))
@@ -752,9 +764,16 @@
 		clash(user, IM, IU)
 	else	//Otherwise, we just riposte them.
 		var/damage = get_complex_damage(IM, src, IU.blade_dulling)
-		if(IM.intdamage_factor > 0)
-			damage *= IM.intdamage_factor
-		if(IM.wbalance < 0)
+		if(IM.intdamage_factor != 1 || used_intent.intent_intdamage_factor != 1)
+			var/higher_intfactor = max(IM.intdamage_factor, used_intent.intent_intdamage_factor)
+			var/lowest_intfactor = min(IM.intdamage_factor, used_intent.intent_intdamage_factor)
+			var/used_intfactor
+			if(lowest_intfactor < 1)	//Our intfactor multiplier can be either 0 to 1, or 1 to whatever.
+				used_intfactor = lowest_intfactor
+			if(higher_intfactor > 1)	//Make sure to keep your weapon and intent intfactors consistent to avoid problems here!
+				used_intfactor = higher_intfactor
+			damage *= used_intfactor
+		if(IM.wbalance == WBALANCE_HEAVY)
 			damage *= 1.5
 		IU.take_damage(max(damage,1), BRUTE, IM.d_type)
 		visible_message(span_suicide("[src] ripostes [H] with \the [IM]!"))

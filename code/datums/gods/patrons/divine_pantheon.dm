@@ -30,7 +30,7 @@
 	miracles = list(/obj/effect/proc_holder/spell/targeted/touch/orison			= CLERIC_ORI,
 					/obj/effect/proc_holder/spell/invoked/lesser_heal 			= CLERIC_T0,
 					/obj/effect/proc_holder/spell/invoked/invisibility/miracle	= CLERIC_T1,
-					/obj/effect/proc_holder/spell/invoked/blindness/miracle		= CLERIC_T2,
+					/obj/effect/proc_holder/spell/invoked/blindness				= CLERIC_T2,
 					/obj/effect/proc_holder/spell/self/noc_spell_bundle			= CLERIC_T3,
 	)
 	confess_lines = list(

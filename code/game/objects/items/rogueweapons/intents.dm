@@ -37,7 +37,7 @@
 	var/keep_looping = TRUE
 	var/damfactor = 1 //multiplied by weapon's force for damage
 	var/penfactor = 0 //see armor_penetration
-	var/intdamage_factor = 1 // Whether the intent itself has integrity damage modifier. Used for rend.
+	var/intent_intdamage_factor = 1 // Whether the intent itself has integrity damage modifier. Used for rend.
 	var/item_d_type = "blunt" // changes the item's attack type ("blunt" - area-pressure attack, "slash" - line-pressure attack, "stab" - point-pressure attack)
 	var/charging_slowdown = 0
 	var/warnoffset = 0
