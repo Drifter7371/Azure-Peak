@@ -355,6 +355,14 @@ var/forgerites = list("Ritual of Blessed Reforgance")
 	var/riteselection = input(user, "Rituals of Progress", src) as null|anything in zizorites
 	switch(riteselection) // put ur rite selection here
 		if("Rite of Armaments")
+			var/onrune = view(1, loc)
+			var/list/folksonrune = list()
+			for(var/mob/living/carbon/human/persononrune in onrune)
+				if(HAS_TRAIT(persononrune, TRAIT_CABAL))
+					folksonrune += persononrune
+			var/target = input(user, "Choose a host") as null|anything in folksonrune
+			if(!target)
+				return
 			if(do_after(user, 50))
 				user.say("ZIZO! ZIZO! DAME OF PROGRESS!!")
 				if(do_after(user, 50))
@@ -364,16 +372,11 @@ var/forgerites = list("Ritual of Blessed Reforgance")
 						if(do_after(user, 50))
 							icon_state = "zizo_active"
 							user.apply_status_effect(/datum/status_effect/debuff/ritesexpended)
-							zizoarmaments(src)
+							zizoarmaments(target)
 							spawn(120)
 								icon_state = "zizo_chalky"
 
-/obj/structure/ritualcircle/zizo/proc/zizoarmaments(src)
-	var/onrune = view(0, loc)
-	var/list/possible_targets = list()
-	for(var/mob/living/carbon/human/persononrune in onrune)
-		possible_targets += persononrune
-	var/mob/living/carbon/human/target = pick(possible_targets)
+/obj/structure/ritualcircle/zizo/proc/zizoarmaments(mob/living/carbon/human/target)
 	if(!HAS_TRAIT(target, TRAIT_CABAL))
 		loc.visible_message(span_cult("THE RITE REJECTS ONE NOT OF THE CABAL"))
 		return
@@ -428,6 +431,14 @@ var/forgerites = list("Ritual of Blessed Reforgance")
 	var/riteselection = input(user, "Rituals of Transaction", src) as null|anything in matthiosrites
 	switch(riteselection) // put ur rite selection here
 		if("Rite of Armaments")
+			var/onrune = view(1, loc)
+			var/list/folksonrune = list()
+			for(var/mob/living/carbon/human/persononrune in onrune)
+				if(HAS_TRAIT(persononrune, TRAIT_COMMIE))
+					folksonrune += persononrune
+			var/target = input(user, "Choose a host") as null|anything in folksonrune
+			if(!target)
+				return
 			if(do_after(user, 50))
 				user.say("Gold and Silver, he feeds!!")
 				if(do_after(user, 50))
@@ -437,16 +448,11 @@ var/forgerites = list("Ritual of Blessed Reforgance")
 						if(do_after(user, 50))
 							icon_state = "matthios_active"
 							user.apply_status_effect(/datum/status_effect/debuff/ritesexpended)
-							matthiosarmaments(src)
+							matthiosarmaments(target)
 							spawn(120)
 								icon_state = "matthios_chalky"
 
-/obj/structure/ritualcircle/matthios/proc/matthiosarmaments(src)
-	var/onrune = view(0, loc)
-	var/list/possible_targets = list()
-	for(var/mob/living/carbon/human/persononrune in onrune)
-		possible_targets += persononrune
-	var/mob/living/carbon/human/target = pick(possible_targets)
+/obj/structure/ritualcircle/matthios/proc/matthiosarmaments(mob/living/carbon/human/target)
 	if(!HAS_TRAIT(target, TRAIT_COMMIE))
 		loc.visible_message(span_cult("THE RITE REJECTS ONE WITHOUT GREED IN THEIR HEART!!"))
 		return
@@ -499,6 +505,14 @@ var/forgerites = list("Ritual of Blessed Reforgance")
 	var/riteselection = input(user, "Rituals of Violence", src) as null|anything in graggarrites
 	switch(riteselection) // put ur rite selection here
 		if("Rite of Armaments")
+			var/onrune = view(1, loc)
+			var/list/folksonrune = list()
+			for(var/mob/living/carbon/human/persononrune in onrune)
+				if(HAS_TRAIT(persononrune, TRAIT_HORDE))
+					folksonrune += persononrune
+			var/target = input(user, "Choose a host") as null|anything in folksonrune
+			if(!target)
+				return
 			if(do_after(user, 50))
 				user.say("Motive force, oh, violence!!")
 				if(do_after(user, 50))
@@ -508,16 +522,11 @@ var/forgerites = list("Ritual of Blessed Reforgance")
 						if(do_after(user, 50))
 							//icon_state = "graggar_active" when we have one
 							user.apply_status_effect(/datum/status_effect/debuff/ritesexpended)
-							graggararmor(src)
+							graggararmor(target)
 							//spawn(120)
 								//icon_state = "graggar_chalky" 
 
-/obj/structure/ritualcircle/graggar/proc/graggararmor(src)
-	var/onrune = view(0, loc)
-	var/list/possible_targets = list()
-	for(var/mob/living/carbon/human/persononrune in onrune)
-		possible_targets += persononrune
-	var/mob/living/carbon/human/target = pick(possible_targets)
+/obj/structure/ritualcircle/graggar/proc/graggararmor(mob/living/carbon/human/target)
 	if(!HAS_TRAIT(target, TRAIT_HORDE))
 		loc.visible_message(span_cult("THE RITE REJECTS ONE WITHOUT SLAUGHTER IN THEIR HEART!!"))
 		return

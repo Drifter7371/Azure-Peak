@@ -168,7 +168,7 @@
 		if(!istype(get_area(src), /area/rogue/indoors/town/church/chapel))
 			to_chat(src, span_warning("I need to do this from the chapel."))
 			return FALSE
-		priority_announce("[inputty]", title = "The Priest Speaks", sound = 'sound/misc/bell.ogg')
+		priority_announce("[inputty]", title = "The Priest Speaks", sound = 'sound/misc/bell.ogg', sender = src)
 
 /obj/effect/proc_holder/spell/self/convertrole/templar
 	name = "Recruit Templar"

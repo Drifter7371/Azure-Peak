@@ -146,7 +146,7 @@
 	icon_state = "gambesonp"
 	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_CHOP)
 	armor = ARMOR_PADDED_GOOD
-	sellprice = 30
+	sellprice = 25
 	color = "#976E6B"
 	var/shiftable = TRUE
 	var/shifted = FALSE
@@ -187,6 +187,7 @@
 	allowed_race = NON_DWARVEN_RACE_TYPES
 	color = "#FFFFFF"
 	shiftable = FALSE
+	sellprice = 30
 
 /obj/item/clothing/suit/roguetown/armor/gambeson/heavy/chargah
 	name = "steppesman chargah robe"
@@ -211,6 +212,7 @@
 	l_sleeve_status = SLEEVE_NORMAL
 	color = "#1d1d22"
 	detail_color = "#FFFFFF"
+	sellprice = 40
 	var/picked = FALSE
 	shiftable = FALSE
 
@@ -382,7 +384,7 @@
 	armor = ARMOR_LEATHER_GOOD
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_BLUNT, BCLASS_CHOP, BCLASS_SMASH)
 	max_integrity = 300
-	sellprice = 25
+	sellprice = 20
 
 /obj/item/clothing/suit/roguetown/armor/leather/heavy/coat
 	name = "hardened leather coat"
@@ -1154,6 +1156,31 @@
 	equip_delay_self = 40
 	armor_class = ARMOR_CLASS_MEDIUM
 	w_class = WEIGHT_CLASS_BULKY
+
+/obj/item/clothing/suit/roguetown/armor/brigandine/light/attack_right(mob/user)
+	if(detail_tag)
+		return
+	var/the_time = world.time
+	var/pickedcolor = input(user, "Select a color.","Brigandine Color") as null|anything in CLOTHING_COLOR_NAMES
+	if(!pickedcolor)
+		return
+	if(world.time > (the_time + 30 SECONDS))
+		return
+	detail_tag = "_detail"
+	detail_color = clothing_color2hex(pickedcolor)
+	update_icon()
+	if(ismob(loc))
+		var/mob/L = loc
+		L.update_inv_armor()
+
+/obj/item/clothing/suit/roguetown/armor/brigandine/light/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
 
 /obj/item/clothing/suit/roguetown/armor/plate/scale/inqcoat
 	slot_flags = ITEM_SLOT_ARMOR

@@ -39,7 +39,7 @@ SUBSYSTEM_DEF(nightshift)
 	check_nightshift()
 
 /datum/controller/subsystem/nightshift/proc/announce(message)
-	priority_announce(message, sound='sound/misc/bell.ogg', sender_override="Automated Lighting System Announcement")
+	priority_announce(message, sound='sound/misc/bell.ogg')
 
 /datum/controller/subsystem/nightshift/proc/check_nightshift()
 //	var/emergency = GLOB.security_level >= SEC_LEVEL_RED

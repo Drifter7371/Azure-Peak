@@ -42,6 +42,7 @@
 		H.mind.adjust_skillrank(/datum/skill/labor/farming, 1, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/craft/cooking, 1, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/misc/sewing, 1, TRUE)
+		H.mind.adjust_skillrank(/datum/skill/magic/arcane, 1, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/craft/crafting, 2, TRUE)
 		H.mind.adjust_skillrank(/datum/skill/craft/carpentry, 2, TRUE)
 		H.mind.adjust_spellpoints(6)

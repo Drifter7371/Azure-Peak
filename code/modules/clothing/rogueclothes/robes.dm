@@ -123,7 +123,7 @@
 
 /obj/item/clothing/suit/roguetown/shirt/robe/priest/equipped(mob/living/user, slot)
 	..()
-	if(slot != SLOT_ARMOR || slot != SLOT_SHIRT)
+	if(slot != SLOT_ARMOR|SLOT_SHIRT)
 		return
 	if(!HAS_TRAIT(user, TRAIT_CHOSEN))	//Requires this cus it's a priest-only thing.
 		return
@@ -145,7 +145,7 @@
 
 /obj/item/clothing/suit/roguetown/shirt/robe/monk/equipped(mob/living/user, slot)
 	..()
-	if(slot != SLOT_ARMOR || slot != SLOT_SHIRT)
+	if(slot != SLOT_ARMOR|SLOT_SHIRT)
 		return
 	if(!HAS_TRAIT(user, TRAIT_CIVILIZEDBARBARIAN))	//Requires this cus it's a monk-only thing.
 		return

@@ -10,6 +10,20 @@
 	experimental_inhand = FALSE
 	grid_width = 32
 	grid_height = 64
+	var/overarmor
+
+/obj/item/clothing/wrists/roguetown/MiddleClick(mob/user, params)
+	. = ..()
+	overarmor = !overarmor
+	to_chat(user, span_info("I [overarmor ? "wear \the [src] over my armor" : "wear \the [src] under my armor"]."))
+	if(overarmor)
+		alternate_worn_layer = WRISTS_LAYER
+	else
+		alternate_worn_layer = UNDER_ARMOR_LAYER
+	user.update_inv_wrists()
+	user.update_inv_gloves()
+	user.update_inv_armor()
+	user.update_inv_shirt()
 
 /obj/item/clothing/wrists/roguetown/bracers
 	name = "bracers"
@@ -62,6 +76,7 @@
 	armor = ARMOR_LEATHER_GOOD
 	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST, BCLASS_CHOP, BCLASS_SMASH)
 	max_integrity = 250
+	sellprice = 10
 	salvage_amount = 1
 	salvage_result = /obj/item/natural/hide/cured
 

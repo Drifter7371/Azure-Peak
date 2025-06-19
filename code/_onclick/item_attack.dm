@@ -104,7 +104,7 @@
 //		user.emote("attackgrunt")
 	var/datum/intent/cached_intent = user.used_intent
 	if(user.used_intent.swingdelay)
-		if(!user.used_intent.noaa)
+		if(!user.used_intent.noaa && isnull(user.mind))
 			if(get_dist(get_turf(user), get_turf(M)) <= user.used_intent.reach)
 				user.do_attack_animation(M, user.used_intent.animname, user.used_intent.masteritem, used_intent = user.used_intent, simplified = TRUE)
 		sleep(user.used_intent.swingdelay)
@@ -214,7 +214,7 @@
 	var/dullfactor = 1
 	if(!I?.force)
 		return 0
-	var/newforce = I.force
+	var/newforce = I.force_dynamic
 	testing("startforce [newforce]")
 	if(!istype(user))
 		return newforce
@@ -246,6 +246,11 @@
 			effective = max(I.minstr / 2, 1)
 		if(effective > user.STASTR)
 			newforce = max(newforce*0.3, 1)
+			if(prob(33))
+				if(I.wielded)
+					to_chat(user, span_info("I am too weak to wield this weapon properly with both hands."))
+				else
+					to_chat(user, span_info("I am too weak to wield this weapon properly with one hand."))
 
 	switch(blade_dulling)
 		if(DULLING_CUT) //wooden that can't be attacked by clubs (trees, bushes, grass)
@@ -399,7 +404,7 @@
 					dullfactor = 1
 				if(BCLASS_PICK)
 					dullfactor = 0.5
-	var/newdam = (I.force * user.used_intent.damfactor) - I.force
+	var/newdam = (I.force_dynamic * user.used_intent.damfactor) - I.force_dynamic
 	newforce = (newforce + newdam) * dullfactor
 	if(user.used_intent.get_chargetime() && user.client?.chargedprog < 100)
 		newforce = newforce * 0.5
@@ -559,7 +564,7 @@
 	var/hitlim = simple_limb_hit(user.zone_selected)
 	testing("[src] attacked_by")
 	I.funny_attack_effects(src, user)
-	if(I.force)
+	if(I.force_dynamic)
 		var/newforce = get_complex_damage(I, user)
 		apply_damage(newforce, I.damtype, def_zone = hitlim)
 		if(I.damtype == BRUTE)
@@ -589,11 +594,11 @@
 					if(get_dist(user, src) <= 1)	//people with TK won't get smeared with blood
 						user.add_mob_blood(src)
 	send_item_attack_message(I, user, hitlim)
-	if(I.force)
+	if(I.force_dynamic)
 		return TRUE
 
 /mob/living/simple_animal/attacked_by(obj/item/I, mob/living/user)
-	if(I.force < force_threshold || I.damtype == STAMINA)
+	if(I.force_dynamic < force_threshold || I.damtype == STAMINA)
 		playsound(loc, 'sound/blank.ogg', I.get_clamped_volume(), TRUE, -1)
 	else
 		return ..()
@@ -603,7 +608,7 @@
 /obj/item/proc/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	SEND_SIGNAL(src, COMSIG_ITEM_AFTERATTACK, target, user, proximity_flag, click_parameters)
 	SEND_SIGNAL(user, COMSIG_MOB_ITEM_AFTERATTACK, target, user, proximity_flag, click_parameters)
-	if(force && !user.used_intent.tranged && !user.used_intent.tshield)
+	if(force_dynamic && !user.used_intent.tranged && !user.used_intent.tshield)
 		if(proximity_flag && isopenturf(target) && !user.used_intent?.noaa)
 			var/adf = user.used_intent.clickcd
 			if(istype(user.rmb_intent, /datum/rmb_intent/aimed))
@@ -630,8 +635,8 @@
 
 /obj/item/proc/get_clamped_volume()
 	if(w_class)
-		if(force)
-			return CLAMP((force + w_class) * 4, 30, 100)// Add the item's force to its weight class and multiply by 4, then clamp the value between 30 and 100
+		if(force_dynamic)
+			return CLAMP((force_dynamic + w_class) * 4, 30, 100)// Add the item's force to its weight class and multiply by 4, then clamp the value between 30 and 100
 		else
 			return CLAMP(w_class * 6, 10, 100) // Multiply the item's weight class by 6, then clamp the value between 10 and 100
 
@@ -639,7 +644,7 @@
 	var/message_verb = "attacked"
 	if(user.used_intent)
 		message_verb = "[pick(user.used_intent.attack_verb)]"
-	else if(!I.force)
+	else if(!I.force_dynamic)
 		return
 	var/message_hit_area = ""
 	if(hit_area)

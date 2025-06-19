@@ -50,6 +50,7 @@
 	armor = ARMOR_LEATHER_GOOD
 	prevent_crits = list(BCLASS_CUT, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_TWIST, BCLASS_SMASH)
 	sewrepair = TRUE
+	sellprice = 10
 	max_integrity = 150
 	salvage_result = /obj/item/natural/hide/cured
 	salvage_amount = 1
@@ -281,11 +282,15 @@
 	
 	return TRUE
 
+/obj/item/clothing/neck/roguetown/psicross/attack_right(mob/user)
+	..()
+	user.emote("pray")
+	return
+
 /obj/item/clothing/neck/roguetown/psicross/aalloy
 	name = "decrepit psicross"
 	desc = "Surely this one endures?"
 	icon_state = "psycross_a"
-
 
 /obj/item/clothing/neck/roguetown/zcross/aalloy
 	name = "decrepit zcross"
@@ -453,13 +458,31 @@
 	anvilrepair = /datum/skill/craft/armorsmithing
 
 /obj/item/clothing/neck/roguetown/horus
-	name = "eye of horuz"
-	desc = ""
+	name = "amulet of appraisal"
+	desc = "An amulet with a pristine eye embedded into it. Blind to everything, but to that which shines in gold."
 	icon_state = "horus"
 	//dropshrink = 0.75
 	resistance_flags = FIRE_PROOF
-	sellprice = 30
+	sellprice = 80
 	anvilrepair = /datum/skill/craft/armorsmithing
+
+/obj/item/clothing/neck/roguetown/horus/examine()
+	. = ..()
+	. += span_info("Click on a turf or an item to see how much it is worth. Avoid tables.")
+
+/obj/item/clothing/neck/roguetown/horus/afterattack(atom/A, mob/user, params)
+	. = ..()
+	var/total_sellprice = 0
+	if(isturf(A))
+		for(var/obj/item/I in A.contents)
+			total_sellprice += I.sellprice
+		to_chat(user, span_notice("Everything on the ground is worth [total_sellprice] mammons."))
+	else if(istype(A, /obj/item))
+		var/obj/item/I = A
+		total_sellprice += I.sellprice
+		for(var/obj/item/item in I.contents)
+			total_sellprice += item.sellprice
+		to_chat(user, span_notice("The item and its contents is worth [total_sellprice] mammons."))
 
 /obj/item/clothing/neck/roguetown/shalal
 	name = "desert rider medal"

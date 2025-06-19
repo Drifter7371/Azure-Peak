@@ -462,11 +462,18 @@
 	A.Bumped(src)
 
 /atom/movable/proc/forceMove(atom/destination)
+	var/mob/living/carbon/human/H = null
+	if(ishuman(src.loc))
+		H = src.loc
+	
 	. = FALSE
 	if(destination)
 		. = doMove(destination)
 	else
 		CRASH("[src] No valid destination passed into forceMove")
+
+	if(H)
+		H.update_a_intents()
 
 /atom/movable/proc/moveToNullspace()
 	return doMove(null)
