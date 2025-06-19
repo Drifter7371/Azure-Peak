@@ -157,11 +157,11 @@
 			if(mainhand)
 				if(mainhand.can_parry)
 					mainhand_defense += (H.mind ? (H.mind.get_skill_level(mainhand.associated_skill) * 20) : 20)
-					mainhand_defense += (mainhand.wdefense * 10)
+					mainhand_defense += (mainhand.wdefense_dynamic * 10)
 			if(offhand)
 				if(offhand.can_parry)
 					offhand_defense += (H.mind ? (H.mind.get_skill_level(offhand.associated_skill) * 20) : 20)
-					offhand_defense += (offhand.wdefense * 10)
+					offhand_defense += (offhand.wdefense_dynamic * 10)
 
 			if(mainhand_defense >= offhand_defense)
 				highest_defense += mainhand_defense

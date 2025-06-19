@@ -39,7 +39,7 @@ GLOBAL_VAR_INIT(last_elder_announce, -50000) // Inits variable for later
 		visible_message(span_warning("[src] takes a deep breath, preparing to make an announcement.."))
 		if(do_after(src, 15 SECONDS, target = src)) // Reduced to 15 seconds from 30 on the original Herald PR. 15 is well enough time for sm1 to shove you.
 			say(announcementinput)
-			priority_announce("[announcementinput]", "The Elder Decrees", 'sound/misc/bell.ogg')
+			priority_announce("[announcementinput]", "The Elder Decrees", 'sound/misc/bell.ogg', sender = src)
 			GLOB.last_elder_announce = world.time
 		else
 			to_chat(src, span_warning("Your announcement was interrupted!"))

@@ -1185,10 +1185,14 @@ SUBSYSTEM_DEF(gamemode)
 				if(current_item.type in list(/obj/item/clothing/neck/roguetown/psicross, /obj/item/clothing/neck/roguetown/psicross/silver, /obj/item/clothing/neck/roguetown/psicross/g))
 					GLOB.azure_round_stats[STATS_PSYCROSS_USERS]++
 					break
-			switch(human_mob.gender)
-				if(MALE)
+			switch(human_mob.pronouns)
+				if(HE_HIM)
 					GLOB.azure_round_stats[STATS_MALE_POPULATION]++
-				if(FEMALE)
+				if(HE_HIM_F)
+					GLOB.azure_round_stats[STATS_MALE_POPULATION]++
+				if(SHE_HER)
+					GLOB.azure_round_stats[STATS_FEMALE_POPULATION]++
+				if(SHE_HER_M)
 					GLOB.azure_round_stats[STATS_FEMALE_POPULATION]++
 				else
 					GLOB.azure_round_stats[STATS_OTHER_GENDER]++

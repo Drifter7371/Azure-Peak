@@ -524,8 +524,8 @@
 	name = "executioners sword"
 	desc = "A longsword with extra heft to its blade, reinforced."
 	possible_item_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/peel, /datum/intent/sword/strike)
-	gripped_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/strike, /datum/intent/sword/chop)
-	alt_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/strike, /datum/intent/rend)
+	gripped_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/rend, /datum/intent/sword/chop)
+	alt_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/strike, /datum/intent/sword/bash)
 	icon_state = "exe"
 	minstr = 12
 	slot_flags = ITEM_SLOT_BACK //Too big for hip

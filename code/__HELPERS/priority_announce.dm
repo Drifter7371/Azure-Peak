@@ -8,16 +8,20 @@
 		announcement += "<h1 class='alert'>[title]</h1>"
 	announcement += "<br><span class='alert'>[STRIP_HTML_SIMPLE(text, MAX_MESSAGE_LEN)]</span>"
 
+	if (sender)
+		sender.log_talk(text, LOG_SAY, tag="priority announcement")
+		message_admins("[ADMIN_LOOKUPFLW(sender)] has made a priority announcement.")
+
 	var/s = sound(sound)
 	for(var/mob/M in GLOB.player_list)
-		if(!M.can_hear())
+		if (!M.can_hear())
 			return
-		if(receiver && !(istype(M, receiver) || (sender && M == sender)))
+		if (receiver && !(istype(M, receiver) || (sender && M == sender)))
 			return
 
 		to_chat(M, announcement)
-		if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
-			if(!sound)
+		if (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
+			if (!sound)
 				return
 			M.playsound_local(M, s, 100)
 

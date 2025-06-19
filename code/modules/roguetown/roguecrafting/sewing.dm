@@ -685,7 +685,6 @@
 				/obj/item/natural/silk = 1)
 	tools = list(/obj/item/needle)
 	craftdiff = 5
-	sellprice = 35
 
 /datum/crafting_recipe/roguetown/sewing/silktunic
 	name = "ornate silk tunic (2 fibers, 2 cloth, 2 silk)"
@@ -890,15 +889,6 @@
 	tools = list(/obj/item/needle)
 	craftdiff = 5
 	sellprice = 22
-	
-/datum/crafting_recipe/roguetown/sewing/sleevelessovercoat
-	name = "hand's vest (2 fibers, 3 cloth)"
-	result = list(/obj/item/clothing/suit/roguetown/armor/leather/vest/hand)
-	reqs = list(/obj/item/natural/cloth = 3,
-	            /obj/item/natural/fibers = 2)
-	tools = list(/obj/item/needle)
-	craftdiff = 4
-	sellprice = 16
 
 /datum/crafting_recipe/roguetown/sewing/guildedjacket
 	name = "guilder jacket (2 fibers, 3 cloth)"
@@ -952,7 +942,6 @@
 	            /obj/item/natural/fibers = 5)
 	tools = list(/obj/item/needle)
 	craftdiff = 6
-	sellprice = 24
 
 /datum/crafting_recipe/roguetown/sewing/sleevelessrobe
 	name = "feldsher's robe (2 fibers, 3 cloth)"

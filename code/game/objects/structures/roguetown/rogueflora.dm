@@ -177,7 +177,7 @@
 	name = "pine stump"
 	icon_state = "dead4"
 	icon = 'icons/obj/flora/pines.dmi'
-	static_debris = list(/obj/item/rogueore/charcoal = 1)
+	static_debris = list(/obj/item/rogueore/coal/charcoal = 1)
 	stump_type = null
 	pixel_x = -32
 
@@ -644,7 +644,7 @@
 	. = ..()
 	icon_state = "swampweed[rand(1,3)]"
 	if(prob(88))
-		bushtype = pickweight(list(/obj/item/reagent_containers/food/snacks/grown/rogue/sweetleaf = 1))
+		bushtype = pickweight(list(/obj/item/reagent_containers/food/snacks/grown/rogue/swampweed = 1))
 	loot_replenish3()
 	pixel_x += rand(-3,3)
 
@@ -652,7 +652,7 @@
 	if(bushtype)
 		looty += bushtype
 	if(prob(66))
-		looty += /obj/item/reagent_containers/food/snacks/grown/rogue/sweetleaf
+		looty += /obj/item/reagent_containers/food/snacks/grown/rogue/swampweed
 
 /obj/structure/flora/roguegrass/swampweed/attack_hand(mob/user)
 	if(isliving(user))
@@ -748,7 +748,7 @@
 	name = "burnt pine tree"
 	icon_state = "dead1"
 	max_integrity = 50
-	static_debris = list(/obj/item/rogueore/charcoal = 1)
+	static_debris = list(/obj/item/rogueore/coal/charcoal = 1)
 	resistance_flags = FIRE_PROOF
 	stump_type = /obj/structure/flora/roguetree/stump/pine
 

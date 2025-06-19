@@ -100,6 +100,7 @@
 		"Walnut-Stine" = SKIN_COLOR_WALNUT_STINE,
 		"Etrustcan-Dandelion" = SKIN_COLOR_ETRUSTCAN_DANDELION,
 		"Naledi-Born" = SKIN_COLOR_NALEDI_BORN,
+		"Naledi-Southerner" = SKIN_COLOR_NALEDI_LIGHT,
 		"Kaze-Lotus" = SKIN_COLOR_KAZE_LOTUS,
 		"Grenzel-Azuria" = SKIN_COLOR_GRENZEL_WOODS,
 		"Etrusca-Lirvas" = SKIN_COLOR_ETRUSCA_LIRVAS,

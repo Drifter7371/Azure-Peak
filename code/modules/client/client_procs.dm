@@ -331,6 +331,7 @@ GLOBAL_LIST_EMPTY(respawncounts)
 	data += "<font color='#8B4513'><span class='bold'>Humens:</span></font> [GLOB.azure_round_stats[STATS_ALIVE_NORTHERN_HUMANS]]<br>"	//Here to save space, should be other column
 	data += "<font color='#6b89e0'><span class='bold'>Males:</span></font> [GLOB.azure_round_stats[STATS_MALE_POPULATION]]<br>"
 	data += "<font color='#d67daa'><span class='bold'>Females:</span></font> [GLOB.azure_round_stats[STATS_FEMALE_POPULATION]]<br>"
+	data += "<font color='#77d0cd'><span class='bold'>Non-binary:</span></font> [GLOB.azure_round_stats[STATS_OTHER_GENDER]]<br>"
 	data += "<font color='#d0d67c'><span class='bold'>Adults:</span></font> [GLOB.azure_round_stats[STATS_ADULT_POPULATION]]<br>"
 	data += "<font color='#FFD700'><span class='bold'>Middle-Aged:</span></font> [GLOB.azure_round_stats[STATS_MIDDLEAGED_POPULATION]]<br>"
 	data += "<font color='#C0C0C0'><span class='bold'>Elderly:</span></font> [GLOB.azure_round_stats[STATS_ELDERLY_POPULATION]]<br>"

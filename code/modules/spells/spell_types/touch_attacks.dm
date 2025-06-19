@@ -25,7 +25,7 @@
 	attached_hand = null
 	action.UpdateButtonIcon()
 
-/obj/effect/proc_holder/spell/targeted/touch/cast(list/targets,mob/user = usr)
+/obj/effect/proc_holder/spell/targeted/touch/cast(list/targets, mob/user = usr)
 	if(!QDELETED(attached_hand))
 		remove_hand(TRUE)
 		to_chat(user, span_notice("[dropmessage]"))
@@ -48,7 +48,7 @@
 	if(!user.put_in_hands(attached_hand))
 		remove_hand(TRUE)
 		if (user.get_num_arms() <= 0)
-			to_chat(user, span_warning("I dont have any usable hands!"))
+			to_chat(user, span_warning("I don't have any usable hands!"))
 		else
 			to_chat(user, span_warning("My hands are full!"))
 		return FALSE
