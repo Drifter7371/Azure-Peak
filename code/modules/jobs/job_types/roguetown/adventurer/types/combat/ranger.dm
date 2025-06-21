@@ -31,11 +31,13 @@
 			armor = /obj/item/clothing/suit/roguetown/armor/leather/hide
 			cloak = /obj/item/clothing/cloak/raincloak/green
 			backl = /obj/item/storage/backpack/rogue/satchel
-			beltr = /obj/item/flashlight/flare/torch/lantern
-			backpack_contents = list(/obj/item/bait = 1, /obj/item/rogueweapon/huntingknife = 1, /obj/item/recipe_book/survival = 1)
+			beltr = /obj/item/rogueweapon/sword/iron/messer
+			backpack_contents = list(/obj/item/bait = 1, /obj/item/rogueweapon/huntingknife = 1, /obj/item/recipe_book/survival = 1, /obj/item/flashlight/flare/torch/lantern = 1)
 			H.mind.adjust_skillrank(/datum/skill/combat/crossbows, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/bows, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/slings, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/swords, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 1, TRUE)
 			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 1, TRUE)
@@ -52,7 +54,7 @@
 			H.mind.adjust_skillrank(/datum/skill/misc/tracking, 2, TRUE)
 			ADD_TRAIT(H, TRAIT_DODGEEXPERT, TRAIT_GENERIC)
 			ADD_TRAIT(H, TRAIT_OUTDOORSMAN, TRAIT_GENERIC)
-			var/weapons = list("Recurve Bow","Crossbow")
+			var/weapons = list("Recurve Bow","Crossbow","Sling")
 			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 			H.set_blindness(0)
 			switch(weapon_choice)
@@ -64,6 +66,10 @@
 					H.mind.adjust_skillrank(/datum/skill/combat/crossbows, 2, TRUE)
 					backr = /obj/item/gun/ballistic/revolver/grenadelauncher/crossbow
 					beltl = /obj/item/quiver/bolts
+				if("Sling")
+					H.mind.adjust_skillrank(/datum/skill/combat/slings, 2, TRUE)
+					beltl = /obj/item/quiver/sling/iron
+					r_hand = /obj/item/gun/ballistic/revolver/grenadelauncher/sling
 			H.change_stat("perception", 3)
 			H.change_stat("speed", 2)
 
