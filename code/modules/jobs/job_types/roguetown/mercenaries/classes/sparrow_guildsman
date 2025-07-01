@@ -1,0 +1,107 @@
+/datum/advclass/mercenary/sparrow_guildsman
+	name = "Sparrow Guildsman"
+	tutorial = "You were born here. Unwilling to shovel shit or grovel to nobles, you climbed the guild ranks. Maybe you’ll die here too."
+	allowed_sexes = list(MALE, FEMALE)
+	allowed_races = RACES_ALL_KINDS
+	outfit = /datum/outfit/job/roguetown/mercenary/
+	category_tags = list(CTAG_MERCENARY) // These guys are locals, no foreigner tags.
+	cmode_music = ''	
+	classes = list("Bulwark" = "Clad in heavy armor, and equally as heavy weapons. You are the wall.",
+					"Footman" = "You're seasoned in many forms of combat, the backbone of the guild.")
+
+	// CLASS ARCHETYPES
+	H.adjust_blindness(-3)
+	var/classes = list("Bulwark","Footman")
+	var/classchoice = input("Choose your archetypes", "Available archetypes") as anything in classes
+
+	switch(classchoice)
+		if("Bulwark") // heavy armor and only 2 base weapon skills.
+			H.set_blindness(0)
+			to_chat(H, span_warning("Clad in heavy armor, and equally as heavy weapons. You are the wall."))
+			wrists = /obj/item/clothing/wrists/roguetown/bracers
+	    belt = /obj/item/storage/belt/rogue/leather/steel/tasset
+	    neck = /obj/item/clothing/neck/roguetown/gorget
+	    shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
+	    head = /obj/item/clothing/head/roguetown/helmet/heavy/bucket/gold // Placeholder to be distinct from regular knights at the moment.
+	    armor = /obj/item/clothing/suit/roguetown/armor/brigandine
+	    shoes = /obj/item/clothing/shoes/roguetown/boots/armor
+      gloves = /obj/item/clothing/gloves/roguetown/chain
+			pants = /obj/item/clothing/under/roguetown/chainlegs
+			cloak = /obj/item/clothing/cloak/stabard
+      beltl = /obj/item/rogueweapon/mace
+      H.mind.adjust_skillrank(/datum/skill/misc/swimming, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/maces, 3, TRUE) // Back-up weapon stat.
+			H.mind.adjust_skillrank(/datum/skill/combat/crossbows, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/shields, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/knives, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 4, TRUE)		//Makes them super tanky for parrying, as intended.
+			H.change_stat("strength", 2)
+			H.change_stat("endurance", 3)
+			H.change_stat("constitution", 3)
+			H.change_stat("perception", -1)
+			H.change_stat("speed", -1)
+      ADD_TRAIT(H, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
+			var/weapons = list("Zweihander", "Halberd", "Sword & Shield")
+			var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+			switch(weapon_choice)
+				if("Zweihander")
+					r_hand = /obj/item/rogueweapon/greatsword/grenz
+          backl = /obj/item/gwstrap
+          H.mind.adjust_skillrank(/datum/skill/combat/swords, 4, TRUE)
+        if("Halberd")
+					r_hand = /obj/item/rogueweapon/halberd
+          H.mind.adjust_skillrank(/datum/skill/combat/polearms, 4, TRUE)
+				if("Sword & Shield")
+					r_hand = /obj/item/rogueweapon/sword/long
+					l_hand = /obj/item/rogueweapon/shield/iron
+          H.mind.adjust_skillrank(/datum/skill/combat/swords, 3, TRUE) // Weaker on defense focus.
+          H.mind.adjust_skillrank(/datum/skill/combat/shields, 4, TRUE)
+		if("Footman") // Battlemaster, but mercenary.
+			H.set_blindness(0)
+			to_chat(H, span_warning("You're an experienced soldier skilled in the use of polearms and axes. Your equals make up the bulk of the mercenary guild's forces."))
+			H.mind.adjust_skillrank(/datum/skill/misc/swimming, 3, TRUE) // More traversable than the Bulwark.
+			H.mind.adjust_skillrank(/datum/skill/misc/climbing, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/sneaking, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/axes, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/crossbows, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/swords, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/polearms, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/whipsflails, 2, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE) // Naturally capable with these as a backup option.
+			H.mind.adjust_skillrank(/datum/skill/misc/reading, 1, TRUE)
+			H.mind.adjust_skillrank(/datum/skill/misc/athletics, 3, TRUE)
+			H.change_stat("strength", 1)
+			H.change_stat("endurance", 2)
+			H.change_stat("constitution", 2)
+      H.change_stat("perception", 1)
+			H.change_stat("speed", 1)
+			var/weapons = list("Halberd,")
+			var/weapon_choice = input("Choose your first weapon.", "THY PRIMARY") as anything in weapons
+			switch(weapon_choice)
+				if("Halberd")
+					r_hand = /obj/item/rogueweapon/halberd
+          H.mind.adjust_skillrank(/datum/skill/combat/polearms, 2, TRUE)
+          backl = /obj/item/gwstrap
+
+	//General gear regardless of class.
+	wrists = /obj/item/clothing/wrists/roguetown/bracers
+	belt = /obj/item/storage/belt/rogue/leather
+	beltl = /obj/item/flashlight/flare/torch
+	beltr = /obj/item/storage/belt/rogue/pouch/coins/poor
+	neck = /obj/item/clothing/neck/roguetown/gorget
+	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy/grenzelhoft
+	head = /obj/item/clothing/head/roguetown/grenzelhofthat
+	armor = /obj/item/clothing/suit/roguetown/armor/plate
+	pants = /obj/item/clothing/under/roguetown/heavy_leather_pants/grenzelpants
+	shoes = /obj/item/clothing/shoes/roguetown/grenzelhoft
+	gloves = /obj/item/clothing/gloves/roguetown/angle/grenzelgloves
+	backr = /obj/item/storage/backpack/rogue/satchel
+
+	backpack_contents = list(/obj/item/roguekey/mercenary, /obj/item/storage/belt/rogue/pouch/coins/poor, /obj/item/flashlight/flare/torch/lantern)
