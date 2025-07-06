@@ -62,6 +62,13 @@
 	verbage_simple = "untie"
 	verbage = "unties"
 
+/datum/crafting_recipe/roguetown/survival/clothsash
+	name = "fine sash (3 fibers, 1 goat fur)"
+	result = /obj/item/storage/belt/rogue/leather/sash
+	reqs = list(/obj/item/natural/fibers = 3,
+				/obj/item/natural/fur/goat = 1)
+	craftdiff = 3
+
 /datum/crafting_recipe/roguetown/survival/ropebelt
 	name = "rope belt"
 	result = /obj/item/storage/belt/rogue/leather/rope
@@ -399,6 +406,35 @@
 		)
 	skillcraft = /datum/skill/craft/carpentry
 	craftdiff = 2
+
+// Improvised surgey tools. They go here for now (TM)
+/datum/crafting_recipe/roguetown/survival/improvisedsaw
+	name = "improvised surgery saw (1 fiber + 1 stone + 1 stick)"
+	result = /obj/item/rogueweapon/surgery/saw/improv
+	reqs = list(
+		/obj/item/natural/fibers = 1, 
+		/obj/item/natural/stone = 1, 
+		/obj/item/grown/log/tree/stick = 1,
+		)
+	craftdiff = 1
+
+/datum/crafting_recipe/roguetown/survival/improvisedclamp
+	name = "improvised retractor ()"
+	result = /obj/item/rogueweapon/surgery/retractor/improv
+	reqs = list(
+		/obj/item/natural/fibers = 1,
+		/obj/item/grown/log/tree/stick = 2,
+		)
+	craftdiff = 1
+
+/datum/crafting_recipe/roguetown/survival/improvisedhemo
+	name = "improvised clamp (1 fiber + 2 sticks)"
+	result = /obj/item/rogueweapon/surgery/hemostat/improv
+	reqs = list(
+		/obj/item/natural/fibers = 1,
+		/obj/item/grown/log/tree/stick = 2,
+		)
+	craftdiff = 1
 
 // Unfortunately there's no good category for it, yet.
 // I don't want ration paper to be too expensive, making wrapped food underused

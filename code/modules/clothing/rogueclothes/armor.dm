@@ -181,13 +181,52 @@
 
 
 /obj/item/clothing/suit/roguetown/armor/gambeson/heavy/otavan
-	name = "fencer gambeson"
+	name = "fencing gambeson"
 	desc = "A large shirt with heavy padding meant to be used below armor. Will probably stop an arrow, unlikely to stop a bolt."
 	icon_state = "fancygamb"
 	allowed_race = NON_DWARVEN_RACE_TYPES
-	color = "#FFFFFF"
+	color = "#282e83"
+	detail_color = "#c7732f"
 	shiftable = FALSE
 	sellprice = 30
+	detail_tag = "_detail"
+
+/obj/item/clothing/suit/roguetown/armor/gambeson/heavy/otavan/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
+
+/obj/item/clothing/suit/roguetown/armor/gambeson/heavy/freifechter
+	name = "padded fencing shirt"
+	desc = "A strong quilted shirt that places little weight on the arms, it's worn underneath a strong leather vest. It won't cover your legs."
+	max_integrity = 200		//Back to default. I think it's right if it doesn't stop you from getting legshotted.
+	body_parts_covered = COVERAGE_ALL_BUT_LEGS
+	detail_tag = "_detail"
+	altdetail_tag = "_detailalt"
+	color = "#FFFFFF"
+	detail_color = "#3b2b29"
+	altdetail_color = "#c29057"
+	icon_state = "fencingshirt"
+
+/obj/item/clothing/suit/roguetown/armor/gambeson/heavy/freifechter/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
+
+	if(get_altdetail_tag())
+		var/mutable_appearance/pic2 = mutable_appearance(icon(icon, "[icon_state][altdetail_tag]"))
+		pic2.appearance_flags = RESET_COLOR
+		if(get_altdetail_color())
+			pic2.color = get_altdetail_color()
+		add_overlay(pic2)
 
 /obj/item/clothing/suit/roguetown/armor/gambeson/heavy/chargah
 	name = "steppesman chargah robe"
@@ -237,6 +276,13 @@
 		if(get_detail_color())
 			pic.color = get_detail_color()
 		add_overlay(pic)
+
+/obj/item/clothing/suit/roguetown/armor/gambeson/heavy/raneshen
+	name = "padded desert coat"
+	desc = "A slim-fitting sherwani, a Ranesheni-styled coat meant to endure in the desert's climate. This one is heavily padded, meant for a warrior to wear."
+	icon_state = "sherwani"
+	color = "#eec39a"
+	shiftable = FALSE
 
 /obj/item/clothing/suit/roguetown/armor/gambeson/councillor
 	color = "#646464"
@@ -396,6 +442,12 @@
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_BLUNT, BCLASS_CHOP, BCLASS_SMASH)
 	max_integrity = 300
 	sellprice = 25
+
+/obj/item/clothing/suit/roguetown/armor/leather/heavy/coat/raneshen
+	name = "megarmach scale coat"
+	desc = "A set of lightweight armor fashioned from the scales of the Ranesheni \'megarmach\', an armored reptilian creacher that ambushes prey by the riverside, and drags them deep into Abyssor's domain."
+	icon_state = "pangolin"
+	item_state = "pangolin"
 
 /obj/item/clothing/suit/roguetown/armor/leather/heavy/coat/steppe
 	name = "fur-woven hatanga coat"
@@ -651,7 +703,7 @@
 	slot_flags = ITEM_SLOT_ARMOR
 	armor_class = ARMOR_CLASS_HEAVY
 	armor = ARMOR_CUIRASS
-	name = "psydonite hauberk"
+	name = "psydonian hauberk"
 	desc = "An ornate steel cuirass with tassets, worn atop thick chainmaille. While it falters against arrows and bolts, \
 			these interlinked layers are superb at warding off the blows of inhumen claws and axes."
 	icon_state = "ornatehauberk"
@@ -700,6 +752,16 @@
 	armor_class = ARMOR_CLASS_MEDIUM
 	smelt_bar_num = 2
 
+/obj/item/clothing/suit/roguetown/armor/plate/half/fencer
+	name = "fencer's cuirass"
+	desc = "An expertly smithed form-fitting steel cuirass that is much lighter and agile, but breaks with much more ease. It's thinner, but backed with silk and leather."
+	armor = ARMOR_LIGHTCUIRASS
+	armor_class = ARMOR_CLASS_LIGHT
+	max_integrity = 170
+	smelt_bar_num = 1
+	icon_state = "fencercuirass"
+	item_state = "fencercuirass"
+
 /obj/item/clothing/suit/roguetown/armor/plate/half/aalloy
 	name = "decrepit cuirass"
 	desc = "A withered cuirass. Aeon's grasp is upon its form."
@@ -722,7 +784,7 @@
 	max_integrity = 350
 
 /obj/item/clothing/suit/roguetown/armor/plate/half/fluted/ornate
-	name = "psydonite cuirass"
+	name = "psydonian cuirass"
 	icon_state = "ornatecuirass"
 	desc = "An ornate steel cuirass with tassets, favored by both the Holy Otavan Inquisition and the Order of the Silver Psycross. \
 			Made to endure."
@@ -844,7 +906,7 @@
 	..()
 
 /obj/item/clothing/suit/roguetown/armor/plate/fluted/ornate
-	name = "psydonite half-plate"
+	name = "psydonian half-plate"
 	desc = "A sturdily made fluted half-plate armour-set, complete with pauldrons and shoulder-guards. \
 			Favored by both the Holy Otavan Inquisition and the Order of the Silver Psycross. It smells of the madness of an enduring God."
 	icon_state = "ornatehalfplate"
@@ -892,37 +954,24 @@
 	max_integrity = 600
 
 /obj/item/clothing/suit/roguetown/armor/plate/full/fluted/ornate
-	name = "psydonite plate"
+	name = "psydonian plate"
 	desc = "A sturdily made fluted full-plate. Heavy-duty, and made to deflect blows from blades and arrows. \
 			Favored by both the Holy Otavan Inquisition and the Order of the Silver Psycross. It smells of the madness of an enduring God."
 	icon_state = "ornateplate"
 
 	max_integrity = 500
 
-	/// Whether the user has the Heavy Armour Trait prior to donning.
-	var/traited = FALSE
-
 /obj/item/clothing/suit/roguetown/armor/plate/full/fluted/ornate/equipped(mob/living/user, slot)
-	..()
+	. = ..()
 	if(slot != SLOT_ARMOR)
 		return
-	user.change_stat("endurance", 1)
-	user.change_stat("constitution", 1)
-	to_chat(user, span_notice("Endure til' inevitability."))
-	if (!HAS_TRAIT(user, TRAIT_MEDIUMARMOR))
-		return
-	if (HAS_TRAIT(user, TRAIT_HEAVYARMOR))
-		traited = TRUE
-		return
-	ADD_TRAIT(user, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
 
-/obj/item/clothing/suit/roguetown/armor/plate/full/fluted/ornate/dropped(mob/living/user)
-	..()
-	user.change_stat("endurance", -1)
-	user.change_stat("constitution", -1)
-	to_chat(user, span_notice("Trust in thyself."))
-	if (!traited)
-		REMOVE_TRAIT(user, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
+	user.apply_status_effect(/datum/status_effect/buff/psydonic_endurance)
+
+/obj/item/clothing/suit/roguetown/armor/plate/full/fluted/ornate/dropped(mob/living/carbon/human/user)
+	. = ..()
+	if(istype(user) && user.wear_armor == src)
+		user.remove_status_effect(/datum/status_effect/buff/psydonic_endurance)
 
 /obj/item/clothing/suit/roguetown/armor/plate/full/matthios
 	name = "gilded fullplate"
@@ -960,7 +1009,7 @@
 
 
 /obj/item/clothing/suit/roguetown/armor/plate/full/bikini
-	name = "full-plate corslet"
+	name = "full-plate corset"
 	desc = "Breastplate, pauldrons, couters, cuisses... did you forget something?"
 	icon_state = "platekini"
 	allowed_sex = list(FEMALE)
@@ -1016,6 +1065,18 @@
 	item_state = "corsethalfplate"
 	adjustable = CAN_CADJUST
 	allowed_race = NON_DWARVEN_RACE_TYPES
+	detail_tag = "_detail"
+	color = "#FFFFFF"
+	detail_color = "#282e83"
+
+/obj/item/clothing/suit/roguetown/armor/plate/otavan/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
 
 /obj/item/clothing/suit/roguetown/armor/plate/otavan/AdjustClothes(mob/user)
 	if(loc == user)
@@ -1204,15 +1265,36 @@
 
  //--------------- BLACKSTEEL ---------------------
 
-/obj/item/clothing/suit/roguetown/armor/plate/blacksteel_full_plate
+/obj/item/clothing/suit/roguetown/armor/plate/modern/blacksteel_full_plate
 	name = "blacksteel plate armor"
+	desc = "A suit of Full Plate smithed from durable blacksteel. Using a modern design, the piercing and blunt protection still remain unmatched among its heavy-plated peers."
+	body_parts_covered = COVERAGE_FULL
+	icon = 'icons/roguetown/clothing/special/blkknight.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/special/onmob/blkknight.dmi'
+	icon_state = "bplate"
+	item_state = "bplate"
+	sleeved = 'icons/roguetown/clothing/special/onmob/blkknight.dmi'
+	armor = ARMOR_PLATE_BSTEEL
+	allowed_race = CLOTHED_RACES_TYPES
+	blocking_behavior = null
+	max_integrity = 400
+	smeltresult = /obj/item/ingot/blacksteel
+	equip_delay_self = 12 SECONDS
+	unequip_delay_self = 12 SECONDS
+	equip_delay_other = 3 SECONDS
+	strip_delay = 6 SECONDS
+	smelt_bar_num = 4 
+
+/obj/item/clothing/suit/roguetown/armor/plate/blacksteel_full_plate
+	name = "ancient blacksteel plate armor"
 	desc = "A suit of Full Plate smithed from durable blacksteel. With an internally layered gambeson, the piercing and blunt protection is unmatched among its heavy-plated peers."
 	body_parts_covered = COVERAGE_FULL
 	icon = 'icons/roguetown/clothing/special/blkknight.dmi'
 	mob_overlay_icon = 'icons/roguetown/clothing/special/onmob/blkknight.dmi'
+	sleeved = 'icons/roguetown/clothing/special/onmob/blkknight.dmi'
 	icon_state = "bkarmor"
 	item_state = "bkarmor"
-	armor = ARMOR_PLATE_GOOD
+	armor = ARMOR_PLATE_BSTEEL
 	allowed_race = CLOTHED_RACES_TYPES
 	blocking_behavior = null
 	max_integrity = 400
@@ -1258,3 +1340,63 @@
 /obj/item/clothing/suit/roguetown/armor/plate/elven_plate/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/item_equipped_movement_rustle, SFX_WOOD_ARMOR)
+
+//the following changes are apart of a kazengite content update, and uses armor values from ratwood
+//i can move the armor protection values into roguetown.dm if it's requested but i really dont think that's necessary for a bunch of custom values
+
+//explanations for armor values & whatever will be sticked at the end of each piece, and they'll be removed if the PR gets merged
+
+/obj/item/clothing/suit/roguetown/armor/basiceast
+	name = "simple dobo robe"
+	desc = "A dirty dobo robe with white lapels. Can be upgraded through the use of a tailor."
+	icon_state = "eastsuit3"
+	item_state = "eastsuit3"
+	sleeved = 'icons/roguetown/clothing/onmob/helpers/sleeves_armor.dmi'
+	break_sound = 'sound/foley/cloth_rip.ogg'
+	drop_sound = 'sound/foley/dropsound/cloth_drop.ogg'
+	body_parts_covered = COVERAGE_FULL
+	armor = list("blunt" = 35, "slash" = 75, "stab" = 40, "piercing" = 20, "fire" = 0, "acid" = 0)
+	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_BLUNT, BCLASS_CHOP)
+	blocksound = SOFTHIT
+	blade_dulling = DULLING_BASHCHOP
+	sewrepair = TRUE
+	nodismemsleeves = TRUE
+	max_integrity = 175 //can be increased if it turns out that having full coverage with such a low integ. isnt worth it
+	sellprice = 20
+	armor_class = ARMOR_CLASS_LIGHT
+	allowed_race = NON_DWARVEN_RACE_TYPES
+	flags_inv = HIDEBOOB|HIDECROTCH
+
+//less integrity than a leather cuirass, incredibly weak to blunt damage - great against slash - standard leather value against stab
+//the intent for these armors is to create specific weaknesses/strengths for people to play with
+
+/obj/item/clothing/suit/roguetown/armor/basiceast/crafteast
+	name = "decorated dobo robe"
+	desc = "A dobo robe with a red tassel. Leather inlays are sewn in."
+	icon_state = "eastsuit2"
+	item_state = "eastsuit2"
+	armor = list("blunt" = 50, "slash" = 90, "stab" = 60, "piercing" = 30, "fire" = 0, "acid" = 0)
+	max_integrity = 200
+
+//craftable variation of eastsuit, essentially requiring the presence of a tailor with relevant materials
+//still weak against blunt
+
+/obj/item/clothing/suit/roguetown/armor/basiceast/mentorsuit
+	name = "old dobo robe"
+	desc = "The scars on your body were once stories of strength and bravado."
+	icon_state = "eastsuit1"
+	item_state = "eastsuit1"
+	sleeved = 'icons/roguetown/clothing/onmob/helpers/sleeves_armor.dmi'
+	armor = list("blunt" = 50, "slash" = 90, "stab" = 60, "piercing" = 30, "fire" = 0, "acid" = 0)
+	max_integrity = 200
+
+/obj/item/clothing/suit/roguetown/armor/basiceast/captainrobe
+	name = "foreign robes"
+	desc = "Flower-styled robes, said to have been infused with magical protection. The Merchant Guild says that this is from the southern Kazengite region."
+	icon_state = "eastsuit4"
+	item_state = "eastsuit4"
+	armor = list("blunt" = 50, "slash" = 90, "stab" = 60, "piercing" = 30, "fire" = 0, "acid" = 0)
+	max_integrity = 300
+	sellprice = 25
+
+// this robe spawns on a role that offers no leg protection nor further upgrades to the loadout, in exchange for better roundstart gear

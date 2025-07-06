@@ -27,6 +27,10 @@ GLOBAL_LIST_EMPTY(loadout_items)
 	name = "Farkle Dice Container"
 	path = /obj/item/storage/pill_bottle/dice/farkle
 
+/datum/loadout_item/tarot_deck
+	name = "Tarot Deck"
+	path = /obj/item/toy/cards/deck/tarot
+
 //HATS
 /datum/loadout_item/shalal
 	name = "Keffiyeh"
@@ -145,6 +149,14 @@ GLOBAL_LIST_EMPTY(loadout_items)
 	name = "Volf Mantle"
 	path = /obj/item/clothing/cloak/volfmantle
 
+/datum/loadout_item/eastcloak2
+	name = "Leather Cloak"
+	path = /obj/item/clothing/cloak/eastcloak2
+
+/datum/loadout_item/thief_cloak
+	name = "Rapscallion's Shawl"
+	path = /obj/item/clothing/cloak/thief_cloak
+
 //SHOES
 /datum/loadout_item/darkboots
 	name = "Dark Boots"
@@ -185,6 +197,10 @@ GLOBAL_LIST_EMPTY(loadout_items)
 /datum/loadout_item/exoticanklets
 	name = "Exotic Anklets"
 	path = /obj/item/clothing/shoes/roguetown/anklets
+
+/datum/loadout_item/rumaclanshoes
+	name = "Raised Sandals"
+	path = /obj/item/clothing/shoes/roguetown/armor/rumaclan
 
 //SHIRTS
 /datum/loadout_item/longcoat
@@ -283,6 +299,13 @@ GLOBAL_LIST_EMPTY(loadout_items)
 	name = "Nun Habit"
 	path = /obj/item/clothing/suit/roguetown/shirt/robe/nun
 
+/datum/loadout_item/eastshirt1
+	name = "Black Foreign Shirt"
+	path = /obj/item/clothing/suit/roguetown/shirt/undershirt/eastshirt1
+
+/datum/loadout_item/eastshirt2
+	name = "White Foreign Shirt"
+	path = /obj/item/clothing/suit/roguetown/shirt/undershirt/eastshirt2
 //PANTS
 /datum/loadout_item/tights
 	name = "Cloth Tights"
@@ -440,6 +463,18 @@ GLOBAL_LIST_EMPTY(loadout_items)
 /datum/loadout_item/chaperon/burgher
     name = "Noble's Chaperon"
     path = /obj/item/clothing/head/roguetown/chaperon/noble
+
+/datum/loadout_item/jesterhat
+    name = "Jester's Hat"
+    path = /obj/item/clothing/head/roguetown/jester
+
+/datum/loadout_item/jestertunick
+    name = "Jester's Tunick"
+    path = /obj/item/clothing/suit/roguetown/shirt/jester
+
+/datum/loadout_item/jestershoes
+    name = "Jester's Shoes"
+    path = /obj/item/clothing/shoes/roguetown/jester
 
 //Donator Section
 //All these items are stored in the donator_fluff.dm in the azure modular folder for simplicity.

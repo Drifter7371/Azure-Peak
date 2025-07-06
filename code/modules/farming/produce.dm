@@ -7,7 +7,10 @@
 	var/seed
 	var/bitesize_mod = 0
 	experimental_inhand = FALSE
-
+	/// Type of splat to use. If null - produce is unsquashable.
+	var/splat_type = null
+	/// Color of the splat, applied when splat_type is spawned (after squashing).
+	var/splat_color = null
 
 /obj/item/reagent_containers/food/snacks/grown/Initialize(mapload)
 	. = ..()
@@ -37,6 +40,40 @@
 			return
 	return ..()
 
+/obj/item/reagent_containers/food/snacks/grown/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	. = ..()
+	if(!QDELETED(src) && !QDELETED(hit_atom) && !isnull(splat_type))
+		return squash(hit_atom, throwingdatum)
+
+/// Squashing logic. Returns TRUE if food is squashed and qdeleted, FALSE - otherwise.
+/obj/item/reagent_containers/food/snacks/grown/proc/squash(atom/movable/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/thrower = throwingdatum?.thrower
+	if(istype(thrower) && (thrower.STASTR < 9 && prob(40 + (20 - thrower.STASTR))))
+		visible_message(span_warning("[src] bounces off [hit_atom]!"))
+		return FALSE // If thrower is weaker than average, it bounces off with no effect just for the pun of it.
+
+	var/turf/T = get_turf(src)
+	if(istransparentturf(T))
+		T = GET_TURF_BELOW(src)
+	if(istype(hit_atom) && !(hit_atom.density && !(hit_atom?.pass_flags & LETPASSTHROW) && !(hit_atom?.flags_1 & ON_BORDER_1)))
+		T = get_turf(hit_atom) // No splats under walls and dense atoms
+
+	forceMove(T)
+	if(ispath(splat_type, /obj/effect/decal/cleanable/food/plant_smudge))
+		if(filling_color)
+			var/atom/movable/spawned_splat = new splat_type(T)
+			spawned_splat.color = splat_color
+			spawned_splat.name = "[name] smudge"
+	else if(splat_type)
+		new splat_type(T)
+
+	if(trash)
+		generate_trash(T)
+
+	visible_message(span_warning("[src] has been squashed."), null, span_hear("I hear a smack."))
+
+	qdel(src)
+	return TRUE
 
 /obj/item/reagent_containers/food/snacks/grown/wheat
 	seed = /obj/item/seeds/wheat
@@ -143,7 +180,9 @@
 	bitesize = 2
 	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
 	foodtype = FRUIT
+	faretype = FARE_POOR
 	rotprocess = SHELFLIFE_DECENT
+	splat_type = /obj/effect/decal/cleanable/food/plant_smudge
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/pear
 	name = "pear"
@@ -151,6 +190,7 @@
 	desc = "A juicy, bell-shaped fruit with a delicate sweetness and soft, grainy flesh."
 	icon_state = "pear"
 	tastes = list("pear" = 1)
+	splat_color = "#D2B48C"
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/lemon
 	name = "lemon"
@@ -158,6 +198,7 @@
 	desc = "A bright yellow citrus fruit, prized for its tart, refreshing juice and fragrant zest."
 	icon_state = "lemon"
 	tastes = list("lemon" = 1)
+	splat_color = "#FFFF00"
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/lime
 	name = "lime"
@@ -165,6 +206,7 @@
 	desc = "A small, green citrus fruit with a sharp, tangy flavor, often used to add zest to dishes and drinks."
 	icon_state = "lemon" // Need a real icon
 	tastes = list("lime" = 1)
+	splat_color = "#00FF00"
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/tangerine
 	name = "tangerine"
@@ -172,6 +214,7 @@
 	desc = "A small, easy-to-peel citrus fruit with a vibrant orange color and sweet, juicy segments."
 	icon_state = "tangerine"
 	tastes = list("tangerine" = 1)
+	splat_color = "#FFA500"
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/plum
 	name = "plum"
@@ -179,6 +222,7 @@
 	desc = "A smooth-skinned fruit with juicy, sweet-tart flesh and a deep purple or red hue."
 	icon_state = "plum"
 	tastes = list("plum" = 1)
+	splat_color = "#8B008B"
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/strawberry
 	name = "strawberry"
@@ -186,6 +230,7 @@
 	desc = "A small, red fruit with a sweet taste. It is often used in desserts."
 	icon_state = "strawberry"
 	tastes = list("strawberry" = 1)
+	splat_color = "#9A1B00"
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/blackberry
 	name = "blackberry"
@@ -193,6 +238,7 @@
 	desc = "A small, dark fruit with a sweet and slightly tart taste. It is often used in desserts."
 	icon_state = "blackberry"
 	tastes = list("blackberry" = 1)
+	splat_color = "#272C3F"
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/raspberry
 	name = "raspberry"
@@ -200,6 +246,7 @@
 	desc = "A small, red fruit with a sweet and slightly tart taste. It is often used in desserts."
 	icon_state = "raspberry"
 	tastes = list("raspberry" = 1)
+	splat_color = "#A01600"
 
 /obj/item/reagent_containers/food/snacks/grown/fruit/tomato
 	name = "tomato"
@@ -207,6 +254,7 @@
 	desc = "A plump, red fruit with juicy flesh and a balanced sweet-tart flavor, essential in salads and sauces."
 	icon_state = "tomato"
 	tastes = list("tomato" = 1)
+	splat_color = "#CD5320"
 
 /obj/item/reagent_containers/food/snacks/grown/berries/rogue
 	seed = /obj/item/seeds/berryrogue

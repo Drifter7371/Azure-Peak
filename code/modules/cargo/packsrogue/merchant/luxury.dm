@@ -35,6 +35,11 @@
 	/obj/item/reagent_containers/glass/cup/ceramic/fancy,
 	/obj/item/reagent_containers/glass/cup/ceramic/fancy)
 
+/datum/supply_pack/rogue/luxury/silverpsicross
+	name = "Silver Psycross"
+	cost = 200
+	contains = list(/obj/item/clothing/neck/roguetown/psicross/silver)
+
 /datum/supply_pack/rogue/luxury/silverdagger
 	name = "Silver Dagger"
 	cost = 150
@@ -55,11 +60,6 @@
 	cost = 250
 	contains = list(/obj/item/listenstone)
 
-/datum/supply_pack/rogue/luxury/riddleofsteel
-	name = "Riddle of Steel"
-	cost = 500
-	contains = list(/obj/item/riddleofsteel)
-
 /datum/supply_pack/rogue/luxury/polishing_kit
 	name = "Polishing Kit"
 	no_name_quantity = TRUE
@@ -68,7 +68,7 @@
 
 /datum/supply_pack/rogue/luxury/talkstone
 	name = "Talkstone"
-	cost = 150
+	cost = 100
 	contains = list(/obj/item/clothing/neck/roguetown/talkstone)
 
 /datum/supply_pack/rogue/luxury/circlet

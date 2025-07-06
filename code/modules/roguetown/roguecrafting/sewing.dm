@@ -353,14 +353,35 @@
 
 /datum/crafting_recipe/roguetown/sewing/ravox
 	name = "tabard, ravox (1 fibers, 3 cloth)"
+	result = list(/obj/item/clothing/cloak/cleric/ravox)
+	reqs = list(/obj/item/natural/cloth = 3,
+				/obj/item/natural/fibers = 1)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/sewing/ravoxtemplar
+	name = "tabard, ravox templar (1 fibers, 3 cloth)"
 	result = list(/obj/item/clothing/cloak/templar/ravox)
 	reqs = list(/obj/item/natural/cloth = 3,
+				/obj/item/natural/fibers = 1)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/sewing/ravoxgorget
+	name = "ravox gorget (1 fibers, 2 cloth)"
+	result = list(/obj/item/clothing/head/roguetown/roguehood/ravoxgorget)
+	reqs = list(/obj/item/natural/cloth = 2,
 				/obj/item/natural/fibers = 1)
 	craftdiff = 3
 
 /datum/crafting_recipe/roguetown/sewing/xylix
 	name = "tabard, xylix (1 fibers, 3 cloth)"
 	result = list(/obj/item/clothing/cloak/templar/xylix)
+	reqs = list(/obj/item/natural/cloth = 3,
+				/obj/item/natural/fibers = 1)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/sewing/xylixian
+	name = "tabard, xylix templar (1 fibers, 3 cloth)"
+	result = list(/obj/item/clothing/cloak/templar/xylixian)
 	reqs = list(/obj/item/natural/cloth = 3,
 				/obj/item/natural/fibers = 1)
 	craftdiff = 3
@@ -378,6 +399,29 @@
 	result = list(/obj/item/clothing/suit/roguetown/shirt/robe)
 	reqs = list(/obj/item/natural/cloth = 3,
 				/obj/item/natural/fibers = 1)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/sewing/jesterchest
+	name = "jester's tunick (1 fibers, 3 cloth)"
+	result = list(/obj/item/clothing/suit/roguetown/shirt/jester)
+	reqs = list(/obj/item/natural/cloth = 3,
+				/obj/item/natural/fibers = 1)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/sewing/jesterhead
+	name = "jester's hat (1 fibers, 2 cloth, 1 set of jingle bells)"
+	result = list(/obj/item/clothing/head/roguetown/jester)
+	reqs = list(/obj/item/natural/cloth = 2,
+				/obj/item/natural/fibers = 1,
+				/obj/item/jingle_bells = 1)
+	craftdiff = 3
+
+/datum/crafting_recipe/roguetown/sewing/jestershoes
+	name = "jester's shoes (1 fibers, 2 cloth, 1 set of jingle bells)"
+	result = list(/obj/item/clothing/shoes/roguetown/jester)
+	reqs = list(/obj/item/natural/cloth = 2,
+				/obj/item/natural/fibers = 1,
+				/obj/item/jingle_bells = 1)
 	craftdiff = 3
 
 /datum/crafting_recipe/roguetown/sewing/bardress
@@ -493,6 +537,13 @@
     reqs = list(/obj/item/natural/cloth = 6,
                 /obj/item/natural/fibers = 4)
     craftdiff = 3
+
+/datum/crafting_recipe/roguetown/sewing/hgambeson/fencer
+	name = "fencing shirt (6 cloth, 2 cured leather)"
+	result = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy/freifechter
+	reqs = list(/obj/item/natural/cloth = 6,
+				/obj/item/natural/hide/cured = 2)
+	craftdiff = 4
 
 /datum/crafting_recipe/roguetown/sewing/chaperon
 	name = "chaperon hat (1 fibers, 2 cloth)"

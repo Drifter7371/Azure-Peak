@@ -24,7 +24,7 @@
 		if(target.mob_biotypes & MOB_UNDEAD)
 			continue
 		target.apply_status_effect(/datum/status_effect/debuff/call_to_slaughter)	//Debuffs non-inhumens/psydonians
-	return ..()
+	return TRUE
 
 //Unholy Grasp - Throws disappearing net made of viscera at enemy. Creates blood on impact.
 /obj/effect/proc_holder/spell/invoked/projectile/blood_net
@@ -78,7 +78,6 @@
 	devotion_cost = 70
 
 /obj/effect/proc_holder/spell/invoked/revel_in_slaughter/cast(atom/A, list/targets, mob/living/user = usr)
-	. = ..()
 	var/success = 0
 	for(var/obj/effect/decal/cleanable/blood/B in view(3, user))
 		success++
@@ -97,7 +96,8 @@
 			addtimer(VARSET_CALLBACK(phy, pain_mod, phy.pain_mod /= 1.5), 15 SECONDS)
 			human_target.visible_message(span_danger("[target]'s wounds become inflammed as their vitality is sapped away!"))
 			to_chat(target, span_warning("My skins feels like pins and needles, as if something were ripping and tearing at me!"))
-			return ..()
+			return TRUE
+	return FALSE
 
 //Bloodrage T0 -- Uncapped STR buff.
 /obj/effect/proc_holder/spell/self/graggar_bloodrage

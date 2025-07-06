@@ -167,6 +167,11 @@
 			to_chat(src, span_warning("I feed on succulent flesh. I feel reinvigorated."))
 			user.reagents.add_reagent(/datum/reagent/medicine/healthpot, 30)
 			gib()
+		if(user.mind && istype(user, /mob/living/carbon/human/species/wildshape/volf))
+			visible_message(span_danger("The volf ravenously consumes the [src]!"))
+			to_chat(src, span_warning("I feed on succulent flesh. I feel satiated."))
+			user.reagents.add_reagent(/datum/reagent/consumable/nutriment, 15)
+			gib()
 		return
 	if(src.apply_damage(damage, BRUTE))
 		if(istype(user, /mob/living/carbon/human/species/werewolf))
@@ -187,7 +192,7 @@
 	if(user.check_leg_grabbed(1) || user.check_leg_grabbed(2))
 		to_chat(user, span_notice("I can't move my leg!"))
 		return
-	if(user.rogfat >= user.maxrogfat)
+	if(user.stamina >= user.max_stamina)
 		return FALSE
 	if(user.loc == target.loc)
 		to_chat(user, span_warning("I'm too close to get a good kick in."))
@@ -210,7 +215,7 @@
 		target.lastattackerckey = user.ckey
 		if(target.mind)
 			target.mind.attackedme[user.real_name] = world.time
-		user.rogfat_add(15)
+		user.stamina_add(15)
 
 /mob/living/simple_animal/proc/attack_threshold_check(damage, damagetype = BRUTE, armorcheck = d_type)
 	var/temp_damage = damage

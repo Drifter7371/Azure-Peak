@@ -20,6 +20,7 @@
 	var/maxore = 1
 	var/cooking = 0
 	var/actively_smelting = FALSE // Are we currently smelting?
+	var/datum/mind/smelter_mind // Who smelted the ore?
 
 	fueluse = 30 MINUTES
 	crossfire = FALSE
@@ -64,48 +65,9 @@
 		if(!(..())) //False/null if using the item as fuel. If true, we want to try smelt it so go onto next segment.
 			return
 	if(W.smeltresult)
-		if(!W)
-			return
-		if(user.get_active_held_item() != W)
-			to_chat(user, span_warning("That item is no longer in my hand..."))
-			return
-		if(ore.len < maxore)
-			user.dropItemToGround(W)
-			W.forceMove(src)
-			ore += W
-			if(!isliving(user) || !user.mind)
-				ore[W] = SMELTERY_LEVEL_SPOIL
-			else
-				var/datum/mind/smelter_mind = user.mind // Who smelted the ore?
-				var/smelter_exp = smelter_mind.get_skill_level(/datum/skill/craft/smelting) // 0 to 6
-				if(smelter_exp < 6)
-					ore[W] = min(6, floor(rand(smelter_exp*15 + 10, max(30, smelter_exp*25))/25)+1) // Math explained below
-				else
-					ore[W] = 6 // Guarantees a return of 6 no matter how extra experience past 3000 you have.
-				/*
-				RANDOMLY PICKED NUMBER ACCORDING TO SMELTER SKILL:
-					NO SKILL: 		between 10 and 30
-					NOVICE:	 		between 25 and 30
-					APPRENTICE:	 	between 40 and 50
-					JOURNEYMAN: 	between 55 and 75
-					EXPERT: 		between 70 and 100
-					MASTER: 		between 85 and 125
-					LEGENDARY: 		between 100 and 150
-
-				PICKED NUMBER GETS DIVIDED BY 25 AND ROUNDED DOWN TO CLOSEST INTEGER, +1.
-				RESULT DETERMINES QUALITY OF BAR. SEE code/__DEFINES/skills.dm
-					1 = SPOILED
-					2 = POOR
-					3 = NORMAL
-					4 = GOOD
-					5 = GREAT
-					6 = EXCELLENT
-				*/
-			user.visible_message(span_warning("[user] puts something in \the [src]."))
-			cooking = 0
-			return
-		else
-			to_chat(user, span_warning("\The [W.name] can be smelted, but \the [src] is full."))
+		addOre(W, user) // Adds the item to the smelter's ore list, if it can be smelted.
+		return
+	
 	else
 		if(!W.firefuel && !istype(W, /obj/item/flint) && !istype(W, /obj/item/flashlight/flare/torch) && !istype(W, /obj/item/rogueore/coal))
 			to_chat(user, span_warning("\The [W.name] cannot be smelted."))
@@ -114,15 +76,7 @@
 /obj/machinery/light/rogue/smelter/attack_right(mob/user)
 	var/obj/item/I = user.get_active_held_item()
 	if(I && I.smeltresult)
-		if(!I)
-			return
-		if(user.get_active_held_item() != I)
-			to_chat(user, span_warning("That item is no longer in my hand..."))
-			return
-		if(ore.len < maxore)
-			user.dropItemToGround(I)
-			I.forceMove(src)
-			ore += I
+		addOre(I, user)
 	return ..()
 
 // Gaining experience from just retrieving bars with your hands would be a hard-to-patch exploit.
@@ -139,6 +93,49 @@
 	else
 		return ..()
 
+/obj/machinery/light/rogue/smelter/proc/addOre(obj/item/W, mob/user)
+	if(!W)
+		return
+	if(user.get_active_held_item() != W)
+		to_chat(user, span_warning("That item is no longer in my hand..."))
+		return
+	if(ore.len < maxore)
+		user.dropItemToGround(W)
+		W.forceMove(src)
+		ore += W
+		if(!isliving(user) || !user.mind)
+			ore[W] = SMELTERY_LEVEL_SPOIL
+		else
+			var/smelter_exp = user.get_skill_level(/datum/skill/craft/smelting) // 0 to 6
+			if(smelter_exp < 6)
+				ore[W] = min(6, floor(rand(smelter_exp*15 + 10, max(30, smelter_exp*25))/25)+1) // Math explained below
+			else
+				ore[W] = 6 // Guarantees a return of 6 no matter how extra experience past 3000 you have.
+			/*
+			RANDOMLY PICKED NUMBER ACCORDING TO SMELTER SKILL:
+				NO SKILL: 		between 10 and 30
+				NOVICE:	 		between 25 and 30
+				APPRENTICE:	 	between 40 and 50
+				JOURNEYMAN: 	between 55 and 75
+				EXPERT: 		between 70 and 100
+				MASTER: 		between 85 and 125
+				LEGENDARY: 		between 100 and 150
+
+			PICKED NUMBER GETS DIVIDED BY 25 AND ROUNDED DOWN TO CLOSEST INTEGER, +1.
+			RESULT DETERMINES QUALITY OF BAR. SEE code/__DEFINES/skills.dm
+				1 = SPOILED
+				2 = POOR
+				3 = NORMAL
+				4 = GOOD
+				5 = GREAT
+				6 = EXCELLENT
+			*/
+		user.visible_message(span_warning("[user] puts something in \the [src]."))
+		cooking = 0
+		return
+	else
+		to_chat(user, span_warning("\The [W.name] can be smelted, but \the [src] is full."))
+		return
 
 /obj/machinery/light/rogue/smelter/process()
 	..()
@@ -181,7 +178,7 @@
 	base_state = "smelter"
 	anchored = TRUE
 	density = TRUE
-	maxore = 6
+	maxore = 4
 	climbable = FALSE
 
 /obj/machinery/light/rogue/smelter/great/process()
@@ -223,12 +220,8 @@
 						if(I.smeltresult == /obj/item/ingot/steel)
 							blacksteelalloy = blacksteelalloy + 2
 
-					if(steelalloycoal && steelalloyiron && steelalloycoal == steelalloyiron)
-						maxore = 0
-						for(var/i = 1 to steelalloycoal)
-							steelalloyiron--
-							steelalloycoal--
-							maxore += 1 // 1 coal + 1 iron = 1 steel
+					if(steelalloycoal == 1 && steelalloyiron == 3)
+						maxore = 3
 						alloy = /obj/item/ingot/steel
 					else if(bronzealloy == 7)
 						testing("BRONZE ALLOYED")

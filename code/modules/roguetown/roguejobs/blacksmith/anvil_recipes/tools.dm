@@ -379,6 +379,11 @@
 	req_bar = /obj/item/ingot/iron
 	created_item = /obj/item/reagent_containers/glass/bucket/pot
 
+/datum/anvil_recipe/tools/iron/kettle
+	name = "Cooking Kettle (Iron)"
+	req_bar = /obj/item/ingot/iron
+	created_item = /obj/item/reagent_containers/glass/bucket/pot/kettle
+
 /datum/anvil_recipe/tools/pote/copper
 	name = "Cooking Pot (Copper)"
 	req_bar = /obj/item/ingot/copper

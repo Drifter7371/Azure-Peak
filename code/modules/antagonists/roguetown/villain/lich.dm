@@ -13,7 +13,7 @@
 	var/out_of_lives = FALSE
 
 	var/traits_lich = list(	
-		TRAIT_NOROGSTAM,
+		TRAIT_INFINITE_STAMINA,
 		TRAIT_NOHUNGER,
 		TRAIT_NOBREATH,
 		TRAIT_NOPAIN,
@@ -105,21 +105,21 @@
 /datum/outfit/job/roguetown/lich/pre_equip(mob/living/carbon/human/H) //Equipment is located below
 	..()
 
-	H.mind.adjust_skillrank(/datum/skill/misc/reading, 6, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/craft/alchemy, 5, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/magic/arcane, 6, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/riding, 4, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/combat/polearms, 4, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/combat/wrestling, 3, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/combat/unarmed, 1, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/swimming, 1, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/climbing, 1, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/athletics, 1, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/combat/swords, 2, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/combat/knives, 5, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/craft/crafting, 1, TRUE)
-	H.mind.adjust_skillrank(/datum/skill/misc/medicine, 3, TRUE)
-	H.mind.adjust_spellpoints(27)
+	H.adjust_skillrank(/datum/skill/misc/reading, 6, TRUE)
+	H.adjust_skillrank(/datum/skill/craft/alchemy, 5, TRUE)
+	H.adjust_skillrank(/datum/skill/magic/arcane, 6, TRUE)
+	H.adjust_skillrank(/datum/skill/misc/riding, 4, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/polearms, 4, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/wrestling, 3, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/unarmed, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/misc/swimming, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/misc/climbing, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/misc/athletics, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/swords, 2, TRUE)
+	H.adjust_skillrank(/datum/skill/combat/knives, 5, TRUE)
+	H.adjust_skillrank(/datum/skill/craft/crafting, 1, TRUE)
+	H.adjust_skillrank(/datum/skill/misc/medicine, 3, TRUE)
+	H?.mind.adjust_spellpoints(27)
 	// Give it decent combat stats to make up for loss of 2 extra lives
 	H.change_stat("strength", 3)
 	H.change_stat("intelligence", 5)
@@ -127,17 +127,18 @@
 	H.change_stat("perception", 3)
 	H.change_stat("speed", 1)
 
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/bonechill)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/raise_undead)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/raise_lesser_undead)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/fireball)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/bloodlightning)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/fetch)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/diagnose/secular)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/minion_order)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/gravemark)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/suicidebomb)
-	H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/lich_announce)
+	if(H.mind)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/bonechill)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/raise_undead)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/raise_lesser_undead)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/fireball)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/bloodlightning)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/projectile/fetch)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/diagnose/secular)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/minion_order)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/gravemark)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/suicidebomb)
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/self/lich_announce)
 	H.ambushable = FALSE
 
 	addtimer(CALLBACK(H, TYPE_PROC_REF(/mob/living/carbon/human, choose_name_popup), "LICH"), 5 SECONDS)

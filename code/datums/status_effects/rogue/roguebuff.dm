@@ -293,7 +293,9 @@
 	alert_type = /atom/movable/screen/alert/status_effect/buff/darkvision
 	duration = 15 MINUTES
 
-/datum/status_effect/buff/darkvision/on_apply()
+/datum/status_effect/buff/darkvision/on_apply(mob/living/new_owner, assocskill)
+	if(assocskill)
+		duration += 5 MINUTES * assocskill
 	. = ..()
 	to_chat(owner, span_warning("The darkness fades somewhat."))
 	ADD_TRAIT(owner, TRAIT_DARKVISION, MAGIC_TRAIT)
@@ -335,7 +337,7 @@
 /datum/status_effect/buff/magearmor/on_apply()
 	. = ..()
 	playsound(owner, 'sound/magic/magearmordown.ogg', 75, FALSE)
-	duration = (7-owner.mind.get_skill_level(/datum/skill/magic/arcane)) MINUTES
+	duration = (7-owner.get_skill_level(/datum/skill/magic/arcane)) MINUTES
 
 /datum/status_effect/buff/magearmor/on_remove()
 	. = ..()
@@ -475,6 +477,73 @@
 		owner.adjustOrganLoss(ORGAN_SLOT_BRAIN, -healing_on_tick)
 		owner.adjustCloneLoss(-healing_on_tick, 0)
 
+/datum/status_effect/buff/healing/necras_vow
+	id = "healing"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/healing
+	duration = -1
+	healing_on_tick = 3
+	outline_colour = "#bbbbbb"
+
+/datum/status_effect/buff/healing/necras_vow/on_apply()
+	healing_on_tick = max(owner.get_skill_level(/datum/skill/magic/holy), 3)
+	return TRUE
+
+/datum/status_effect/buff/healing/necras_vow/tick()
+	var/obj/effect/temp_visual/heal/H = new /obj/effect/temp_visual/heal_rogue(get_turf(owner))
+	H.color = "#a5a5a5"
+	var/list/wCount = owner.get_wounds()
+	if(!owner.construct)
+		if(owner.blood_volume < BLOOD_VOLUME_NORMAL)
+			owner.blood_volume = min(owner.blood_volume + (healing_on_tick + 10), BLOOD_VOLUME_NORMAL)
+		if(wCount.len > 0)
+			owner.heal_wounds(healing_on_tick, list(/datum/wound/slash, /datum/wound/puncture, /datum/wound/bite, /datum/wound/bruise))
+			owner.update_damage_overlays()
+		owner.adjustBruteLoss(-healing_on_tick, 0)
+		owner.adjustFireLoss(-healing_on_tick, 0)
+		owner.adjustOxyLoss(-healing_on_tick, 0)
+		owner.adjustToxLoss(-healing_on_tick, 0)
+		owner.adjustOrganLoss(ORGAN_SLOT_BRAIN, -healing_on_tick)
+		owner.adjustCloneLoss(-healing_on_tick, 0)
+
+/atom/movable/screen/alert/status_effect/buff/psyhealing
+	name = "Enduring"
+	desc = "I am awash with sentimentality."
+	icon_state = "buff"
+
+#define PSYDON_HEALING_FILTER "psydon_heal_glow"
+
+/datum/status_effect/buff/psyhealing
+	id = "psyhealing"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/psyhealing
+	duration = 15 SECONDS
+	examine_text = "SUBJECTPRONOUN stirs with a sense of ENDURING!"
+	var/healing_on_tick = 1
+	var/outline_colour = "#d3d3d3"
+
+/datum/status_effect/buff/psyhealing/on_creation(mob/living/new_owner, new_healing_on_tick)
+	healing_on_tick = new_healing_on_tick
+	return ..()
+
+/datum/status_effect/buff/psyhealing/on_apply()
+	SEND_SIGNAL(owner, COMSIG_LIVING_MIRACLE_HEAL_APPLY, healing_on_tick, src)
+	var/filter = owner.get_filter(PSYDON_HEALING_FILTER)
+	if (!filter)
+		owner.add_filter(PSYDON_HEALING_FILTER, 2, list("type" = "outline", "color" = outline_colour, "alpha" = 60, "size" = 1))
+	return TRUE
+
+/datum/status_effect/buff/psyhealing/tick()
+	var/obj/effect/temp_visual/heal/H = new /obj/effect/temp_visual/psyheal_rogue(get_turf(owner))
+	H.color = "#d3d3d3"
+	var/list/wCount = owner.get_wounds()
+	if(!owner.construct)
+		if(wCount.len > 0)
+			owner.heal_wounds(healing_on_tick * 1.75)
+			owner.update_damage_overlays()
+		owner.adjustOxyLoss(-healing_on_tick, 0)
+		owner.adjustToxLoss(-healing_on_tick, 0)
+		owner.adjustOrganLoss(ORGAN_SLOT_BRAIN, -healing_on_tick)
+		owner.adjustCloneLoss(-healing_on_tick, 0)		
+
 /datum/status_effect/buff/rockmuncher
 	id = "rockmuncher"
 	duration = 10 SECONDS
@@ -502,7 +571,11 @@
 /datum/status_effect/buff/healing/on_remove()
 	owner.remove_filter(MIRACLE_HEALING_FILTER)
 	owner.update_damage_hud()
-	
+
+/datum/status_effect/buff/psyhealing/on_remove()
+	owner.remove_filter(PSYDON_HEALING_FILTER)
+	owner.update_damage_hud()
+
 /atom/movable/screen/alert/status_effect/buff/fortify
 	name = "Fortifying Miracle"
 	desc = "Divine intervention bolsters me and aids my recovery."
@@ -637,7 +710,7 @@
 	id = "Moonsight"
 	alert_type = /atom/movable/screen/alert/status_effect/buff/moonlightdance
 	effectedstats = list("intelligence" = 2)
-	duration = 15 MINUTES
+	duration = 25 MINUTES
 
 /atom/movable/screen/alert/status_effect/buff/moonlightdance
 	name = "Moonlight Dance"
@@ -941,7 +1014,7 @@
 
 /datum/status_effect/buff/bloodrage/on_apply()
 	ADD_TRAIT(owner, TRAIT_STRENGTH_UNCAPPED, TRAIT_MIRACLE)
-	var/holyskill = owner.mind?.get_skill_level(/datum/skill/magic/holy)
+	var/holyskill = owner.get_skill_level(/datum/skill/magic/holy)
 	duration = ((15 SECONDS) * holyskill)
 	var/filter = owner.get_filter(BLOODRAGE_FILTER)
 	if(!filter)
@@ -966,5 +1039,24 @@
 	owner.remove_filter(BLOODRAGE_FILTER)
 	owner.emote("breathgasp", forced = TRUE)
 	owner.Slowdown(3)
+
+/datum/status_effect/buff/psydonic_endurance
+	id = "psydonic_endurance"
+	alert_type = /atom/movable/screen/alert/status_effect/buff/psydonic_endurance
+	effectedstats = list("constitution" = 1,"endurance" = 1) 
+
+/datum/status_effect/buff/psydonic_endurance/on_apply()
+	. = ..()
+	if(HAS_TRAIT(owner, TRAIT_MEDIUMARMOR) && !HAS_TRAIT(owner, TRAIT_HEAVYARMOR))
+		ADD_TRAIT(owner, TRAIT_HEAVYARMOR, src)
+
+/datum/status_effect/buff/psydonic_endurance/on_remove()
+	. = ..()
+	REMOVE_TRAIT(owner, TRAIT_HEAVYARMOR, src)
+
+/atom/movable/screen/alert/status_effect/buff/psydonic_endurance
+	name = "Psydonic Endurance"
+	desc = "I am protected by blessed Psydonian plate armor."
+	icon_state = "buff"
 
 #undef BLOODRAGE_FILTER

@@ -90,7 +90,7 @@ SUBSYSTEM_DEF(nightshift)
 			apply_status_effect(/datum/status_effect/debuff/sleepytime)
 
 	if(todd == "night")
-		if(HAS_TRAIT(src, TRAIT_NOROGSTAM))
+		if(HAS_TRAIT(src, TRAIT_INFINITE_STAMINA))
 			return ..()
 		if(HAS_TRAIT(src, TRAIT_NOSLEEP))
 			return ..()

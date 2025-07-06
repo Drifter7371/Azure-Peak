@@ -357,7 +357,7 @@
 /obj/structure/flora/roguegrass/bush/attack_hand(mob/user)
 	if(isliving(user))
 		var/mob/living/L = user
-		user.changeNext_move(CLICK_CD_MELEE)
+		user.changeNext_move(CLICK_CD_INTENTCAP)
 		playsound(src.loc, "plantcross", 50, FALSE, -1)
 		if(do_after(L, rand(1,5), target = src))
 			if(!looty.len && (world.time > res_replenish))
@@ -372,10 +372,21 @@
 					user.visible_message(span_notice("[user] finds [B] in [src]."))
 					return
 			user.visible_message(span_warning("[user] searches through [src]."))
+			if(looty.len)
+				attack_hand(user)
 			if(!looty.len)
 				to_chat(user, span_warning("Picked clean... I should try later."))
 /obj/structure/flora/roguegrass/bush/update_icon()
 	icon_state = "bush[rand(2, 4)]"
+
+/obj/structure/flora/roguegrass/bush/CanAStarPass(ID, travel_dir, caller)
+	if(ismovableatom(caller))
+		var/atom/movable/mover = caller
+		if(mover.pass_flags & PASSGRILLE)
+			return TRUE
+	if(travel_dir == dir)
+		return FALSE // just don't even try, not even if you can climb it
+	return ..()
 
 /obj/structure/flora/roguegrass/bush/CanPass(atom/movable/mover, turf/target)
 	if(istype(mover) && (mover.pass_flags & PASSGRILLE))
@@ -430,6 +441,13 @@
 	if(istype(mover) && (mover.pass_flags & PASSGRILLE))
 		return 1
 	return 0
+
+/obj/structure/flora/roguegrass/bush/wall/CanAStarPass(ID, travel_dir, caller)
+	if(ismovableatom(caller))
+		var/atom/movable/mover = caller
+		if(mover.pass_flags & PASSGRILLE)
+			return TRUE
+	return climbable || !density
 
 /obj/structure/flora/roguegrass/bush/wall/CheckExit(atom/movable/O, turf/target)
 	if(istype(O) && (O.pass_flags & PASSGRILLE))
@@ -492,6 +510,15 @@
 	if(get_dir(loc, target) == dir)
 		return 0
 	return 1
+
+/obj/structure/flora/rogueshroom/CanAStarPass(ID, travel_dir, caller)
+	if(ismovableatom(caller))
+		var/atom/movable/mover = caller
+		if(mover.pass_flags & PASSGRILLE)
+			return TRUE
+	if(travel_dir == dir)
+		return FALSE // just don't even try, not even if you can climb it
+	return ..()
 
 /obj/structure/flora/rogueshroom/CheckExit(atom/movable/mover as mob|obj, turf/target)
 	if(istype(mover) && (mover.pass_flags & PASSGRILLE))
@@ -584,6 +611,7 @@
 	climbable = FALSE
 	dir = SOUTH
 	debris = list(/obj/item/natural/fibers = 1)
+	max_integrity = 9999 // From base 1. So antag don't get to destroy it easily :).
 	var/list/looty = list()
 	var/bushtype
 	var/res_replenish
@@ -608,7 +636,7 @@
 /obj/structure/flora/roguegrass/pyroclasticflowers/attack_hand(mob/user)
 	if(isliving(user))
 		var/mob/living/L = user
-		user.changeNext_move(CLICK_CD_MELEE)
+		user.changeNext_move(CLICK_CD_INTENTCAP)
 		playsound(src.loc, "plantcross", 80, FALSE, -1)
 		if(do_after(L, rand(1,5), target = src))
 			if(!looty.len && (world.time > res_replenish))
@@ -657,7 +685,7 @@
 /obj/structure/flora/roguegrass/swampweed/attack_hand(mob/user)
 	if(isliving(user))
 		var/mob/living/L = user
-		user.changeNext_move(CLICK_CD_MELEE)
+		user.changeNext_move(CLICK_CD_INTENTCAP)
 		playsound(src.loc, "plantcross", 80, FALSE, -1)
 		if(do_after(L, rand(1,5), target = src))
 			if(!looty.len && (world.time > res_replenish))

@@ -94,6 +94,12 @@
 	color = "#ff0000"
 	component_type = /datum/component/storage/concrete/roguetown/belt
 
+/obj/item/storage/belt/rogue/leather/sash
+	name = "fine sash"		//Like the cloth sash but with better storage. More expensive.
+	desc = "A pliable sash made of wool meant to wrap tightly around the waist, especially popular with travellers who wear loose shirts."
+	icon_state = "clothsash"
+	item_state = "clothsash"
+
 /obj/item/storage/belt/rogue/pouch
 	name = "pouch"
 	desc = "A small sack with a drawstring that allows it to be worn around the neck. Or at the hips, provided you have a belt."
@@ -209,6 +215,11 @@
 		CP.rmb_show(user)
 		return TRUE
 
+/obj/item/storage/backpack/rogue/satchel/short
+	name = "short satchel"
+	desc = "A leather satchel that's meant to  clip to a belt or to a pair of pants, freeing the shoulders from any weight."
+	icon_state = "satchelshort"
+	item_state = "satchelshort"
 
 /obj/item/storage/backpack/rogue/backpack
 	name = "backpack"

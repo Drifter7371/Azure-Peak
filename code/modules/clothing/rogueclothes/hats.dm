@@ -151,6 +151,15 @@
 	flags_inv = HIDEEARS|HIDEHAIR|HIDEFACIALHAIR	//Does not hide face.
 	block2add = null
 
+/obj/item/clothing/head/roguetown/roguehood/shalal/hijab/raneshen
+	name = "padded headscarf"
+	desc = "A common sight amongst those travelling the long desert routes, it offers protection from the heat and a modicum of it against the beasts that prowl its more comfortable nites."
+	max_integrity = 100
+	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST)
+	armor = ARMOR_HEAD_PSYDON //basically the same as a warscholar hood
+	item_state = "hijab"
+	icon_state = "deserthood"
+	naledicolor = TRUE
 
 /obj/item/clothing/head/roguetown/roguehood/shalal/heavyhood
 	name = "heavy hood"
@@ -352,6 +361,15 @@
 	GLOB.lordcolor -= src
 	return ..()
 
+/obj/item/clothing/head/roguetown/jester/MiddleClick(mob/user)
+	if(!ishuman(user))
+		return
+	if(flags_inv & HIDE_HEADTOP)
+		flags_inv &= ~HIDE_HEADTOP
+	else
+		flags_inv |= HIDE_HEADTOP
+	user.update_inv_head()
+
 /obj/item/clothing/head/roguetown/strawhat
 	name = "straw hat"
 	desc = "It's scratchy and rustic, but at least it keeps the sun off your head while you toil in the fields."
@@ -477,6 +495,12 @@
 	color = "#641E16"
 	detail_color = "#b68e37ff"
 
+/obj/item/clothing/head/roguetown/chaperon/noble/guildmaster
+	name = "Guildmaster's chapereon"
+	desc = "A noble's chaperon made for the guildmaster."
+	color = "#1b1717ff"
+	detail_color = "#b68e37ff"
+
 /obj/item/clothing/head/roguetown/chaperon/councillor
 	name = "chaperon hat"
 	desc = "A fancy hat worn by nobles."
@@ -566,7 +590,7 @@
 	anvilrepair = /datum/skill/craft/armorsmithing
 
 /obj/item/clothing/head/roguetown/nyle/consortcrown
-	name = "consort crown"
+	name = "gem-encrusted crown"
 	icon_state = "consortcrown"
 	item_state = "consortcrown"
 	sellprice = 100
@@ -818,9 +842,18 @@
 	item_state = "bascinet_novisor"
 	color = COLOR_ASSEMBLY_GOLD
 
+/obj/item/clothing/head/roguetown/helmet/sallet/raneshen
+	name = "kulah khud"
+	desc = "A sturdy, conical helm that has served the Empire well throughout its many campaigns. It's a sight to see, thousands of these bobbing as an army marches. The only greater humiliation than losing it is losing one's medallion."
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/64x64/head.dmi'
+	icon_state = "raneshen"
+	worn_x_dimension = 64
+	worn_y_dimension = 64
+	bloody_icon = 'icons/effects/blood64.dmi'
+
 /obj/item/clothing/head/roguetown/helmet/otavan
 	name = "otavan helmet"
-	desc = ""
+	desc = "A helmet of Otavan make, similar in structure to a Psydonian Armet but fitted with an angular klappvisier."
 	icon_state = "otavahelm"
 	item_state = "otavahelm"
 	adjustable = CAN_CADJUST
@@ -832,6 +865,18 @@
 	smeltresult = /obj/item/ingot/steel
 	smelt_bar_num = 2
 	max_integrity = 300
+	detail_tag = "_detail"
+	color = "#FFFFFF"
+	detail_color = "#c7732f"
+
+/obj/item/clothing/head/roguetown/helmet/otavan/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
 
 /obj/item/clothing/head/roguetown/helmet/otavan/getonmobprop(tag)
 	if(tag)
@@ -1825,6 +1870,23 @@
 
 //----------------- BLACKSTEEL ---------------------
 
+/obj/item/clothing/head/roguetown/helmet/blacksteel/modern/armet
+	name = "blacksteel armet"
+	desc = "An armet forged of durable blacksteel, utilizing a modern design."
+	body_parts_covered = FULL_HEAD
+	icon = 'icons/roguetown/clothing/special/blkknight.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/special/onmob/blkknight.dmi'
+	icon_state = "bplatehelm"
+	item_state = "bplatehelm"
+	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	armor = ARMOR_PLATE_BSTEEL
+	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_SMASH, BCLASS_TWIST, BCLASS_PICK)
+	block2add = FOV_BEHIND
+	max_integrity = 425
+	smeltresult = /obj/item/ingot/blacksteel
+	smelt_bar_num = 2
+
 /obj/item/clothing/head/roguetown/helmet/blacksteel/bucket
 	name = "blacksteel bucket helm"
 	desc = "A bucket helmet forged of durable blacksteel. None shall pass.."
@@ -1835,7 +1897,7 @@
 	item_state = "bkhelm"
 	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
-	armor = ARMOR_HEAD_HELMET_VISOR
+	armor = ARMOR_PLATE_BSTEEL
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_SMASH, BCLASS_TWIST, BCLASS_PICK)
 	block2add = FOV_BEHIND
 	max_integrity = 425
@@ -1991,3 +2053,17 @@
 
 /obj/item/clothing/head/roguetown/helmet/bascinet/antler/ComponentInitialize()
 	AddComponent(/datum/component/adjustable_clothing, (HEAD|EARS|HAIR), (HIDEEARS|HIDEHAIR), null, 'sound/items/visor.ogg', null, UPD_HEAD)	//Standard helmet
+
+//kazengite update
+/obj/item/clothing/head/roguetown/mentorhat
+	name = "worn bamboo hat"
+	desc = "A reinforced bamboo hat."
+	icon_state = "easthat"
+	item_state = "easthat"
+	armor = list("blunt" = 70, "slash" = 80, "stab" = 65, "piercing" = 40, "fire" = 0, "acid" = 0)
+	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST)
+	max_integrity = 150
+	blocksound = SOFTHIT
+	sewrepair = TRUE
+	flags_inv = HIDEEARS
+	body_parts_covered = HEAD|HAIR|EARS|NOSE|EYES

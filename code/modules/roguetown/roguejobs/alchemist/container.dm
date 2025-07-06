@@ -63,6 +63,9 @@
 /obj/item/reagent_containers/glass/bottle/alchemical/lucpot
 	list_reagents = list(/datum/reagent/buff/fortune = 27)
 
+/obj/item/reagent_containers/glass/bottle/alchemical/healthpot
+	list_reagents = list(/datum/reagent/medicine/healthpot = 27)
+
 //////////////////////////
 /// ALCOHOLIC BOTTLES ///
 //////////////////////////
@@ -104,9 +107,13 @@
 	list_reagents = list(/datum/reagent/consumable/ethanol/stonebeards = 48)
 	desc = "A bottle with the House Stoutenson cork-seal. Stonebeards Reserve is one of the most legendary beers in existence, with only a few hundred barrels made every year."
 
+/obj/item/reagent_containers/glass/bottle/rogue/beer/sazdistal
+	list_reagents = list(/datum/reagent/consumable/ethanol/sazdistal = 48)
+	desc = "A bottle with the House Stoutenson cork-seal. This strange liquid is considered as the most spicy and alcoholic drink in all the Mountainhomes. Bought by nobles of all ages, mostly those with a deathwish."	
+
 /obj/item/reagent_containers/glass/bottle/rogue/beer/voddena
 	list_reagents = list(/datum/reagent/consumable/ethanol/voddena = 48)
-	desc = "A bottle with the House Stoutenson cork-seal. This strange liquid is considered as the most spicy and alcoholic drink in all the Mountainhomes. Bought by nobles of all ages, mostly those with a deathwish."
+	desc = "A bottle with the City of Norwandine cork-seal. It contains a respectably pure, clean voddena."
 
 // WINES - Expensive, Nobleblooded
 /obj/item/reagent_containers/glass/bottle/rogue/wine
@@ -177,6 +184,35 @@
 /obj/item/reagent_containers/glass/bottle/rogue/beer/kgunplum
 	list_reagents = list(/datum/reagent/consumable/ethanol/kgunplum = 48)
 	desc = "A bottle with a Golden Swan cork-seal. A reddish-golden alcohol made from a fruit commonly found on the Kazengun-isles. A favourite of the commoners."
+
+/obj/item/reagent_containers/glass/bottle/rogue/beer/kgunshochu
+	list_reagents = list(/datum/reagent/consumable/ethanol/kgunshochu = 48)
+	desc = "A bottle with a Golden Swan cork-seal. A clean alcohol made by distilling rice. With a dry and clean finish. Popular amongst the warrior caste of Kazengun."
+
+// Zhongese Drinks
+/obj/item/reagent_containers/glass/bottle/rogue/beer/huangjiu
+	list_reagents = list(/datum/reagent/consumable/ethanol/huangjiu = 48)
+	desc = "A bottle with a red seal. A strong, sweet yellow rice wine that is often used in cooking."
+
+/obj/item/reagent_containers/glass/bottle/rogue/beer/baijiu
+	list_reagents = list(/datum/reagent/consumable/ethanol/baijiu = 48)
+	desc = "A bottle with a red seal. A strong, clear liquor made from fermented sorghum or rice. The favored drink of wandering warriors."
+
+/obj/item/reagent_containers/glass/bottle/rogue/beer/yaojiu
+	list_reagents = list(/datum/reagent/consumable/ethanol/yaojiu = 48)
+	desc = "A bottle with a red seal. A strong, sweet rice wine infused with medicinal herbs, including Ginseng. Often prescribed as a medicine on the Zhongese mainland."
+
+/obj/item/reagent_containers/glass/bottle/rogue/beer/shejiu
+	list_reagents = list(/datum/reagent/consumable/ethanol/shejiu = 48)
+	desc = "A bottle with a red seal. A strong rice wine with a dead snake inside. In the land of Zhong, It is believed that drinking this will improve one's virility and blood circulation."
+
+/obj/item/reagent_containers/glass/bottle/rogue/beer/murkwine
+	list_reagents = list(/datum/reagent/consumable/ethanol/murkwine = 48)
+	desc = "A bottle with a Possumtail Brewery mark. A special brew made from murky water and swampweed. A Heartfelt special."
+
+/obj/item/reagent_containers/glass/bottle/rogue/beer/nocshine
+	list_reagents = list(/datum/reagent/consumable/ethanol/nocshine = 48)
+	desc = "A bottle with a blue, Crescent moon mark. A special brew that is extremely potent and toxic, but strengthen the body. If you dare."
 
 		//////////////////////////
 		/// CLAY BOTTLES ///

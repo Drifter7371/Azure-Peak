@@ -49,6 +49,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	var/heated_progress_time
 	///when our heat can decay
 	var/heat_decay = 0
+	sellprice = 15 // Default price for the keg.
 
 /obj/structure/fermentation_keg/Initialize()
 	. = ..()
@@ -208,7 +209,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 		if(selected_recipe.helpful_hints)
 			message += "[selected_recipe.helpful_hints].\n"
 
-		. += span_blue("Right-Click on the Barrel to clear it. Left-Click to start brewing.")
+		. += span_blue("Right-Click on the Barrel to clear it. Left-Click to start brewing. Brewing will remove all existing reagents in the barrel!")
 		/*
 		if(istype(selected_recipe, /datum/brewing_recipe/custom_recipe))
 			var/datum/brewing_recipe/custom_recipe/recipe = selected_recipe
@@ -245,7 +246,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	if(options.len == 0)
 		return
 
-	if(user.mind.get_skill_level(/datum/skill/craft/cooking) < 3)
+	if(user.get_skill_level(/datum/skill/craft/cooking) < 3)
 		to_chat(user, span_notice("I am not knowledgable enough to brew."))
 		return FALSE
 
@@ -268,7 +269,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 
 	//Second stage brewing gives no refunds! - This is intented design to help make it so folks dont quit halfway through and still get a rebate
 	ready_to_bottle = FALSE
-	sellprice = 25
+	sellprice = initial(sellprice)
 	if(open_icon_state)
 		icon_state = open_icon_state
 	update_overlays()
@@ -301,7 +302,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	age_start_time = 0
 	start_time = 0
 
-	sellprice = 25
+	sellprice = initial(sellprice)
 	tapped = FALSE
 	beer_left = 0
 
@@ -343,7 +344,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	soundloop.stop()
 	ready_to_bottle = TRUE
 	brewing = FALSE
-	sellprice = selected_recipe.sell_value
+	sellprice = selected_recipe.sell_value + initial(sellprice)
 	made_item = selected_recipe.name
 	start_time = 0
 	heated_progress_time = 0
@@ -367,19 +368,19 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	for(var/obj/item/reagent_containers/food/needed_crop as anything in selected_recipe.needed_crops)
 		if(recipe_crop_stocks[needed_crop] < selected_recipe.needed_crops[needed_crop])
 			if(user)
-				to_chat(user, span_notice("This keg lacks [initial(needed_crop.name)]!"))
+				to_chat(user, span_notice("This keg needs more [initial(needed_crop.name)]!"))
 				ready = FALSE
 
 	for(var/obj/item/needed_item as anything in selected_recipe.needed_items)
 		if(recipe_crop_stocks[needed_item] < selected_recipe.needed_items[needed_item])
 			if(user)
-				to_chat(user, span_notice("This keg lacks [initial(needed_item.name)]!"))
+				to_chat(user, span_notice("This keg needs more [initial(needed_item.name)]!"))
 				ready = FALSE
 
 	for(var/datum/reagent/required_chem as anything in selected_recipe.needed_reagents)
 		if(selected_recipe.needed_reagents[required_chem] > reagents.get_reagent_amount(required_chem))
 			if(user)
-				to_chat(user, span_notice("The keg's unable to brew well lacking [initial(required_chem.name)]!"))
+				to_chat(user, span_notice("This keg needs more [initial(required_chem.name)]!"))
 				ready = FALSE
 
 	return ready
@@ -398,29 +399,6 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	heat = min(1000, burn_temp + heat)
 	qdel(item)
 
-/obj/structure/fermentation_keg/random/water
-	name = "water barrel"
-
-/obj/structure/fermentation_keg/random/water/Initialize()
-	. = ..()
-	reagents.add_reagent(/datum/reagent/water, rand(0,900))
-
-
-/obj/structure/fermentation_keg/random/beer/Initialize()
-	. = ..()
-	reagents.add_reagent(/datum/reagent/consumable/ethanol/beer, rand(0,900))
-
-/obj/structure/fermentation_keg/water
-	name = "water barrel"
-
-/obj/structure/fermentation_keg/water/Initialize()
-	. = ..()
-	reagents.add_reagent(/datum/reagent/water,900)
-
-/obj/structure/fermentation_keg/beer/Initialize()
-	. = ..()
-	reagents.add_reagent(/datum/reagent/consumable/ethanol/beer,900)
-
 /obj/structure/fermentation_keg/proc/create_items()
 	if(!ready_to_bottle)
 		return
@@ -431,7 +409,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	age_start_time = 0
 	beer_left = 0
 	brewing = FALSE
-	sellprice = 25
+	sellprice = initial(sellprice)
 	heated_progress_time = 0
 	start_time = 0
 	if(open_icon_state)
@@ -454,7 +432,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 		age_start_time = 0
 		beer_left = 0
 		brewing = FALSE
-		sellprice = 25
+		sellprice = initial(sellprice)
 		heated_progress_time = 0
 		start_time = 0
 		if(open_icon_state)
@@ -466,20 +444,12 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 				glass_colour = "brew_bottle"
 
 			var/bottlecaps
-			for(bottlecaps=0, bottlecaps < selected_recipe.brewed_amount, bottlecaps++)
+			for(bottlecaps = 0, bottlecaps < selected_recipe.brewed_amount, bottlecaps++)
 				var/obj/item/reagent_containers/glass/bottle/brewing_bottle/bottle_made = new /obj/item/reagent_containers/glass/bottle/brewing_bottle(get_turf(src))
 				bottle_made.icon_state = "[glass_colour]"
-				/*
-				if(istype(selected_recipe, /datum/brewing_recipe/custom_recipe))
-					var/datum/brewing_recipe/custom_recipe/recipe = selected_recipe
-					bottle_made.name = recipe.bottle_name
-					bottle_made.desc = recipe.bottle_desc
-					bottle_made.glass_name = recipe.glass_name
-					bottle_made.glass_desc = recipe.glass_desc
-					bottle_made.reagents.add_reagent(selected_recipe.reagent_to_brew, selected_recipe.per_brew_amount, list("reagents" = recipe.reagent_data))
-				else
-					bottle_made.reagents.add_reagent(selected_recipe.reagent_to_brew, selected_recipe.per_brew_amount)
-				*/
+				bottle_made.name = "brewer's bottle of [selected_recipe.bottle_name]"
+				bottle_made.sellprice = round(selected_recipe.sell_value / selected_recipe.brewed_amount)
+				bottle_made.desc =  selected_recipe.bottle_desc || "A bottle of locally-brewed [selected_recipe.bottle_name]."
 				var/datum/reagent/brewed_reagent = selected_recipe.reagent_to_brew
 				if(selected_recipe.ages)
 					var/time = world.time - age_start_time
@@ -540,13 +510,14 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 
 
 /obj/item/reagent_containers/glass/bottle/brewing_bottle
-	name = "bottle"
+	name = "brewer's bottle"
 	desc = "A bottle with a cork."
 	icon =  'icons/obj/bottle.dmi'
 	icon_state = "brew_bottle"
 
 	var/glass_name
 	var/glass_desc
+	var/sealed = TRUE
 	glass_on_impact = FALSE // Prevent duping glass
 
 /obj/item/reagent_containers/glass/bottle/brewing_bottle/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
@@ -559,6 +530,18 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	if(reagents.total_volume <= 0)
 		glass_desc = null
 		glass_name = null
+
+/obj/item/reagent_containers/glass/bottle/brewing_bottle/examine()
+	. = ..()
+	if(sealed)
+		. += span_notice("The bottle is sealed. It can sell for something.")
+	else
+		. += span_notice("The bottle has been unsealed. It cannot be sold anymore.")
+
+/obj/item/reagent_containers/glass/bottle/brewing_bottle/rmb_self(mob/user)
+	. = ..()
+	sealed = FALSE
+	sellprice = 0
 
 /obj/structure/fermentation_keg/MouseDrop_T(atom/over, mob/living/user)
 	if(!istype(over, /obj/structure/fermentation_keg))

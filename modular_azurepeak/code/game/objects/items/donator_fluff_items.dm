@@ -37,6 +37,7 @@
 	sleeved = 'modular_azurepeak/icons/clothing/onmob/donor_sleeves_armor.dmi'
 	flags_inv = HIDEBOOB
 	color = null
+	nodismemsleeves = TRUE // prevents sleeves from being torn
 
 //Bat's donator item - custom harp sprite
 /obj/item/rogue/instrument/harp/handcarved

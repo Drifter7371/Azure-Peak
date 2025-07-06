@@ -26,6 +26,7 @@
 	desc = "Cheap and easy to make. It's better than leaving your neck exposed."
 	icon_state = "coif"
 	item_state = "coif"
+	color = CLOTHING_BROWN
 	flags_inv = HIDEHAIR
 	slot_flags = ITEM_SLOT_NECK|ITEM_SLOT_HEAD
 	blocksound = SOFTHIT
@@ -199,7 +200,7 @@
 	smeltresult = /obj/item/ingot/copper
 
 /obj/item/clothing/neck/roguetown/fencerguard
-	name = "fencer neckguard"
+	name = "fencing guard"
 	icon_state = "fencercollar"
 	armor = ARMOR_BEVOR
 	smeltresult = /obj/item/ingot/iron
@@ -212,6 +213,18 @@
 	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_TWIST)
 	blocksound = PLATEHIT
 	allowed_race = NON_DWARVEN_RACE_TYPES
+	detail_tag = "_detail"
+	color = "#282e83"
+	detail_color = "#c7732f"
+
+/obj/item/clothing/neck/roguetown/fencerguard/update_icon()
+	cut_overlays()
+	if(get_detail_tag())
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
 
 /obj/item/clothing/neck/roguetown/gorget/forlorncollar
 	name = "forlorn collar"
@@ -454,7 +467,7 @@
 	//dropshrink = 0.75
 	resistance_flags = FIRE_PROOF
 	allowed_race = CLOTHED_RACES_TYPES
-	sellprice = 98
+	sellprice = 70
 	anvilrepair = /datum/skill/craft/armorsmithing
 
 /obj/item/clothing/neck/roguetown/horus

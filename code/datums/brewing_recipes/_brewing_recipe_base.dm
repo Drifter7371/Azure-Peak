@@ -1,7 +1,7 @@
 /datum/brewing_recipe
 	abstract_type = /datum/brewing_recipe
 	var/name = "Alcohols"
-	var/category = "Alcohols"
+	var/category = "Other"
 	///the type path of the reagent
 	var/reagent_to_brew = /datum/reagent/consumable/ethanol
 	///pre-reqs: Essentially do we need past recipes made of this, uses the reagent_to_brew var to know if this has been done
@@ -19,7 +19,7 @@
 	///amount of brewed creations used when either canning or bottling
 	var/brewed_amount = 1
 	///each bottle or canning gives how this much reagents
-	var/per_brew_amount = 50
+	var/per_brew_amount = 48
 	///helpful hints
 	var/helpful_hints
 	///if we have a secondary name some do if you want to hide the ugly info
@@ -34,6 +34,9 @@
 	var/list/age_times = list()
 	///the heat we need to be kept at
 	var/heat_required
+	// The name & description on the bottle, if any. Lowercase for the name. 
+	var/bottle_name = "generic brew"
+	var/bottle_desc = null
 
 /datum/brewing_recipe/proc/after_finish_attackby(mob/user, obj/item/attacked_item, atom/source)
 	return FALSE

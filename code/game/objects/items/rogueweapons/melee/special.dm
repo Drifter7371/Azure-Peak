@@ -63,7 +63,7 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/HU = user
 
-		if((HU.job != "Grand Duke") && (HU.job != "Consort"))
+		if(HU.job != "Grand Duke")
 			to_chat(user, span_danger("The rod doesn't obey me."))
 			return
 
@@ -238,7 +238,7 @@
 	icon_state = "incut"
 	attack_verb = list("cuts", "slashes")
 	animname = "cut"
-	blade_class = BCLASS_CHOP
+	blade_class = BCLASS_CUT
 	hitsound = list('sound/combat/hits/bladed/smallslash (1).ogg', 'sound/combat/hits/bladed/smallslash (2).ogg', 'sound/combat/hits/bladed/smallslash (3).ogg')
 	penfactor = 0
 	chargetime = 0
@@ -274,7 +274,7 @@
 	desc = "A gift from a creature of the sea. The claw is sharpened to a wicked edge."
 	icon_state = "abyssorclaw"
 	force = 27	//Its thrust will be able to pen 80 stab armor if the wielder has 17 STR. (With softcap)
-	max_integrity = 150
+	max_integrity = 120
 
 
 /obj/item/rogueweapon/knuckles
@@ -301,7 +301,7 @@
 	smeltresult = /obj/item/ingot/steel
 	grid_width = 64
 	grid_height = 32
-	intdamage_factor = 1.45
+	intdamage_factor = 1.2
 
 /obj/item/rogueweapon/knuckles/getonmobprop(tag)
 	. = ..()
@@ -347,7 +347,7 @@
 	chargetime = 0
 	penfactor = BLUNT_DEFAULT_PENFACTOR
 	clickcd = 8
-	damfactor = 1
+	damfactor = 1.1
 	swingdelay = 0
 	icon_state = "inpunch"
 	item_d_type = "blunt"
@@ -359,9 +359,10 @@
 	attack_verb = list("smashes")
 	hitsound = list('sound/combat/hits/punch/punch_hard (1).ogg', 'sound/combat/hits/punch/punch_hard (2).ogg', 'sound/combat/hits/punch/punch_hard (3).ogg')
 	penfactor = BLUNT_DEFAULT_PENFACTOR
-	damfactor = 1.3
-	clickcd = 10
-	swingdelay = 6
+	damfactor = 1.1
+	clickcd = CLICK_CD_MELEE
+	swingdelay = 8
+	intent_intdamage_factor = 1.8
 	icon_state = "insmash"
 	item_d_type = "blunt"
 
@@ -371,6 +372,7 @@
 	icon_state = "aknuckle"
 	force = 12
 	max_integrity = 150
+	wdefense = 5
 	smeltresult = /obj/item/ingot/aalloy
 	blade_dulling = DULLING_SHAFT_CONJURED
 

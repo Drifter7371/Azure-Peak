@@ -84,6 +84,8 @@
 	var/list/guaranteed_butcher_results = null //these will always be yielded from butchering
 	var/butcher_difficulty = 0 //effectiveness prob. is modified negatively by this amount; positive numbers make it more difficult, negative ones make it easier
 
+	var/is_jumping = 0 //to differentiate between jumping and thrown mobs
+
 	var/hellbound = 0 //People who've signed infernal contracts are unrevivable.
 
 	var/list/weather_immunities = list()
@@ -123,10 +125,10 @@
 	var/list/ownedSoullinks //soullinks we are the owner of
 	var/list/sharedSoullinks //soullinks we are a/the sharer of
 
-	var/maxrogstam = 1000
-	var/maxrogfat = 100
-	var/rogstam = 1000
-	var/rogfat = 0
+	var/max_energy = 1000
+	var/max_stamina = 100
+	var/energy = 1000
+	var/stamina = 0 // Stamina. In reality this is stamina damage and the higher it is the worse it is.
 
 	var/last_fatigued = 0
 	var/last_ps = 0

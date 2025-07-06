@@ -32,7 +32,7 @@
 	if (QDELETED(src))
 		return 0
 
-	if(. && (mode != AI_OFF))
+	if(. && (mode != NPC_AI_OFF))
 		handle_ai()
 
 	if(advsetup)
@@ -43,7 +43,7 @@
 		for(var/datum/antagonist/A in mind.antag_datums)
 			A.on_life(src)
 
-	if(mode == AI_OFF)
+	if(mode == NPC_AI_OFF)
 		handle_vamp_dreams()
 		if(IsSleeping())
 			if(health > 0)
@@ -70,13 +70,13 @@
 		//heart attack stuff
 		handle_heart()
 		handle_liver()
-		update_rogfat()
-		update_rogstam()
+		update_stamina()
+		update_energy()
 		if(charflaw && !charflaw.ephemeral && mind)
 			charflaw.flaw_on_life(src)
 		if(health <= 0)
 			adjustOxyLoss(0.5)
-		if(mode == AI_OFF && !client && !HAS_TRAIT(src, TRAIT_NOSLEEP))
+		if(mode == NPC_AI_OFF && !client && !HAS_TRAIT(src, TRAIT_NOSLEEP))
 			if(mob_timers["slo"])
 				if(world.time > mob_timers["slo"] + 90 SECONDS)
 					Sleeping(100)

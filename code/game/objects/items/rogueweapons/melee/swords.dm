@@ -268,6 +268,11 @@
 			if("onbelt") return list("shrink" = 0.4, "sx" = -4, "sy" = -6, "nx" = 5, "ny" = -6, "wx" = 0, "wy" = -6, "ex" = -1, "ey" = -6, "nturn" = 100, "sturn" = 156, "wturn" = 90, "eturn" = 180, "nflip" = 0, "sflip" = 0, "wflip" = 0, "eflip" = 0, "northabove" = 0, "southabove" = 1, "eastabove" = 1, "westabove" = 0)
 			if("altgrip") return list("shrink" = 0.6,"sx" = 2,"sy" = 3,"nx" = -7,"ny" = 1,"wx" = -8,"wy" = 0,"ex" = 8,"ey" = -1,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = -135,"sturn" = -35,"wturn" = 45,"eturn" = 145,"nflip" = 8,"sflip" = 8,"wflip" = 1,"eflip" = 0)
 
+/obj/item/rogueweapon/sword/long/etruscan
+	name = "basket-hilted longsword"
+	desc = "An uncommon and elaborate type of longsword with a compound hilt like those seen on rapiers and smallswords. It has a marked unsharpened section for safe unarmored half-swording, and it's made of Calorian steel."
+	icon_state = "elongsword"
+
 /obj/item/rogueweapon/sword/long/malumflamm
 	name = "forgefiend flamberge"
 	desc = "This sword's creation took a riddle in its own making. A great sacrifice was made for a blade of perfect quality."
@@ -524,15 +529,15 @@
 	name = "executioners sword"
 	desc = "A longsword with extra heft to its blade, reinforced."
 	possible_item_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/peel, /datum/intent/sword/strike)
-	gripped_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/rend, /datum/intent/sword/chop)
-	alt_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust, /datum/intent/sword/strike, /datum/intent/sword/bash)
+	gripped_intents = list(/datum/intent/sword/cut, /datum/intent/sword/thrust/exe, /datum/intent/rend, /datum/intent/axe/chop)
 	icon_state = "exe"
 	minstr = 12
 	slot_flags = ITEM_SLOT_BACK //Too big for hip
 
 /datum/intent/sword/thrust/exe
 	swingdelay = 4	//Slight delay to stab; big and heavy.
-	penfactor = 30	//Slightly better pen than base longsword, which is 20. It's a heavy blade so.
+	penfactor = BLUNT_DEFAULT_PENFACTOR //Flat tip? I don't know, man. This intent is won't penetrate anything but it damages armor more.
+	intent_intdamage_factor = 1.3 //This is basically like getting hit by a mace.
 
 /obj/item/rogueweapon/sword/long/exe/astrata
 	name = "\"Solar Judge\""
@@ -565,6 +570,11 @@
 	user.visible_message(span_warning("[user] wipes [src] down with its cloth."),span_notice("I wipe [src] down with its cloth."))
 	return
 
+/obj/item/rogueweapon/sword/long/oldpsysword
+	name = "old psydonian longsword"
+	desc = "A finely made longsword, plated in a worn-down veneer of grubby silver. It's long seen better daes."
+	icon_state = "psysword"
+
 /obj/item/rogueweapon/sword/long/psysword
 	name = "psydonian longsword"
 	desc = "A finely made longsword, plated in a ceremonial veneer of ornate silver - made for felling men and monsters alike.\
@@ -574,6 +584,7 @@
 /obj/item/rogueweapon/sword/long/psysword/ComponentInitialize()
 	. = ..()							//+3 force, +100 blade int, +50 int, +1 def, make silver
 	AddComponent(/datum/component/psyblessed, FALSE, 3, 100, 50, 1, TRUE)
+	
 
 /obj/item/rogueweapon/sword/iron
 	name = "iron arming sword"
@@ -1265,7 +1276,7 @@
 				)
 
 /obj/item/rogueweapon/sword/long/kriegmesser
-	name = "kriegmesser"
+	name = "kriegsmesser"
 	desc = "A large two-handed sword with a single-edged blade, a crossguard and a knife-like hilt. \
 	It is meant to be wielded with both hands and is a popular weapon amongst Grenzelhoftian mercenaries."
 	icon = 'icons/roguetown/weapons/swords64.dmi'
@@ -1281,3 +1292,26 @@
 	Its blade bears twin inscriptions on either side. One reads, \"THY KINGDOM COME\" while the obverse reads, \"THY WILL BE DONE\"."
 	icon_state = "declongsword"
 	sellprice = 140
+
+// kazengite content
+
+/obj/item/rogueweapon/sword/sabre/mulyeog
+	force = 25
+	name = "foreign straight sword"
+	desc = "A foreign sword used by cut-throats & thugs. There's a red tassel on the hilt."
+	icon_state = "eastsword1"
+	smeltresult = /obj/item/ingot/steel
+	wdefense = 3
+
+/obj/item/rogueweapon/sword/sabre/mulyeog/rumahench
+	name = "lenticular straight sword"
+	desc = "A steel sword with cloud patterns on the groove."
+	icon_state = "eastsword2"
+
+/obj/item/rogueweapon/sword/sabre/mulyeog/rumacaptain
+	force = 30
+	name = "Heiyundao"
+	desc = "A gold-stained with cloud patterns on the groove. One of a kind."
+	icon_state = "eastsword3"
+	max_integrity = 180
+	wdefense = 4

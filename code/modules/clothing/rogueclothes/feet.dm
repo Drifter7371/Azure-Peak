@@ -183,6 +183,12 @@
 	max_integrity = 100			//Half that of iron boots
 	armor = ARMOR_BOOTS			//Better than regular leather.
 
+/obj/item/clothing/shoes/roguetown/boots/leather/reinforced/short
+	name = "dress boots"
+	desc = "A pair of sturdy boots stitched together from cured leather. These are shorter than usual, made for casual wear and dueling."
+	icon_state = "albootsb"
+	item_state = "albootsb"
+
 /obj/item/clothing/shoes/roguetown/boots/otavan
 	name = "otavan leather boots"
 	desc = "Boots of outstanding craft, your fragile feet have never felt so protected and comfortable before."
@@ -381,8 +387,26 @@
 
 // ----------------- BLACKSTEEL -----------------------
 
-/obj/item/clothing/shoes/roguetown/boots/blacksteel/plateboots
+/obj/item/clothing/shoes/roguetown/boots/blacksteel/modern/plateboots
 	name = "blacksteel plate boots"
+	desc = "Boots forged of durable blacksteel, using a modern design."
+	body_parts_covered = FEET
+	icon = 'icons/roguetown/clothing/special/blkknight.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/special/onmob/blkknight.dmi'
+	sleeved = 'icons/roguetown/clothing/special/onmob/blkknight.dmi'
+	icon_state = "bplateboots"
+	item_state = "bplateboots"
+	prevent_crits = list(BCLASS_CUT, BCLASS_STAB, BCLASS_CHOP, BCLASS_BLUNT, BCLASS_TWIST)
+	color = null
+	blocksound = PLATEHIT
+	max_integrity = 400
+	armor = ARMOR_PLATE_BSTEEL
+	anvilrepair = /datum/skill/craft/armorsmithing
+	smeltresult = /obj/item/ingot/blacksteel
+	resistance_flags = FIRE_PROOF
+
+/obj/item/clothing/shoes/roguetown/boots/blacksteel/plateboots
+	name = "ancient blacksteel plate boots"
 	desc = "Boots forged of durable blacksteel."
 	body_parts_covered = FEET
 	icon = 'icons/roguetown/clothing/special/blkknight.dmi'
@@ -393,7 +417,7 @@
 	color = null
 	blocksound = PLATEHIT
 	max_integrity = 400
-	armor = ARMOR_BOOTS_PLATED
+	armor = ARMOR_PLATE_BSTEEL
 	anvilrepair = /datum/skill/craft/armorsmithing
 	smeltresult = /obj/item/ingot/blacksteel
 	resistance_flags = FIRE_PROOF
@@ -409,3 +433,12 @@
 	is_barefoot = TRUE
 	sewrepair = TRUE
 	armor = ARMOR_BOOTS_BAD
+
+//kazen update
+/obj/item/clothing/shoes/roguetown/armor/rumaclan
+	name = "raised sandals"
+	desc = "A pair of strange sandals that push you off the ground."
+	icon_state = "eastsandals"
+	item_state = "eastsandals"
+	sleeved = 'icons/roguetown/clothing/onmob/helpers/stonekeep_merc.dmi'
+	armor = ARMOR_BOOTS

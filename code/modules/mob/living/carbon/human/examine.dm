@@ -64,6 +64,8 @@
 		on_examine_face(user)
 		var/used_name = name
 		var/used_title = get_role_title()
+		if(SSticker.regentmob == src)
+			used_title = "[used_title]" + " Regent"
 		var/display_as_wanderer = FALSE
 		var/is_returning = FALSE
 		if(observer_privilege)
@@ -213,11 +215,11 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 
-		if(HAS_TRAIT(H, TRAIT_INTELLECTUAL) || H.mind?.get_skill_level(H, /datum/skill/craft/blacksmithing) >= SKILL_EXP_EXPERT)
+		if(HAS_TRAIT(H, TRAIT_INTELLECTUAL) || H.get_skill_level(H, /datum/skill/craft/blacksmithing) >= SKILL_EXP_EXPERT)
 			is_smart = TRUE	//Most of this is determining integrity of objects + seeing multiple layers. 
-		if(((H?.STAINT - 10) + round((H?.STAPER - 10) / 2) + H.mind?.get_skill_level(/datum/skill/misc/reading)) < 0 && !is_smart)
+		if(((H?.STAINT - 10) + round((H?.STAPER - 10) / 2) + H.get_skill_level(/datum/skill/misc/reading)) < 0 && !is_smart)
 			is_stupid = TRUE
-		if(((H?.STAINT - 10) + (H?.STAPER - 10) + H.mind?.get_skill_level(/datum/skill/misc/reading)) >= 5)
+		if(((H?.STAINT - 10) + (H?.STAPER - 10) + H.get_skill_level(/datum/skill/misc/reading)) >= 5)
 			is_normal = TRUE
 
 	if(user != src)
@@ -236,7 +238,10 @@
 
 	if(wear_shirt && !(SLOT_SHIRT in obscured))
 		if(!wear_armor)
-			. += "[m3] [wear_shirt.get_examine_string(user)]."
+			var/str = "[m3] [wear_shirt.get_examine_string(user)]."
+			if(!is_stupid)
+				str += " [wear_shirt.integrity_check()]"
+			. += str
 		else
 			if(is_smart)
 				var/str = "[m3] [wear_shirt.get_examine_string(user)]. "
@@ -317,7 +322,7 @@
 			str += cloak.integrity_check()
 			. += str
 		else if (is_stupid)					//So they can tell the named RG tabards. If they can read them, anyway.
-			if(!istype(cloak, /obj/item/clothing/cloak/stabard) && user.mind?.get_skill_level(/datum/skill/misc/reading))
+			if(!istype(cloak, /obj/item/clothing/cloak/stabard) && user.get_skill_level(/datum/skill/misc/reading))
 				. += "[m3] some kinda clothy thing on [m2] shoulders!"
 			else
 				. += "[m3] [cloak.get_examine_string(user)] on [m2] shoulders."
@@ -878,8 +883,8 @@
 		if(mind.special_role == "Bandit")
 			if(HAS_TRAIT(examiner, TRAIT_COMMIE))
 				villain_text = span_notice("Free man!")
-			/*else
-				villain_text = span_userdanger("BANDIT!")*/
+			if(HAS_TRAIT(src,TRAIT_KNOWNCRIMINAL))
+				villain_text = span_userdanger("BANDIT!")
 		if(mind.special_role == "Vampire Lord")
 			var/datum/antagonist/vampirelord/VD = mind.has_antag_datum(/datum/antagonist/vampirelord)
 			if(VD) 

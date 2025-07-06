@@ -260,6 +260,10 @@
 	icon_state = "pestrasickle"
 	max_integrity = 200
 
+/*
+	name = "facón"
+	desc = "An ornate traditional Etruscan knife inlaid with silver, passed down through generations of farmhands and warlords alike."
+	icon_state = "facon" */
 
 /obj/item/rogueweapon/huntingknife/idagger/dtace
 	name = "'De Tace'"
@@ -704,7 +708,7 @@
 		var/obj/item/item = O
 		if(item.sewrepair && item.salvage_result) // We can only salvage objects which can be sewn!
 			var/salvage_time = 70
-			salvage_time = (70 - ((user.mind.get_skill_level(/datum/skill/misc/sewing)) * 10))
+			salvage_time = (70 - ((user.get_skill_level(/datum/skill/misc/sewing)) * 10))
 			if(!do_after(user, salvage_time, target = user))
 				return
 			
@@ -713,7 +717,7 @@
 			if(istype(item, /obj/item/storage))
 				var/obj/item/storage/bag = item
 				bag.emptyStorage()
-			var/skill_level = user.mind.get_skill_level(/datum/skill/misc/sewing)
+			var/skill_level = user.get_skill_level(/datum/skill/misc/sewing)
 			if(prob(50 - (skill_level * 10))) // We are dumb and we failed!
 				to_chat(user, span_info("I ruined some of the materials due to my lack of skill..."))
 				playsound(item, 'sound/foley/cloth_rip.ogg', 50, TRUE)
