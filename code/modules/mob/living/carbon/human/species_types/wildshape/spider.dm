@@ -4,7 +4,8 @@
 	footstep_type = FOOTSTEP_MOB_CLAW
 	ambushable = FALSE
 	skin_armor = new /obj/item/clothing/suit/roguetown/armor/skin_armor/spider_chitin
-	// Someone else balance this, I am here for code, not numbers
+	wildshape_icon = 'icons/roguetown/mob/monster/spider.dmi'
+	wildshape_icon_state = "honeys"
 
 /mob/living/carbon/human/species/wildshape/spider/gain_inherent_skills()
 	. = ..()
@@ -18,14 +19,14 @@
 
 		src.STASTR = 12
 		src.STACON = 6
-		src.STAEND = 7
+		src.STAWIL = 7
 		src.STAPER = 12
 		src.STASPD = 14
 
 		AddSpell(new /obj/effect/proc_holder/spell/self/spiderfangs)
 		AddSpell(new /obj/effect/proc_holder/spell/self/createhoney)
 		AddSpell(new /obj/effect/proc_holder/spell/self/weaveweb)
-		real_name = "Beespider ([stored_mob.real_name])"
+		real_name = "beespider"
 		faction += "spiders" // It IS a spider
 
 // CAT SPECIES DATUM //
@@ -44,6 +45,7 @@
 		TRAIT_BREADY, //Ambusher
 		TRAIT_ORGAN_EATER,
 		TRAIT_PIERCEIMMUNE, //Prevents weapon dusting and caltrop effects when killed/stepping on shards, also 8 legs.
+		TRAIT_DODGEEXPERT,
 		TRAIT_LONGSTRIDER
 	)
 	inherent_biotypes = MOB_HUMANOID
@@ -108,7 +110,7 @@
 	attack_verb = list("bites", "pierces", "impales")
 	animname = "stab"
 	hitsound = "genslash"
-	penfactor = 20
+	penfactor = PEN_LIGHT
 	candodge = TRUE
 	canparry = TRUE
 	miss_text = "bites the air!"
@@ -121,7 +123,7 @@
 	item_state = null
 	lefthand_file = null
 	righthand_file = null
-	icon = 'icons/roguetown/weapons/32.dmi'
+	icon = 'icons/roguetown/weapons/unarmed32.dmi'
 	max_blade_int = 400
 	max_integrity = 400
 	force = 25 //More than the volf, more fragile, hits slower
@@ -197,6 +199,7 @@
 	var/turf/T = get_turf(user)
 	playsound(T, pick('sound/vo/mobs/spider/speak (1).ogg','sound/vo/mobs/spider/speak (2).ogg','sound/vo/mobs/spider/speak (3).ogg','sound/vo/mobs/spider/speak (4).ogg'), 100, TRUE, -1)
 	new /obj/item/reagent_containers/food/snacks/rogue/honey/spider(T)
+	return TRUE
 
 /obj/effect/proc_holder/spell/self/weaveweb
 	name = "Weave Web"
@@ -210,3 +213,4 @@
 	var/turf/T = get_turf(user)
 	playsound(T, pick('sound/vo/mobs/spider/speak (1).ogg','sound/vo/mobs/spider/speak (2).ogg','sound/vo/mobs/spider/speak (3).ogg','sound/vo/mobs/spider/speak (4).ogg'), 100, TRUE, -1)
 	new /obj/structure/spider/stickyweb(T)
+	return TRUE

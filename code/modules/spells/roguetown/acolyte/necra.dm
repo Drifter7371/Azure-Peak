@@ -1,37 +1,6 @@
-// Necrite
-/obj/effect/proc_holder/spell/targeted/burialrite
-	name = "Burial Rites"
-	range = 5
-	overlay_state = "consecrateburial"
-	releasedrain = 30
-	recharge_time = 30 SECONDS
-	req_items = list(/obj/item/clothing/neck/roguetown/psicross)
-	max_targets = 0
-	cast_without_targets = TRUE
-	sound = 'sound/magic/churn.ogg'
-	associated_skill = /datum/skill/magic/holy
-	invocation = "Undermaiden grant thee passage forth and spare the trials of the forgotten."
-	invocation_type = "whisper" //can be none, whisper, emote and shout
-	miracle = TRUE
-	devotion_cost = 5 //very weak spell, you can just make a grave marker with a literal stick
-
-/obj/effect/proc_holder/spell/targeted/burialrite/cast(list/targets, mob/user = usr)
-	. = ..()
-	var/success = FALSE
-	for(var/obj/structure/closet/crate/coffin/coffin in view(1))
-		success = pacify_coffin(coffin, user)
-		if(success)
-			user.visible_message("[user] consecrates [coffin]!", "My funeral rites have been performed on [coffin]!")
-			return
-	for(var/obj/structure/closet/dirthole/hole in view(1))
-		success = pacify_coffin(hole, user)
-		if(success)
-			user.visible_message("[user] consecrates [hole]!", "My funeral rites have been performed on [hole]!")
-			return
-	to_chat(user, span_red("I failed to perform the rites."))
-
 /obj/effect/proc_holder/spell/targeted/churn
 	name = "Churn Undead"
+	desc = "Stuns and explodes undead."
 	range = 4	//Way lower, halved.
 	overlay_state = "necra"
 	releasedrain = 30
@@ -42,7 +11,7 @@
 	req_items = list(/obj/item/clothing/neck/roguetown/psicross)
 	sound = 'sound/magic/churn.ogg'
 	associated_skill = /datum/skill/magic/holy
-	invocation = "The Undermaiden rebukes!"
+	invocations = list("The Undermaiden rebukes!")
 	invocation_type = "shout" //can be none, whisper, emote and shout
 	miracle = TRUE
 	devotion_cost = 50
@@ -59,10 +28,9 @@
 		if(L.stat == DEAD)
 			continue
 		if(L.mind)
-			var/datum/antagonist/vampirelord/lesser/V = L.mind.has_antag_datum(/datum/antagonist/vampirelord/lesser)
-			if(V)
-				if(!V.disguised)
-					isvampire = TRUE
+			var/datum/antagonist/vampire/V = L.mind.has_antag_datum(/datum/antagonist/vampire)
+			if(V && !SEND_SIGNAL(L, COMSIG_DISGUISE_STATUS))
+				isvampire = TRUE
 			if(L.mind.has_antag_datum(/datum/antagonist/zombie))
 				iszombie = TRUE
 			if(L.mind.special_role == "Vampire Lord" || L.mind.special_role == "Lich")	//Won't detonate Lich's or VLs but will fling them away.
@@ -71,6 +39,9 @@
 				user.throw_at(get_ranged_target_turf(user, get_dir(user,L), 7), 7, 1, L, spin = FALSE)
 				return
 		if((L.mob_biotypes & MOB_UNDEAD) || isvampire || iszombie)
+			if(spell_guard_check(L, TRUE))
+				L.visible_message(span_warning("[L] resists being churned!"))
+				continue
 			var/vamp_prob = prob2explode
 			if(isvampire)
 				vamp_prob -= 59
@@ -83,172 +54,54 @@
 	..()
 	return TRUE
 
+
+/*
+	DEATH'S DOOR
+*/
+
+
 /obj/effect/proc_holder/spell/invoked/deaths_door
 	name = "Death's Door"
-	range = 7
+	desc = "Opens a one-way portal into a realm on the edge of death, People can be dragged into the portal to prevent their decay. Undead with be set aflame. Those whom enter the domain will find their Will to continue heavily weaken. <br>Necras domain can be left through a portal within to a shrine, or a grave/psycross marked with necra's sight."
+	range = 6
 	no_early_release = TRUE
-	charging_slowdown = 1
-	releasedrain = 20
 	chargedrain = 0
-	overlay_state = "speakwithdead"
+	overlay_state = "deathdoor"
+	charging_slowdown = 1
 	chargetime = 2 SECONDS
-	chargedloop = null
-	sound = 'sound/misc/deadbell.ogg'
-	invocation = "Necra, show me my destination!"
-	invocation_type = "shout"
-	associated_skill = /datum/skill/magic/holy
+	recharge_time = 30 SECONDS
 	antimagic_allowed = TRUE
-	recharge_time = 180 SECONDS
+	sound = 'sound/misc/deadbell.ogg'
+	invocations = list("Necra, show me my destination!")
+	invocation_type = "shout"
 	miracle = TRUE
 	devotion_cost = 30
 
 /obj/effect/proc_holder/spell/invoked/deaths_door/cast(list/targets, mob/living/user)
-	..()
 	var/turf/T = get_turf(targets[1])
 	if(!isopenturf(T))
-		to_chat(user, span_warning("The targeted location is blocked. I cannot open a doorway here."))
 		return FALSE
-	for (var/obj/structure/underworld_portal/e_portal in user.contents) // checks if the portal exists, and shits them out
-		if(istype(e_portal))
-			e_portal.dispelled = FALSE //we are recasting after dispelling, its safe to set this as false.
-			e_portal.spitout_mob(user, T)
-			return TRUE
-	if(!locate(/obj/structure/underworld_portal) in T)
-		var/obj/structure/underworld_portal/portal = new /obj/structure/underworld_portal(T)
-		portal.caster = user
-		return TRUE
-
-
-/obj/structure/underworld_portal
-	name = "underworld portal"
-	desc = null // see examine
-	icon = 'icons/roguetown/misc/structure.dmi'
-	icon_state = "shitportal" //get a better sprite for this
-	max_integrity = 50
-	move_resist = MOVE_FORCE_EXTREMELY_STRONG
-	anchored = TRUE
-	density = FALSE
-	var/mob/living/caster // stores the caster. obviously.
-	var/list/trapped = list()// stores the trapped.
-	var/time_id
-	var/dispelled = FALSE //Safety check
-
-/obj/structure/underworld_portal/examine(mob/living/carbon/user)
-	. = ..()
-	if(user.mob_biotypes & MOB_UNDEAD)
-		. += "A temporary gateway to the underworld. [span_warning("Faintly, you can see clutching fingers in the dark, reaching for you. If you go through, you won't come back.")]"
-	else
-		. += "A temporary gateway to the underworld. You can hear faint whispers through it. [span_warning("It might be possible to step through.")]"
-
-/obj/structure/underworld_portal/attack_hand(mob/living/carbon/user, list/modifiers)
-	..()
-	if(user == caster)
-		for (var/thing in contents)
-			if (istype(thing, /mob/living/carbon))
-				caster.contents.Add(src)
-				dispelled = TRUE
-				user.visible_message(
-					span_revenwarning("[user] dispels the doorway with a touch."),
-					span_purple("I close the gateway. Opening it again will release whatever is inside.")
-					)
-				return TRUE
-		qdel(src)
-		return TRUE
-	if(!do_after(user, 2 SECONDS, src))
-		return
-	gobble_mob(user, caster)
-	return TRUE
-
-
-/obj/structure/underworld_portal/Destroy()
-	if(dispelled == FALSE)//Only do this if we DON'T close it ourselves,that means something ELSE -FUNNY- happend.
-		visible_message(span_revenwarning("The portal collapses with an angry hiss."))
-		if(trapped)
-			for(var/mob/living/inportal in trapped)
-				spitout_mob(inportal, src.loc)
-	..()
-
-/obj/structure/underworld_portal/attack_right(mob/living/carbon/user, list/modifiers)
-	..()
-	if(user == caster)
-		if(trapped)
-			for(var/mob/living/inportal in trapped)
-				spitout_mob(inportal)
-				user.visible_message(
-							span_revenwarning("[user] gestures thier hand at the gateway to expel what is within."),
-							span_purple("I gesture at the gateway to release whatever is inside.")
-							)
-			return TRUE
-
-/obj/structure/underworld_portal/MouseDrop_T(atom/movable/O, mob/living/user)
-	if(!isliving(O))
-		return
-	if(!istype(user) || user.incapacitated())
-		return
-	if(!Adjacent(user) || !user.Adjacent(O))
-		return
-	if(!do_after_mob(user, O, 5 SECONDS))
-		return
-	gobble_mob(O)
-	user.visible_message(
-		span_warning("[user] forces [O] into the portal!")
-	)
-	return TRUE
-
-/obj/structure/underworld_portal/proc/gobble_mob(mob/living/carbon/user, mob/living/carbon/caster)
-	if(user.mob_biotypes & MOB_UNDEAD)
-		user.visible_message(
-			span_warning("[user] is suddenly grabbed by a massive hand-and pulled through!"),
-			span_userdanger("Touching the portal, the Carriageman's hand closes around my own! No! NO!")
-			)
-		playsound(user, 'sound/misc/deadbell.ogg', 50, TRUE, -2, ignore_walls = TRUE)
-		new /obj/effect/gibspawner/generic(get_turf(user))
-		qdel(user)
-		return TRUE
-
-	user.visible_message(
-		span_revenwarning("[user] slips through the portal. Silence follows."),
-		span_purple("I touch the doorway. I slip through, and the world is silent and dark. I hear the distant rattle of a passing carriage.")
-		)
-	trapped += user
-	user.forceMove(src)
-	ADD_TRAIT(user, TRAIT_BLOODLOSS_IMMUNE, STATUS_EFFECT_TRAIT)
-	ADD_TRAIT(user, TRAIT_NOBREATH, STATUS_EFFECT_TRAIT)
-	user.add_client_colour(/datum/client_colour/monochrome)
-	time_id = addtimer(CALLBACK(src, PROC_REF(spitout_mob), user, null), 5 MINUTES, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_STOPPABLE) // 5 mins timer else its spitting you out where the necran is.
-	return TRUE
-
-/obj/structure/underworld_portal/proc/spitout_mob(mob/living/carbon/user, turf/T)
-	if(!trapped)
+	
+	if(istype(get_area(user), /area/rogue/indoors/ravoxarena))
+		to_chat(user, span_userdanger("I tried to escape, but something rebukes me! There's no escape until the end of the challenge!"))
+		revert_cast()
 		return FALSE
-	if(src in user.contents)
-		forceMove(T)
 
-	if(dispelled == TRUE)//dispelled at the caster, this is the case of we do not recast out dispelled portal and its been five minutes.
-		user.forceMove(caster.loc)
-		dispelled = FALSE
-	else
-		user.forceMove(loc)
-	if(time_id)
-		deltimer(time_id)
-	user.visible_message(
-		span_revenwarning("[user] slips out from the whispering portal. Shadow roils off their form like smoke."),
-		span_purple("I am pulled from Necra's realm. Air fills my lungs, my heart starts beating- I live.")
-		)
-	user.remove_client_colour(/datum/client_colour/monochrome)
-	REMOVE_TRAIT(user, TRAIT_BLOODLOSS_IMMUNE, STATUS_EFFECT_TRAIT)
-	REMOVE_TRAIT(user, TRAIT_NOBREATH, STATUS_EFFECT_TRAIT)
-	trapped -= user
+	if(locate(/obj/structure/deaths_door_portal) in T)
+		to_chat(user, span_warning("A gate already stands here."))
+		return FALSE
+
+	// Ensure the caster has Necra's Sight so they can mark graves/psycrosses
+	if(user && user.mind && !user.mind?.has_spell(/obj/effect/proc_holder/spell/invoked/necras_sight))
+		user.mind?.AddSpell(new /obj/effect/proc_holder/spell/invoked/necras_sight)
+		to_chat(user, span_notice("A cold clarity fills your vision as Necra opens your sight."))
+
+	new /obj/structure/deaths_door_portal(T, user)
 	return TRUE
 
-/obj/structure/underworld_portal/container_resist(mob/living/user)
-	..()
-	if(trapped != user)
-		return
-	var/resist_prob = user.STASTR * 2.5
-	if(!prob(resist_prob))
-		return
-	spitout_mob(user)
+/*
+	SOUL SPEAK
+*/
 
 
 /obj/effect/proc_holder/spell/targeted/soulspeak
@@ -262,7 +115,7 @@
 	cast_without_targets = TRUE
 	sound = 'sound/magic/churn.ogg'
 	associated_skill = /datum/skill/magic/holy
-	invocation = "She-Below brooks thee respite, be heard, wanderer."
+	invocations = list("She-Below brooks thee respite, be heard, wanderer.")
 	invocation_type = "whisper" //can be none, whisper, emote and shout
 	miracle = TRUE
 	devotion_cost = 30

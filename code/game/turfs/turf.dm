@@ -2,6 +2,10 @@
 	icon = 'icons/turf/floors.dmi'
 	level = 1
 
+	///what /mob/oranges_ear instance is already assigned to us as there should only ever be one.
+	///used for guaranteeing there is only one oranges_ear per turf when assigned, speeds up view() iteration
+	var/mob/oranges_ear/assigned_oranges_ear
+
 	var/intact = 1
 
 	// baseturfs can be either a list or a single turf type.
@@ -18,7 +22,8 @@
 	var/blocks_air = FALSE
 
 	flags_1 = CAN_BE_DIRTY_1
-
+	var/turf_flags = NONE
+	
 	var/list/image/blueprint_data //for the station blueprints, images of objects eg: pipes
 
 	var/explosion_level = 0	//for preventing explosion dodging
@@ -47,11 +52,14 @@
 	var/break_message = null
 
 	var/neighborlay
-	var/neighborlay_list = list()
+	var/list/neighborlay_list
 	var/neighborlay_override
 	var/teleport_restricted = FALSE //whether turf teleport spells are forbidden from teleporting to this turf
 
 	vis_flags = VIS_INHERIT_PLANE|VIS_INHERIT_ID
+
+	/// If we were going to smooth with an Atom instead overlay this onto self
+	var/neighborlay_self
 
 /turf/vv_edit_var(var_name, new_value)
 	var/static/list/banned_edits = list("x", "y", "z")
@@ -104,10 +112,12 @@
 
 	if (opacity)
 		has_opaque_atom = TRUE
+	
+	if(smooth & USES_SMOOTHING)  
+		QUEUE_SMOOTH(src)
+		QUEUE_SMOOTH_NEIGHBORS(src)
 
 	ComponentInitialize()
-
-	queue_smooth_neighbors(src)
 
 	return INITIALIZE_HINT_NORMAL
 
@@ -138,9 +148,6 @@
 	QDEL_LIST(blueprint_data)
 	flags_1 &= ~INITIALIZED_1
 	..()
-
-#define SEE_SKY_YES 1
-#define SEE_SKY_NO 2
 
 /turf
 	var/can_see_sky //1, 2
@@ -216,6 +223,13 @@
 /turf/proc/can_traverse_safely(atom/movable/traveler)
 	return TRUE
 
+/// WARNING WARNING
+/// Turfs DO NOT lose their signals when they get replaced, REMEMBER THIS
+/// It's possible because turfs are fucked, and if you have one in a list and it's replaced with another one, the list ref points to the new turf
+/// We do it because moving signals over was needlessly expensive, and bloated a very commonly used bit of code
+/turf/clear_signal_refs()
+	return
+
 /turf/attack_hand(mob/user)
 	. = ..()
 	if(.)
@@ -243,7 +257,7 @@
  * * type_list - are we checking for types of atoms to ignore and not physical atoms
  */
 /turf/proc/is_blocked_turf(exclude_mobs = FALSE, source_atom = null, list/ignore_atoms, type_list = FALSE)
-	if(density)
+	if((!isnull(source_atom) && !CanPass(source_atom, get_dir(src, source_atom))) || density)
 		return TRUE
 
 	for(var/atom/movable/movable_content as anything in contents)
@@ -322,7 +336,7 @@
 	return zPassOut(A, DOWN, target) && target.zPassIn(A, DOWN, src)
 
 /turf/proc/zFall(atom/movable/A, levels = 1, force = FALSE)
-	var/turf/target = get_step_multiz(src, DOWN)
+	var/turf/target = GET_TURF_BELOW(src)
 	if(!target || (!isobj(A) && !ismob(A)))
 		return FALSE
 	if(!force && (!can_zFall(A, levels, target) || !A.can_zFall(src, levels, target, DOWN)))
@@ -357,12 +371,11 @@
 	var/atom/firstbump
 	var/canPassSelf = CanPass(mover, src)
 	if(canPassSelf || CHECK_BITFIELD(mover.movement_type, UNSTOPPABLE))
-		for(var/i in contents)
+		for(var/atom/movable/thing as anything in contents)
 			if(QDELETED(mover))
 				return FALSE		//We were deleted, do not attempt to proceed with movement.
-			if(i == mover || i == mover.loc) // Multi tile objects and moving out of other objects
+			if(thing == mover || thing == mover.loc) // Multi tile objects and moving out of other objects
 				continue
-			var/atom/movable/thing = i
 			if(!thing.Cross(mover))
 				if(QDELETED(mover))		//Mover deleted from Cross/CanPass, do not proceed.
 					return FALSE
@@ -388,12 +401,6 @@
 	for(var/i in contents)
 		if(i == mover)
 			continue
-		var/atom/movable/thing = i
-		if(!thing.Uncross(mover, newloc))
-			if(thing.flags_1 & ON_BORDER_1)
-				mover.Bump(thing)
-			if(!CHECK_BITFIELD(mover.movement_type, UNSTOPPABLE))
-				return FALSE
 		if(QDELETED(mover))
 			return FALSE		//We were deleted.
 
@@ -408,6 +415,17 @@
 	// If an opaque movable atom moves around we need to potentially update visibility.
 	if (AM.opacity)
 		has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
+		reconsider_lights()
+
+/turf/Exited(atom/movable/Obj, atom/newloc)
+	. = ..()
+
+	if(istype(Obj))
+		SEND_SIGNAL(src, COMSIG_TURF_EXITED, Obj, newloc)
+		SEND_SIGNAL(Obj, COMSIG_MOVABLE_TURF_EXITED, src, newloc)
+
+	if (Obj && Obj.opacity)
+		recalc_atom_opacity() // Make sure to do this before reconsider_lights(), incase we're on instant updates.
 		reconsider_lights()
 
 /turf/open/Entered(atom/movable/AM)
@@ -430,7 +448,7 @@
 	var/turf/current_target
 	if(fake_baseturf_type)
 		if(length(fake_baseturf_type)) // We were given a list, just apply it and move on
-			baseturfs = fake_baseturf_type
+			baseturfs = baseturfs_string_list(fake_baseturf_type, src)
 			return
 		current_target = fake_baseturf_type
 	else
@@ -446,9 +464,9 @@
 	if(created_baseturf_lists[current_target])
 		var/list/premade_baseturfs = created_baseturf_lists[current_target]
 		if(length(premade_baseturfs))
-			baseturfs = premade_baseturfs.Copy()
+			baseturfs = baseturfs_string_list(premade_baseturfs.Copy(), src)
 		else
-			baseturfs = premade_baseturfs
+			baseturfs = baseturfs_string_list(premade_baseturfs, src)
 		return baseturfs
 
 	var/turf/next_target = initial(current_target.baseturfs)
@@ -469,7 +487,7 @@
 		current_target = next_target
 		next_target = initial(current_target.baseturfs)
 
-	baseturfs = new_baseturfs
+	baseturfs = baseturfs_string_list(new_baseturfs, src)
 	created_baseturf_lists[new_baseturfs[new_baseturfs.len]] = new_baseturfs.Copy()
 	return new_baseturfs
 
@@ -620,9 +638,9 @@
 /turf/handle_fall(mob/faller, forced)
 	if(!forced)
 		return
-	if(has_gravity(src))
-		playsound(src, "bodyfall", 100, TRUE)
-	faller.drop_all_held_items()
+	playsound(src, "bodyfall", 100, TRUE)
+	if(!faller.mind)
+		faller.drop_all_held_items()
 
 /turf/proc/photograph(limit=20)
 	var/image/I = new()
@@ -673,3 +691,166 @@
 /turf/proc/Melt()
 	return ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 
+/atom/proc/smooth()
+	if(!smoothing_icon)
+		smoothing_icon = initial(icon_state)
+	var/new_junction = NONE
+
+	// cache for sanic speed
+	var/smoothing_list = src.smoothing_list
+
+	var/smooth_border = (smooth & SMOOTH_BORDER)
+	var/smooth_obj = (smooth & SMOOTH_OBJ)
+	var/smooth_edge = (smooth & SMOOTH_EDGE)
+
+	#define SET_ADJ_IN_DIR(direction, direction_flag) \
+		set_adj_in_dir: { \
+			do { \
+				var/turf/neighbor = get_step(src, direction); \
+				if(!neighbor) { \
+					if(smooth_border) { \
+						new_junction |= direction_flag; \
+					}; \
+					break set_adj_in_dir; \
+				}; \
+				if(smooth_edge && type == neighbor.type) { \
+					break set_adj_in_dir; \
+				}; \
+				if(smooth_obj) { \
+					for(var/atom/movable/thing as anything in neighbor) { \
+						if(!thing.anchored) { \
+							continue; \
+						}; \
+						if(!smoothing_list) { \
+							if(type == thing.type) { \
+								new_junction |= direction_flag; \
+								break set_adj_in_dir; \
+							}; \
+							continue; \
+						}; \
+						var/thing_smoothing_groups = thing.smoothing_groups; \
+						if(!thing_smoothing_groups) { \
+							continue; \
+						}; \
+						for(var/target in smoothing_list) { \
+							if(smoothing_list[target] & thing_smoothing_groups[target]) { \
+								new_junction |= direction_flag; \
+								break set_adj_in_dir; \
+							}; \
+						}; \
+					}; \
+				}; \
+				if(!smoothing_list) { \
+					if(type == neighbor.type) { \
+						new_junction |= direction_flag; \
+					}; \
+					break set_adj_in_dir; \
+				}; \
+				var/neighbor_smoothing_groups = neighbor.smoothing_groups; \
+				if(neighbor_smoothing_groups) { \
+					for(var/target as anything in smoothing_list) { \
+						if(smoothing_list[target] & neighbor_smoothing_groups[target]) { \
+							new_junction |= direction_flag; \
+							break set_adj_in_dir; \
+						}; \
+					}; \
+				}; \
+				break set_adj_in_dir; \
+			} while(FALSE) \
+		}
+
+	for(var/direction as anything in GLOB.cardinals) //Cardinal case first.
+		SET_ADJ_IN_DIR(direction, direction)
+
+	if(smooth_edge)
+		if(!isturf(src))
+			CRASH("[type] has SMOOTH_EDGE set but is not a turf!")
+		var/turf/T = src
+		T.set_neighborlays(new_junction)
+		return
+
+	if(smooth & SMOOTH_BITMASK_CARDINALS || !(new_junction & (NORTH|SOUTH)) || !(new_junction & (EAST|WEST)))
+		set_smoothed_icon_state(new_junction)
+		return
+
+	if(new_junction & NORTH_JUNCTION)
+		if(new_junction & WEST_JUNCTION)
+			SET_ADJ_IN_DIR(NORTHWEST, NORTHWEST_JUNCTION)
+
+		if(new_junction & EAST_JUNCTION)
+			SET_ADJ_IN_DIR(NORTHEAST, NORTHEAST_JUNCTION)
+
+	if(new_junction & SOUTH_JUNCTION)
+		if(new_junction & WEST_JUNCTION)
+			SET_ADJ_IN_DIR(SOUTHWEST, SOUTHWEST_JUNCTION)
+
+		if(new_junction & EAST_JUNCTION)
+			SET_ADJ_IN_DIR(SOUTHEAST, SOUTHEAST_JUNCTION)
+
+	set_smoothed_icon_state(new_junction)
+
+	#undef SET_ADJ_IN_DIR
+
+///Changes the icon state based on the new junction bitmask.
+/atom/proc/set_smoothed_icon_state(new_junction)
+	icon_state = "[smoothing_icon]-[new_junction]"
+
+/turf/proc/set_neighborlays(new_junction)
+	remove_neighborlays()
+
+	if(new_junction == NONE)
+		return
+
+	if(new_junction & NORTH)
+		handle_edge_icon(NORTH)
+
+	if(new_junction & SOUTH)
+		handle_edge_icon(SOUTH)
+
+	if(new_junction & EAST)
+		handle_edge_icon(EAST)
+
+	if(new_junction & WEST)
+		handle_edge_icon(WEST)
+
+/turf/proc/handle_edge_icon(dir)
+	if(neighborlay_self)
+		add_neighborlay(dir, neighborlay_self)
+	if(neighborlay)
+		// Reverse dir because we are offsetting the overlay onto the adjacency
+		add_neighborlay(REVERSE_DIR(dir), neighborlay, TRUE)
+
+/turf/proc/add_neighborlay(dir, edgeicon, offset = FALSE)
+	var/add
+	var/y = 0
+	var/x = 0
+	switch(dir)
+		if(NORTH)
+			add = "[edgeicon]-n"
+			y = -32
+		if(SOUTH)
+			add = "[edgeicon]-s"
+			y = 32
+		if(EAST)
+			add = "[edgeicon]-e"
+			x = -32
+		if(WEST)
+			add = "[edgeicon]-w"
+			x = 32
+
+	if(!add)
+		return
+
+	var/image/overlay = image(icon, src, add, TURF_DECAL_LAYER, pixel_x = offset ? x : 0, pixel_y = offset ? y : 0 )
+
+	LAZYADDASSOC(neighborlay_list, "[dir]", overlay)
+	add_overlay(overlay)
+
+/turf/proc/remove_neighborlays()
+	if(!LAZYLEN(neighborlay_list))
+		return
+	for(var/key as anything in neighborlay_list)
+		cut_overlay(neighborlay_list[key])
+		qdel(neighborlay_list[key])
+		neighborlay_list[key] = null
+		LAZYREMOVE(neighborlay_list, key)

@@ -1,11 +1,8 @@
 /obj/item
 	var/baitpenalty = 100 // Using this as bait will incurr a penalty to fishing chance. 100 makes it useless as bait. Lower values are better, but Never make it past 10.
+	var/baitresilience = 0 // How resilient bait is. Decreases by 2 for every catch, decreases by 1 when used by a master or better. Bait cannot be consumed whilst it has resilience left.
 	var/isbait = FALSE	// Is the item in question bait to be used?
-	var/list/freshfishloot = null
-	var/list/seafishloot = null
-	var/list/mudfishloot = null
-	var/list/fishloot = null
-	var/list/cageloot = null	
+	var/list/fishingMods = null
 
 /obj/item/natural/worms
 	name = "worm"
@@ -16,57 +13,23 @@
 	isbait = TRUE
 	color = "#985544"
 	w_class = WEIGHT_CLASS_TINY
-	freshfishloot = list(
-		/obj/item/reagent_containers/food/snacks/fish/carp = 225,
-		/obj/item/reagent_containers/food/snacks/fish/sunny = 325,
-		/obj/item/reagent_containers/food/snacks/fish/salmon = 190,
-		/obj/item/reagent_containers/food/snacks/fish/eel = 140,
-		/obj/item/grown/log/tree/stick = 3,
-		/obj/item/storage/belt/rogue/pouch/coins/poor = 1,
-		/obj/item/natural/cloth = 1,
-		/obj/item/ammo_casing/caseless/rogue/arrow = 1,
-		/obj/item/clothing/ring/gold = 1,
-		/obj/item/reagent_containers/food/snacks/smallrat = 1, //That's not a fish...?
-		/obj/item/reagent_containers/glass/bottle/rogue/wine = 1,
-		/obj/item/reagent_containers/glass/bottle/rogue = 1,	
-		/mob/living/simple_animal/hostile/retaliate/rogue/mudcrab = 20,			
+	fishingMods=list(
+		"commonFishingMod" = 1,
+		"rareFishingMod" = 1,
+		"treasureFishingMod" = 1,
+		"trashFishingMod" = 1,
+		"dangerFishingMod" = 1,
+		"ceruleanFishingMod" = 0, // 1 on cerulean aril, 0 on everything else
+		"cheeseFishingMod" = 0 // Just for the funny gimmick of a chance for rats and rouses.
 	)
-	seafishloot = list(
-		/obj/item/reagent_containers/food/snacks/fish/cod = 190,
-		/obj/item/reagent_containers/food/snacks/fish/plaice = 210,
-		/obj/item/reagent_containers/food/snacks/fish/sole = 340,
-		/obj/item/reagent_containers/food/snacks/fish/angler = 140,
-		/obj/item/reagent_containers/food/snacks/fish/lobster = 150,
-		/obj/item/reagent_containers/food/snacks/fish/bass = 210,
-		/obj/item/reagent_containers/food/snacks/fish/clam = 40,
-		/obj/item/reagent_containers/food/snacks/fish/clownfish = 20,
-		/obj/item/grown/log/tree/stick = 3,
-		/obj/item/storage/belt/rogue/pouch/coins/poor = 1,
-		/obj/item/natural/cloth = 1,
-		/obj/item/ammo_casing/caseless/rogue/arrow = 1,
-		/obj/item/clothing/ring/gold = 1,
-		/obj/item/reagent_containers/food/snacks/smallrat = 1, //That's not a fish...?
-		/obj/item/reagent_containers/glass/bottle/rogue/wine = 1,
-		/obj/item/reagent_containers/glass/bottle/rogue = 1,	
-		/mob/living/carbon/human/species/goblin/npc/sea = 25,
-		/mob/living/simple_animal/hostile/rogue/deepone = 30,
-		/mob/living/simple_animal/hostile/rogue/deepone/spit = 30,			
-	)
-	mudfishloot = list(
-		/obj/item/reagent_containers/food/snacks/fish/mudskipper = 200,
-		/obj/item/natural/worms/leech = 50,
-		/obj/item/clothing/ring/gold = 1,
-		/mob/living/simple_animal/hostile/retaliate/rogue/mudcrab = 25,				
-	)
-	// This is super trimmed down from the ratwood list to focus entirely on shellfishes
-	cageloot = list(
-		/obj/item/reagent_containers/food/snacks/fish/oyster = 214,
-		/obj/item/reagent_containers/food/snacks/fish/shrimp = 214,
-		/obj/item/reagent_containers/food/snacks/fish/crab = 214,
-		/obj/item/reagent_containers/food/snacks/fish/lobster = 214,
-	)	
+	baitresilience = 1
+	
 	drop_sound = 'sound/foley/dropsound/food_drop.ogg'
 	var/amt = 1
+
+/obj/item/natural/worms/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Like many wriggling things, this can be used as bait for fishing. Its friends can be found by digging holes in wet dirt.")
 
 /obj/item/natural/worms/grubs
 	name = "grub"
@@ -74,48 +37,17 @@
 	baitpenalty = 5
 	isbait = TRUE
 	color = null
-	freshfishloot = list(
-		/obj/item/reagent_containers/food/snacks/fish/carp = 200,
-		/obj/item/reagent_containers/food/snacks/fish/sunny = 305,
-		/obj/item/reagent_containers/food/snacks/fish/salmon = 210,
-		/obj/item/reagent_containers/food/snacks/fish/eel = 160,
-		/obj/item/grown/log/tree/stick = 3,
-		/obj/item/storage/belt/rogue/pouch/coins/poor = 1,
-		/obj/item/natural/cloth = 1,
-		/obj/item/ammo_casing/caseless/rogue/arrow = 1,
-		/obj/item/clothing/ring/gold = 1,
-		/obj/item/reagent_containers/food/snacks/smallrat = 1, //That's not a fish...?
-		/obj/item/reagent_containers/glass/bottle/rogue/wine = 1,
-		/obj/item/reagent_containers/glass/bottle/rogue = 1,
-		/mob/living/simple_animal/hostile/retaliate/rogue/mudcrab = 20,				
+	fishingMods=list(
+		"commonFishingMod" = 0.85,
+		"rareFishingMod" = 1.15,
+		"treasureFishingMod" = 1,
+		"trashFishingMod" = 1,
+		"dangerFishingMod" = 1,
+		"ceruleanFishingMod" = 0, // 1 on cerulean aril, 0 on everything else
+		"cheeseFishingMod" = 0 // Just for the funny gimmick of a chance for rats and rouses.
 	)
-	seafishloot = list(
-		/obj/item/reagent_containers/food/snacks/fish/cod = 230,
-		/obj/item/reagent_containers/food/snacks/fish/plaice = 180,
-		/obj/item/reagent_containers/food/snacks/fish/sole = 250,
-		/obj/item/reagent_containers/food/snacks/fish/angler = 170,
-		/obj/item/reagent_containers/food/snacks/fish/lobster = 180,
-		/obj/item/reagent_containers/food/snacks/fish/bass = 230,
-		/obj/item/reagent_containers/food/snacks/fish/clam = 50,
-		/obj/item/reagent_containers/food/snacks/fish/clownfish = 40,
-		/obj/item/grown/log/tree/stick = 3,
-		/obj/item/storage/belt/rogue/pouch/coins/poor = 1,
-		/obj/item/natural/cloth = 1,
-		/obj/item/ammo_casing/caseless/rogue/arrow = 1,
-		/obj/item/clothing/ring/gold = 1,
-		/obj/item/reagent_containers/food/snacks/smallrat = 1, //That's not a fish...?
-		/obj/item/reagent_containers/glass/bottle/rogue/wine = 1,
-		/obj/item/reagent_containers/glass/bottle/rogue = 1,		
-		/mob/living/carbon/human/species/goblin/npc/sea = 25,
-		/mob/living/simple_animal/hostile/rogue/deepone = 30,
-		/mob/living/simple_animal/hostile/rogue/deepone/spit = 30,		
-	)
-	mudfishloot = list(
-		/obj/item/reagent_containers/food/snacks/fish/mudskipper = 200,
-		/obj/item/natural/worms/leech = 50,
-		/obj/item/clothing/ring/gold = 1,
-		/mob/living/simple_animal/hostile/retaliate/rogue/mudcrab = 25,				
-	)	
+	baitresilience = 2
+
 /obj/item/natural/worms/grubs/attack_right(mob/user)
 	return
 

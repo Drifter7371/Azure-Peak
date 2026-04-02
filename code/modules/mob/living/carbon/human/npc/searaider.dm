@@ -9,10 +9,10 @@ GLOBAL_LIST_INIT(searaider_aggro, world.file2list("strings/rt/searaideraggroline
 	dodgetime = 30
 	flee_in_pain = TRUE
 	possible_rmb_intents = list()
-	var/is_silent = FALSE /// Determines whether or not we will scream our funny lines at people.
-
 
 /mob/living/carbon/human/species/human/northern/searaider/ambush
+	threat_point = THREAT_MODERATE
+	ambush_faction = "raiders"
 	aggressive=1
 
 	wander = TRUE
@@ -23,9 +23,9 @@ GLOBAL_LIST_INIT(searaider_aggro, world.file2list("strings/rt/searaideraggroline
 	if(target)
 		aggressive=1
 		wander = TRUE
-		if(!is_silent && target != newtarg)
-			say(pick(GLOB.searaider_aggro))
-			linepoint(target)
+		if(target != newtarg)
+			if(npc_combat_dialogue(GLOB.searaider_aggro, prob_chance = 50, cooldown = 0))
+				pointed(target)
 
 /mob/living/carbon/human/species/human/northern/searaider/should_target(mob/living/L)
 	if(L.stat != CONSCIOUS)
@@ -45,14 +45,15 @@ GLOBAL_LIST_INIT(searaider_aggro, world.file2list("strings/rt/searaideraggroline
 	ADD_TRAIT(src, TRAIT_NOMOOD, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_NOHUNGER, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
-	ADD_TRAIT(src, TRAIT_INFINITE_ENERGY, TRAIT_GENERIC)
+	ADD_TRAIT(src, TRAIT_LEECHIMMUNE, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_BREADY, TRAIT_GENERIC)
 	equipOutfit(new /datum/outfit/job/roguetown/human/species/human/northern/searaider)
 	gender = pick(MALE, FEMALE)
 	var/obj/item/organ/eyes/organ_eyes = getorgan(/obj/item/organ/eyes)
 	var/obj/item/bodypart/head/head = get_bodypart(BODY_ZONE_HEAD)
-	var/hairf = pick(list(/datum/sprite_accessory/hair/head/lowbraid, 
+	var/hairf = pick(list(/datum/sprite_accessory/hair/head/lowbraid,
 						/datum/sprite_accessory/hair/head/countryponytailalt))
-	var/hairm = pick(list(/datum/sprite_accessory/hair/head/ponytailwitcher, 
+	var/hairm = pick(list(/datum/sprite_accessory/hair/head/ponytailwitcher,
 						/datum/sprite_accessory/hair/head/lowbraid))
 	var/beard = pick(list(/datum/sprite_accessory/hair/facial/viking,
 						/datum/sprite_accessory/hair/facial/manly,
@@ -116,8 +117,7 @@ GLOBAL_LIST_INIT(searaider_aggro, world.file2list("strings/rt/searaideraggroline
 
 /mob/living/carbon/human/species/human/northern/searaider/handle_combat()
 	if(mode == NPC_AI_HUNT)
-		if(prob(50)) // ignores is_silent because they should at least still be able to scream at people!
-			emote("rage")
+		npc_combat_dialogue(GLOB.searaider_aggro, list("rage", "laugh", "warcry"), prob_chance = 10, say_chance = 30)
 	. = ..()
 
 /datum/outfit/job/roguetown/human/species/human/northern/searaider/pre_equip(mob/living/carbon/human/H)
@@ -138,15 +138,21 @@ GLOBAL_LIST_INIT(searaider_aggro, world.file2list("strings/rt/searaideraggroline
 		neck = /obj/item/clothing/neck/roguetown/gorget
 	if(prob(50))
 		gloves = /obj/item/clothing/gloves/roguetown/leather
-	if(prob(50))
-		r_hand = /obj/item/rogueweapon/sword/iron
-		l_hand = /obj/item/rogueweapon/shield/wood
-	else
-		r_hand = /obj/item/rogueweapon/greataxe
+	switch(rand(1, 4))
+		if(1)
+			r_hand = /obj/item/rogueweapon/sword/iron
+			l_hand = /obj/item/rogueweapon/shield/wood
+		if(2)
+			r_hand = /obj/item/rogueweapon/spear
+		if(3)
+			r_hand = /obj/item/rogueweapon/greataxe
+		if(4)
+			r_hand = /obj/item/rogueweapon/greatsword/iron
+
 	shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 	H.STASPD = 9
 	H.STACON = rand(10,12) //so their limbs no longer pop off like a skeleton
-	H.STAEND = 15
+	H.STAWIL = 15
 	H.STAPER = 10
 	H.STAINT = 1
 	H.STASTR = 14

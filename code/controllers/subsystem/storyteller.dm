@@ -3,8 +3,48 @@
 #define DEFAULT_STORYTELLER_VOTE_OPTIONS 4
 ///amount of players we can have before no longer running votes for storyteller
 #define MAX_POP_FOR_STORYTELLER_VOTE 25
+#define LAST_ROUND_STATS_FILE "data/last_round/storyteller_vote.json"
+#define LAST_ROUND_STATS_STORYTELLER_VOTE "storyteller_vote"
 ///the duration into the round for which roundstart events are still valid to run
 #define ROUNDSTART_VALID_TIMEFRAME 3 MINUTES
+/// Width of a popup window that opens when user presses (?) and contains storyteller description
+#define DESC_POPUP_WIDTH 400
+/// Height of a popup window that opens when user presses (?) and contains storyteller description
+#define DESC_POPUP_HEIGHT 250
+/// A town combatant role counts as 1 + this value towards effective population
+#define TOWN_COMBATANT_ADDITIONAL_WEIGHT 2
+/// A half combatant (acolyte) counts as 1 + this value towards effective population
+#define HALF_COMBATANT_ADDITIONAL_WEIGHT 1
+
+/proc/is_storyteller_pending_or_roundstart(storyteller_type)
+	if(!ispath(storyteller_type, /datum/storyteller))
+		return FALSE
+	if(SSticker && SSticker.current_state != GAME_STATE_PLAYING && SSticker.current_state != GAME_STATE_FINISHED)
+		return SSgamemode.selected_storyteller == storyteller_type
+	if(ispath(SSgamemode.roundstart_storyteller, /datum/storyteller))
+		return SSgamemode.roundstart_storyteller == storyteller_type
+	return istype(SSgamemode.current_storyteller, storyteller_type)
+
+
+/proc/is_storyteller_villain_blocked()
+	return is_storyteller_pending_or_roundstart(/datum/storyteller/eora) || is_storyteller_pending_or_roundstart(/datum/storyteller/psydon)
+
+/proc/is_storyteller_soft_antag_blocked()
+	return is_storyteller_pending_or_roundstart(/datum/storyteller/psydon)
+
+/proc/enforce_storyteller_soft_antag_slots()
+	if(!is_storyteller_soft_antag_blocked())
+		return
+	for(var/job_title in list("Wretch", "Gnoll", "Assassin"))
+		var/datum/job/blocked_job = SSjob.GetJob(job_title)
+		if(!blocked_job)
+			continue
+		var/allowed_slots = max(0, blocked_job.current_positions)
+		blocked_job.total_positions = allowed_slots
+		blocked_job.spawn_positions = allowed_slots
+
+/proc/is_roundstart_roles_blocked_storyteller()
+	return is_storyteller_villain_blocked()
 
 SUBSYSTEM_DEF(gamemode)
 	name = "Gamemode"
@@ -24,8 +64,12 @@ SUBSYSTEM_DEF(gamemode)
 	var/datum/storyteller/current_storyteller
 	/// Result of the storyteller vote/pick. Defaults to Astrata.
 	var/selected_storyteller = /datum/storyteller/astrata
+	/// Storyteller that won the roundstart vote/pick for this round. Remains fixed after the round begins.
+	var/roundstart_storyteller
 	/// List of all the storytellers. Populated at init. Associative from type
 	var/list/storytellers = list()
+	/// Cached storyteller type that won the previous round's storyteller vote.
+	var/last_storyteller_vote
 	/// Next process for our storyteller. The wait time is STORYTELLER_WAIT_TIME
 	var/next_storyteller_process = 0
 	/// Associative list of even track points.
@@ -163,7 +207,10 @@ SUBSYSTEM_DEF(gamemode)
 	var/royalty = 0
 	var/constructor = 0
 	var/garrison = 0
-	var/church = 0
+	var/holy_warrior = 0
+	var/half_combatant = 0
+	/// Calculated effective pop after weighing garrison & holy warriors at 3x, acolytes at 2x
+	var/effective_pop = 0 
 
 	/// Is storyteller secret or not
 	var/secret_storyteller = FALSE
@@ -222,12 +269,14 @@ SUBSYSTEM_DEF(gamemode)
 		event_pools[event.track] += event //Add it to the categorized event pools
 
 	load_roundstart_data()
+
+	check_roundstart_gods_rankings()
 	. = ..()
 
 /datum/controller/subsystem/gamemode/fire(resumed = FALSE)
 	if(last_devotion_check < world.time)
 		pick_most_influential()
-		last_devotion_check = world.time + 90 MINUTES
+		last_devotion_check = world.time + 45 MINUTES
 
 	if(SSticker.HasRoundStarted() && (world.time - SSticker.round_start_time) >= ROUNDSTART_VALID_TIMEFRAME)
 		can_run_roundstart = FALSE
@@ -273,7 +322,8 @@ SUBSYSTEM_DEF(gamemode)
 
 /// Gets the number of antagonists the antagonist injection events will stop rolling after.
 /datum/controller/subsystem/gamemode/proc/get_antag_cap()
-	var/total_number = get_correct_popcount() + (garrison * 2)
+	var/total_number = get_correct_popcount() + (garrison * TOWN_COMBATANT_ADDITIONAL_WEIGHT) + (holy_warrior * TOWN_COMBATANT_ADDITIONAL_WEIGHT) + (half_combatant * HALF_COMBATANT_ADDITIONAL_WEIGHT)
+	effective_pop = total_number // For panel tracking
 	var/cap = FLOOR((total_number / ANTAG_CAP_DENOMINATOR), 1) + ANTAG_CAP_FLAT
 	return cap
 
@@ -281,7 +331,7 @@ SUBSYSTEM_DEF(gamemode)
 	. = 0
 	var/list/already_counted = list() // Never count the same mind twice
 	for(var/datum/antagonist/antag as anything in GLOB.antagonists)
-		if(QDELETED(antag) || QDELETED(antag.owner) || already_counted[antag.owner])
+		if(QDELETED(antag) || QDELETED(antag.owner))
 			continue
 		if((antag.antag_flags & (FLAG_FAKE_ANTAG | FLAG_ANTAG_CAP_IGNORE)))
 			continue
@@ -294,8 +344,14 @@ SUBSYSTEM_DEF(gamemode)
 		var/mob/antag_mob = antag.owner.current
 		if(QDELETED(antag_mob) || !antag_mob.key || antag_mob.stat == DEAD || antag_mob.client?.is_afk())
 			continue
-		already_counted[antag.owner] = TRUE
-		.++
+		var/weight = antag.get_antag_cap_weight()
+		// If we have already counted this mind, and the new weight is higher, add the difference only (Strongest antag datum)
+		if(weight && already_counted[antag.owner] && weight > already_counted[antag.owner])
+			. += (weight - already_counted[antag.owner])
+			already_counted[antag.owner] = weight
+		else if(weight && !already_counted[antag.owner])
+			already_counted[antag.owner] = weight
+			. += weight // Just add normally
 
 /// Whether events can inject more antagonists into the round
 /datum/controller/subsystem/gamemode/proc/can_inject_antags()
@@ -416,9 +472,11 @@ SUBSYSTEM_DEF(gamemode)
 		calc_value *= current_storyteller?.starting_point_multipliers[track]
 		calc_value *= (rand(100 - current_storyteller?.roundstart_points_variance,100 + current_storyteller?.roundstart_points_variance)/100)
 		event_track_points[track] = min(round(calc_value), round(point_thresholds[track] * 1.25))
+		if(track == EVENT_TRACK_CHARACTER_INJECTION && is_roundstart_roles_blocked_storyteller())
+			event_track_points[track] = 0
 
 	/// If the storyteller guarantees an antagonist roll, add points to make it so.
-	if(current_storyteller?.guarantees_roundstart_roleset && event_track_points[EVENT_TRACK_CHARACTER_INJECTION] < point_thresholds[EVENT_TRACK_CHARACTER_INJECTION])
+	if(!is_roundstart_roles_blocked_storyteller() && current_storyteller?.guarantees_roundstart_roleset && event_track_points[EVENT_TRACK_CHARACTER_INJECTION] < point_thresholds[EVENT_TRACK_CHARACTER_INJECTION])
 		event_track_points[EVENT_TRACK_CHARACTER_INJECTION] = point_thresholds[EVENT_TRACK_CHARACTER_INJECTION]
 
 	/// If we have any forced events, ensure we get enough points for them
@@ -470,8 +528,9 @@ SUBSYSTEM_DEF(gamemode)
 	active_players = 0
 	royalty = 0
 	constructor = 0
-	church = 0
+	holy_warrior = 0
 	garrison = 0
+	half_combatant = 0
 	for(var/mob/player_mob as anything in GLOB.player_list)
 		if(!player_mob.client)
 			continue
@@ -487,8 +546,10 @@ SUBSYSTEM_DEF(gamemode)
 				royalty++
 			if(player_mob.mind.job_bitflag & BITFLAG_CONSTRUCTOR)
 				constructor++
-			if(player_mob.mind.job_bitflag & BITFLAG_CHURCH)
-				church++
+			if(player_mob.mind.job_bitflag & BITFLAG_HOLY_WARRIOR)
+				holy_warrior++
+			if(player_mob.mind.job_bitflag & BITFLAG_HALF_COMBATANT)
+				half_combatant++
 			if(player_mob.mind.job_bitflag & BITFLAG_GARRISON)
 				garrison++
 	update_pop_scaling()
@@ -530,7 +591,17 @@ SUBSYSTEM_DEF(gamemode)
 	if(!length(storytellers))
 		for(var/type in subtypesof(/datum/storyteller))
 			storytellers[type] = new type()
-	set_storyteller(/datum/storyteller/astrata)
+	for(var/storyteller_name in storytellers)
+		var/datum/storyteller/initialized_storyteller = storytellers[storyteller_name]
+		if(initialized_storyteller?.ascendant)
+			to_chat(world, "<br>")
+			to_chat(world, span_reallybig("[initialized_storyteller.name] is ascendant!"))
+			to_chat(world, "<br>")
+
+	if(!current_storyteller || current_storyteller.type != selected_storyteller)
+		init_storyteller()
+	if(!ispath(roundstart_storyteller, /datum/storyteller))
+		roundstart_storyteller = selected_storyteller
 	calculate_ready_players()
 	roll_pre_setup_points()
 	//handle_pre_setup_roundstart_events()
@@ -553,6 +624,7 @@ SUBSYSTEM_DEF(gamemode)
 	refresh_alive_stats()
 	handle_post_setup_roundstart_events()
 	handle_post_setup_points()
+	enforce_storyteller_soft_antag_slots()
 	roundstart_event_view = FALSE
 	return TRUE
 
@@ -570,17 +642,18 @@ SUBSYSTEM_DEF(gamemode)
 	var/ttime = world.time - SSticker.round_start_time
 	if(ttime >= GLOB.round_timer)
 		if(roundvoteend)
-			if(ttime >= round_ends_at)
-				for(var/mob/living/carbon/human/H in GLOB.human_list)
-					if(H.stat != DEAD)
-						if(H.allmig_reward)
-							H.adjust_triumphs(H.allmig_reward)
-							H.allmig_reward = 0
+			if(world.time >= round_ends_at)
+//				for(var/mob/living/carbon/human/H in GLOB.human_list)
+//					if(H.stat != DEAD)
+//						if(H.allmig_reward)
+//							H.adjust_triumphs(H.allmig_reward)
+//							H.allmig_reward = 0
 				return TRUE
 		else
 			if(!SSvote.mode)
 				SSvote.initiate_vote("endround", pick("Zlod", "Sun King", "Gaia", "Moon Queen", "Aeon", "Gemini", "Aries"))
-
+	else if(roundvoteend && world.time >= round_ends_at)
+		return TRUE
 	if(SSmapping.retainer.head_rebel_decree)
 		if(reb_end_time == 0)
 			to_chat(world, span_boldannounce("The peasant rebels took control of the throne, hail the new community!"))
@@ -679,11 +752,16 @@ SUBSYSTEM_DEF(gamemode)
 /datum/controller/subsystem/gamemode/proc/storyteller_vote_choices()
 	var/list/final_choices = list()
 	var/list/pick_from = list()
-	for(var/datum/storyteller/storyboy in get_valid_storytellers())
+	var/list/valid_storytellers = get_valid_storytellers()
+	var/previous_storyteller = get_last_storyteller_vote()
+	var/can_exclude_previous = length(valid_storytellers) > 1
+	for(var/datum/storyteller/storyboy in valid_storytellers)
+		if(can_exclude_previous && previous_storyteller == storyboy.type)
+			continue
 		if(storyboy.always_votable)
-			final_choices[storyboy.name] = 0
+			final_choices["<b>[storyboy.name]</b><a href='?src=[REF(src)];storyboy_details=[storyboy.type]'>(?)</a>"] = 0
 		else
-			pick_from[storyboy.name] = storyboy.weight //might be able to refactor this to be slightly better due to get_valid_storytellers returning a weighted list
+			pick_from["<b>[storyboy.name]</b><a href='?src=[REF(src)];storyboy_details=[storyboy.type]'>(?)</a>"] = storyboy.weight //might be able to refactor this to be slightly better due to get_valid_storytellers returning a weighted list
 
 	var/added_storytellers = 0
 	while(added_storytellers < DEFAULT_STORYTELLER_VOTE_OPTIONS && length(pick_from))
@@ -701,12 +779,55 @@ SUBSYSTEM_DEF(gamemode)
 		return storyboy.desc
 
 
-/datum/controller/subsystem/gamemode/proc/storyteller_vote_result(winner_name)
+/datum/controller/subsystem/gamemode/proc/storyteller_vote_result(html_contaminated)
+	var/matched_storyteller = FALSE
 	for(var/storyteller_type in storytellers)
 		var/datum/storyteller/storyboy = storytellers[storyteller_type]
-		if(storyboy.name == winner_name)
-			selected_storyteller = storyteller_type
+		if(findtext(html_contaminated, storyboy.name))
+			selected_storyteller = storyboy.type
+			matched_storyteller = TRUE
+			SSgnoll_scaling.get_gnoll_scaling() // Calling this here as to make sure scaling holds true as per the roundstart vote, not a latejoin hunted character joining.
 			break
+	if(matched_storyteller)
+		save_last_storyteller_vote(selected_storyteller)
+
+	var/datum/storyteller/storytypecasted = selected_storyteller
+	to_chat(world, span_notice("<b>Storyteller is [initial(storytypecasted.name)]!</b>"))
+	to_chat(world, span_notice("[initial(storytypecasted.vote_desc)]"))
+
+/datum/controller/subsystem/gamemode/proc/get_last_storyteller_vote()
+	if(last_storyteller_vote)
+		return last_storyteller_vote
+	var/json_file = file(LAST_ROUND_STATS_FILE)
+	if(!fexists(json_file))
+		return null
+	var/list/last_round_stats = safe_json_decode(file2text(json_file))
+	if(!islist(last_round_stats))
+		return null
+	if(last_round_stats["state"] != "completed")
+		return null
+	var/loaded_path = text2path(trim(last_round_stats[LAST_ROUND_STATS_STORYTELLER_VOTE]))
+	if(!ispath(loaded_path, /datum/storyteller))
+		return null
+	last_storyteller_vote = loaded_path
+	return last_storyteller_vote
+
+/datum/controller/subsystem/gamemode/proc/save_last_storyteller_vote(storyteller_type)
+	if(!ispath(storyteller_type, /datum/storyteller))
+		return
+	last_storyteller_vote = storyteller_type
+	var/json_file = file(LAST_ROUND_STATS_FILE)
+	var/list/last_round_stats = list()
+	if(!fexists(json_file))
+		WRITE_FILE(json_file, "{}")
+	else
+		last_round_stats = safe_json_decode(file2text(json_file))
+	if(!islist(last_round_stats))
+		last_round_stats = list()
+	last_round_stats[LAST_ROUND_STATS_STORYTELLER_VOTE] = "[storyteller_type]"
+	fdel(json_file)
+	WRITE_FILE(json_file, json_encode(last_round_stats))
+	message_admins("Storyteller vote was saved as [storyteller_type]")
 
 ///return a weighted list of all storytellers that are currently valid to roll, if return_types is set then we will return types instead of instances
 /datum/controller/subsystem/gamemode/proc/get_valid_storytellers(return_types = FALSE)
@@ -731,7 +852,12 @@ SUBSYSTEM_DEF(gamemode)
 	var/datum/storyteller/chosen_storyteller = storytellers[passed_type]
 	chosen_storyteller.times_chosen++
 	GLOB.featured_stats[FEATURED_STATS_STORYTELLERS]["entries"][initial(chosen_storyteller.name)] = chosen_storyteller.times_chosen
+	selected_storyteller = passed_type
 	current_storyteller = chosen_storyteller
+	if(SSjob?.occupations?.len)
+		gnollslot_update()
+		update_scaling_slots()
+		enforce_storyteller_soft_antag_slots()
 	if(!secret_storyteller)
 		send_to_playing_players(span_notice("<b>Storyteller is [current_storyteller.name]!</b>"))
 		send_to_playing_players(span_notice("[current_storyteller.welcome_text]"))
@@ -744,8 +870,22 @@ SUBSYSTEM_DEF(gamemode)
 	dat += "Storyteller: [current_storyteller ? "[current_storyteller.name]" : "None"] "
 	dat += " <a href='byond://?src=[REF(src)];panel=main;action=halt_storyteller' [halted_storyteller ? "class='linkOn'" : ""]>HALT Storyteller</a> <a href='byond://?src=[REF(src)];panel=main;action=open_stats'>Event Panel</a> <a href='byond://?src=[REF(src)];panel=main;action=set_storyteller'>Set Storyteller</a> <a href='byond://?src=[REF(user.client)];panel=main;viewinfluences=1'>View Influences</a> <a href='byond://?src=[REF(src)];panel=main'>Refresh</a>"
 	dat += "<BR><font color='#888888'><i>Storyteller determines points gained, event chances, and is the entity responsible for rolling events.</i></font>"
-	dat += "<BR>Active Players: [active_players]   (Royalty: [royalty], Garrison: [garrison], Town Workers: [constructor], Church: [church])"
+	dat += "<BR>Active Players: [active_players]   (Royalty: [royalty], Garrison: [garrison], Town Workers: [constructor], Holy Warriors: [holy_warrior], Acolytes: [half_combatant])"
+	dat += "<BR>Effective Population: [effective_pop] (Total: [active_players] + Garrison Bonus: [garrison * 2] + Holy Warrior Bonus: [holy_warrior * 2] + Acolyte Bonus: [half_combatant * 1])"
 	dat += "<BR>Antagonist Count vs Maximum: [get_antag_count()] / [get_antag_cap()]"
+
+	// Job Scaling Info
+	dat += "<BR><b>--- Job Scaling ---</b>"
+	var/list/wretch_scaling = calculate_wretch_scaling()
+	var/datum/job/wretch_job = SSjob.GetJob("Wretch")
+	dat += "<BR>Wretch Slots: [wretch_job?.current_positions]/[wretch_job?.total_positions] — T1: [wretch_scaling["tier1_slots"]]/10, T2: +[wretch_scaling["tier2_extra"]] / 5 = [wretch_scaling["final_slots"]] final"
+	dat += "<BR>&nbsp;&nbsp;Garrison: [wretch_scaling["garrison"]], Holy Warriors: [wretch_scaling["holy_warrior"]], Acolytes: [wretch_scaling["acolyte"]] (half weight), Combat Total: [wretch_scaling["combat_total"]] (need > 10 for T2)"
+	if(wretch_scaling["major_antag_active"])
+		dat += "<BR>&nbsp;&nbsp;<font color='red'>MAJOR ANTAG ACTIVE (VL/LICH) — Tier 2 locked, max 10</font>"
+
+	var/list/adv_scaling = calculate_adventurer_scaling()
+	var/datum/job/adv_job = SSjob.GetJob("Adventurer")
+	dat += "<BR>Adventurer Slots: [adv_job?.current_positions]/[adv_job?.total_positions] (Calculated: [adv_scaling["final_slots"]])"
 	dat += "<HR>"
 	dat += "<a href='byond://?src=[REF(src)];panel=main;action=tab;tab=[GAMEMODE_PANEL_MAIN]' [panel_page == GAMEMODE_PANEL_MAIN ? "class='linkOn'" : ""]>Main</a>"
 	dat += " <a href='byond://?src=[REF(src)];panel=main;action=tab;tab=[GAMEMODE_PANEL_VARIABLES]' [panel_page == GAMEMODE_PANEL_VARIABLES ? "class='linkOn'" : ""]>Variables</a>"
@@ -779,7 +919,7 @@ SUBSYSTEM_DEF(gamemode)
 		if(GAMEMODE_PANEL_MAIN)
 			var/even = TRUE
 			dat += "<h2>Event Tracks:</h2>"
-			dat += "<font color='#888888'><i>Every track represents progression towards scheduling an event of it's severity</i></font>"
+			dat += "<font color='#888888'><i>Every track represents progression towards scheduling an event of its severity</i></font>"
 			dat += "<table align='center'; width='100%'; height='100%'; style='background-color:#13171C'>"
 			dat += "<tr style='vertical-align:top'>"
 			dat += "<td width=25%><b>Track</b></td>"
@@ -947,6 +1087,18 @@ SUBSYSTEM_DEF(gamemode)
 /datum/controller/subsystem/gamemode/Topic(href, href_list)
 	. = ..()
 	var/mob/user = usr
+	if(href_list["storyboy_details"])
+		var/datum/storyteller/storyboy = storytellers[text2path(href_list["storyboy_details"])]
+		if(!istype(storyboy))
+			return
+
+		var/datum/browser/popup = new(user, "storyboy_details", "[storyboy.name] - Storyteller Details")
+		popup.width = DESC_POPUP_WIDTH
+		popup.height = DESC_POPUP_HEIGHT
+		popup.set_content(storyboy.vote_desc)
+		popup.open()
+		return
+
 	if(!check_rights(R_ADMIN))
 		return
 	switch(href_list["panel"])
@@ -1060,7 +1212,7 @@ SUBSYSTEM_DEF(gamemode)
 			if(listed.name != event_name)
 				continue
 			listed.occurrences++
-			listed.occurrences++
+			listed.last_round_occurrences++
 
 /// Compares influence of all storytellers and sets a new storyteller with a highest influence
 /datum/controller/subsystem/gamemode/proc/pick_most_influential(roundstart = FALSE)
@@ -1091,10 +1243,13 @@ SUBSYSTEM_DEF(gamemode)
 			lowest = initialized_storyteller
 	if(!highest)
 		return
-	if(storytellers_with_influence[highest] > 1.25)
-		highest.bonus_points -= 1.25
 
-	lowest.bonus_points += 1.25
+	var/adjustment = min(2.5, 1 + (0.3 * FLOOR(max(0, highest.times_chosen - 5) / 5, 1)))
+
+	if(storytellers_with_influence[highest] > adjustment)
+		highest.bonus_points -= adjustment
+
+	lowest.bonus_points += adjustment
 
 	set_storyteller(highest.type)
 
@@ -1105,55 +1260,73 @@ SUBSYSTEM_DEF(gamemode)
 
 	GLOB.patron_follower_counts.Cut()
 
-	// General / Patron count
-	GLOB.azure_round_stats[STATS_TOTAL_POPULATION] = 0
-	GLOB.azure_round_stats[STATS_PSYCROSS_USERS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_NOBLES] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_GARRISON] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_CLERGY] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_TRADESMEN] = 0
-	GLOB.azure_round_stats[STATS_WEREVOLVES] = 0
-	GLOB.azure_round_stats[STATS_BANDITS] = 0
-	GLOB.azure_round_stats[STATS_VAMPIRES] = 0
-	GLOB.azure_round_stats[STATS_DEADITES_ALIVE] = 0
-	GLOB.azure_round_stats[STATS_CLINGY_PEOPLE] = 0
-	GLOB.azure_round_stats[STATS_ALCOHOLICS] = 0
-	GLOB.azure_round_stats[STATS_JUNKIES] = 0
-	GLOB.azure_round_stats[STATS_GREEDY_PEOPLE] = 0
-	GLOB.azure_round_stats[STATS_PLEASURES] = 0
+	var/list/statistics_to_clear = list(
+		STATS_TOTAL_POPULATION,
+        STATS_PSYCROSS_USERS,
+        STATS_ALIVE_NOBLES,
+        STATS_ALIVE_GARRISON,
+        STATS_ALIVE_CLERGY,
+        STATS_ALIVE_TRADESMEN,
+        STATS_WEREVOLVES,
+        STATS_BANDITS,
+        STATS_VAMPIRES,
+        STATS_DEADITES_ALIVE,
+        STATS_CLINGY_PEOPLE,
+		STATS_BEAUTIFUL_PEOPLE,
+		STATS_MARRIAGES_MADE,
+        STATS_ALCOHOLICS,
+        STATS_JUNKIES,
+		STATS_VOYEURS,
+		STATS_NYMPHOMANIACS,
+		STATS_INDEBTED,
+		STATS_THRILLSEEKERS,
+        STATS_GREEDY_PEOPLE,
+        STATS_PLEASURES,
+        STATS_MALE_POPULATION,
+        STATS_FEMALE_POPULATION,
+        STATS_OTHER_GENDER,
+        STATS_ADULT_POPULATION,
+        STATS_MIDDLEAGED_POPULATION,
+        STATS_ELDERLY_POPULATION,
+        STATS_ALIVE_NORTHERN_HUMANS,
+        STATS_ALIVE_DWARVES,
+        STATS_ALIVE_DARK_ELVES,
+        STATS_ALIVE_WOOD_ELVES,
+        STATS_ALIVE_HALF_ELVES,
+		STATS_ALIVE_SUN_ELVES,
+        STATS_ALIVE_HALF_ORCS,
+        STATS_ALIVE_GOBLINS,
+        STATS_ALIVE_KOBOLDS,
+        STATS_ALIVE_LIZARDS,
+        STATS_ALIVE_AASIMAR,
+        STATS_ALIVE_TIEFLINGS,
+        STATS_ALIVE_HALFKIN,
+        STATS_ALIVE_WILDKIN,
+        STATS_ALIVE_CONSTRUCTS,
+        STATS_ALIVE_VERMINFOLK,
+        STATS_ALIVE_DRACON,
+        STATS_ALIVE_AXIAN,
+        STATS_ALIVE_TABAXI,
+        STATS_ALIVE_VULPS,
+        STATS_ALIVE_LUPIANS,
+        STATS_ALIVE_MOTHS
+	)
 
-	// Gender count
-	GLOB.azure_round_stats[STATS_MALE_POPULATION] = 0
-	GLOB.azure_round_stats[STATS_FEMALE_POPULATION] = 0
-	GLOB.azure_round_stats[STATS_OTHER_GENDER] = 0
+	for(var/stat_name in statistics_to_clear)
+		force_set_round_statistic(stat_name, 0)
 
-	// Age count
-	GLOB.azure_round_stats[STATS_ADULT_POPULATION] = 0
-	GLOB.azure_round_stats[STATS_MIDDLEAGED_POPULATION] = 0
-	GLOB.azure_round_stats[STATS_ELDERLY_POPULATION] = 0
+	var/total_wealth = 0
 
-	// Races count
-	GLOB.azure_round_stats[STATS_ALIVE_NORTHERN_HUMANS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_DWARVES] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_DARK_ELVES] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_WOOD_ELVES] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_HALF_ELVES] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_HALF_ORCS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_GOBLINS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_KOBOLDS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_LIZARDS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_AASIMAR] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_TIEFLINGS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_HALFKIN] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_WILDKIN] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_CONSTRUCTS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_VERMINFOLK] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_DRACON] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_AXIAN] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_TABAXI] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_VULPS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_LUPIANS] = 0
-	GLOB.azure_round_stats[STATS_ALIVE_MOTHS] = 0
+	var/highest_strength = -1
+	var/highest_intelligence = -1
+	var/highest_wealth = -1
+	var/highest_luck = -1
+	var/highest_speed = -1
+
+	var/lowest_intelligence
+	var/lowest_speed
+	var/lowest_luck
+
 
 	for(var/client/client in GLOB.clients)
 		if(roundstart)
@@ -1169,101 +1342,151 @@ SUBSYSTEM_DEF(gamemode)
 			if(living.patron)
 				GLOB.patron_follower_counts[living.patron.name]++
 				if(living.job == "Grand Duke")
-					GLOB.azure_round_stats[STATS_MONARCH_PATRON] = "[living.patron.name]"
+					force_set_round_statistic(STATS_MONARCH_PATRON, living.patron.name)
 		if(living.mind.has_antag_datum(/datum/antagonist/bandit))
-			GLOB.azure_round_stats[STATS_BANDITS]++
+			record_round_statistic(STATS_BANDITS)
 		if(living.mind.has_antag_datum(/datum/antagonist/werewolf))
-			GLOB.azure_round_stats[STATS_WEREVOLVES]++
+			record_round_statistic(STATS_WEREVOLVES)
 		if(living.mind.has_antag_datum(/datum/antagonist/vampire))
-			GLOB.azure_round_stats[STATS_VAMPIRES]++
+			record_round_statistic(STATS_VAMPIRES)
 		if(living.mind.has_antag_datum(/datum/antagonist/zombie) || living.mind.has_antag_datum(/datum/antagonist/skeleton) || living.mind.has_antag_datum(/datum/antagonist/lich))
-			GLOB.azure_round_stats[STATS_DEADITES_ALIVE]++
+			record_round_statistic(STATS_DEADITES_ALIVE)
 		if(ishuman(living))
 			var/mob/living/carbon/human/human_mob = client.mob
-			GLOB.azure_round_stats[STATS_TOTAL_POPULATION]++
+			record_round_statistic(STATS_TOTAL_POPULATION)
 			for(var/obj/item/clothing/neck/current_item in human_mob.get_equipped_items(TRUE))
 				if(current_item.type in list(/obj/item/clothing/neck/roguetown/psicross, /obj/item/clothing/neck/roguetown/psicross/wood, /obj/item/clothing/neck/roguetown/psicross/aalloy, /obj/item/clothing/neck/roguetown/psicross/silver,	/obj/item/clothing/neck/roguetown/psicross/g))
-					GLOB.azure_round_stats[STATS_PSYCROSS_USERS]++
+					record_round_statistic(STATS_PSYCROSS_USERS)
 					break
 			switch(human_mob.pronouns)
 				if(HE_HIM)
-					GLOB.azure_round_stats[STATS_MALE_POPULATION]++
-				if(HE_HIM_F)
-					GLOB.azure_round_stats[STATS_MALE_POPULATION]++
+					record_round_statistic(STATS_MALE_POPULATION)
 				if(SHE_HER)
-					GLOB.azure_round_stats[STATS_FEMALE_POPULATION]++
-				if(SHE_HER_M)
-					GLOB.azure_round_stats[STATS_FEMALE_POPULATION]++
+					record_round_statistic(STATS_FEMALE_POPULATION)
 				else
-					GLOB.azure_round_stats[STATS_OTHER_GENDER]++
+					record_round_statistic(STATS_OTHER_GENDER)
 			switch(human_mob.age)
 				if(AGE_ADULT)
-					GLOB.azure_round_stats[STATS_ADULT_POPULATION]++
+					record_round_statistic(STATS_ADULT_POPULATION)
 				if(AGE_MIDDLEAGED)
-					GLOB.azure_round_stats[STATS_MIDDLEAGED_POPULATION]++
+					record_round_statistic(STATS_MIDDLEAGED_POPULATION)
 				if(AGE_OLD)
-					GLOB.azure_round_stats[STATS_ELDERLY_POPULATION]++
+					record_round_statistic(STATS_ELDERLY_POPULATION)
 			if(human_mob.is_noble())
-				GLOB.azure_round_stats[STATS_ALIVE_NOBLES]++
-			if(human_mob.mind.assigned_role in GLOB.garrison_positions)
-				GLOB.azure_round_stats[STATS_ALIVE_GARRISON]++
+				record_round_statistic(STATS_ALIVE_NOBLES)
+			if((human_mob.mind.assigned_role in GLOB.garrison_positions) || (human_mob.mind.assigned_role in GLOB.retinue_positions))
+				record_round_statistic(STATS_ALIVE_GARRISON)
 			if(human_mob.mind.assigned_role in GLOB.church_positions)
-				GLOB.azure_round_stats[STATS_ALIVE_CLERGY]++
-			if((human_mob.mind.assigned_role in GLOB.yeoman_positions) || (human_mob.mind.assigned_role in GLOB.peasant_positions) || (human_mob.mind.assigned_role in GLOB.mercenary_positions))
-				GLOB.azure_round_stats[STATS_ALIVE_TRADESMEN]++
-			if(human_mob.has_flaw(/datum/charflaw/clingy))
-				GLOB.azure_round_stats[STATS_CLINGY_PEOPLE]++
+				record_round_statistic(STATS_ALIVE_CLERGY)
+			if((human_mob.mind.assigned_role in GLOB.burgher_positions) || (human_mob.mind.assigned_role in GLOB.peasant_positions))
+				record_round_statistic(STATS_ALIVE_TRADESMEN)
 			if(human_mob.has_flaw(/datum/charflaw/addiction/alcoholic))
-				GLOB.azure_round_stats[STATS_ALCOHOLICS]++
+				record_round_statistic(STATS_ALCOHOLICS)
 			if(human_mob.has_flaw(/datum/charflaw/addiction/junkie))
-				GLOB.azure_round_stats[STATS_JUNKIES]++
+				record_round_statistic(STATS_JUNKIES)
+			if(human_mob.has_flaw(/datum/charflaw/addiction/lovefiend))
+				record_round_statistic(STATS_NYMPHOMANIACS)
+			if(human_mob.has_flaw(/datum/charflaw/indebted))
+				record_round_statistic(STATS_INDEBTED)
 			if(human_mob.has_flaw(/datum/charflaw/greedy))
-				GLOB.azure_round_stats[STATS_GREEDY_PEOPLE]++
+				record_round_statistic(STATS_GREEDY_PEOPLE)
+			if(human_mob.has_flaw(/datum/charflaw/clingy))
+				record_round_statistic(STATS_CLINGY_PEOPLE)
+			if(human_mob.has_flaw(/datum/charflaw/addiction/thrillseeker))
+				record_round_statistic(STATS_THRILLSEEKERS)
+			if(human_mob.has_flaw(/datum/charflaw/addiction/voyeur))
+				record_round_statistic(STATS_VOYEURS)
+			if(HAS_TRAIT(human_mob, TRAIT_BEAUTIFUL))
+				record_round_statistic(STATS_BEAUTIFUL_PEOPLE)
 
 			// Races - proper alive checking (We have so fucking many, kill me..)
 			if(ishumannorthern(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_NORTHERN_HUMANS]++
+				record_round_statistic(STATS_ALIVE_NORTHERN_HUMANS)
 			if(isdwarf(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_DWARVES]++
+				record_round_statistic(STATS_ALIVE_DWARVES)
 			if(isdarkelf(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_DARK_ELVES]++
+				record_round_statistic(STATS_ALIVE_DARK_ELVES)
 			if(iswoodelf(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_WOOD_ELVES]++
+				record_round_statistic(STATS_ALIVE_WOOD_ELVES)
+			if(issunelf(human_mob))
+				record_round_statistic(STATS_ALIVE_SUN_ELVES)
 			if(ishalfelf(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_HALF_ELVES]++
+				record_round_statistic(STATS_ALIVE_HALF_ELVES)
 			if(ishalforc(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_HALF_ORCS]++
+				record_round_statistic(STATS_ALIVE_HALF_ORCS)
 			if(isgoblinp(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_GOBLINS]++
+				record_round_statistic(STATS_ALIVE_GOBLINS)
 			if(iskobold(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_KOBOLDS]++
+				record_round_statistic(STATS_ALIVE_KOBOLDS)
 			if(islizard(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_LIZARDS]++
+				record_round_statistic(STATS_ALIVE_LIZARDS)
 			if(isaasimar(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_AASIMAR]++
+				record_round_statistic(STATS_ALIVE_AASIMAR)
 			if(istiefling(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_TIEFLINGS]++
+				record_round_statistic(STATS_ALIVE_TIEFLINGS)
 			if(ishalfkin(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_HALFKIN]++
+				record_round_statistic(STATS_ALIVE_HALFKIN)
 			if(iswildkin(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_WILDKIN]++
+				record_round_statistic(STATS_ALIVE_WILDKIN)
 			if(isconstruct(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_CONSTRUCTS]++
+				record_round_statistic(STATS_ALIVE_CONSTRUCTS)
 			if(isvermin(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_VERMINFOLK]++
+				record_round_statistic(STATS_ALIVE_VERMINFOLK)
 			if(isdracon(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_DRACON]++
+				record_round_statistic(STATS_ALIVE_DRACON)
 			if(isaxian(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_AXIAN]++
+				record_round_statistic(STATS_ALIVE_AXIAN)
 			if(istabaxi(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_TABAXI]++
+				record_round_statistic(STATS_ALIVE_TABAXI)
 			if(isvulp(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_VULPS]++
+				record_round_statistic(STATS_ALIVE_VULPS)
 			if(islupian(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_LUPIANS]++
+				record_round_statistic(STATS_ALIVE_LUPIANS)
 			if(ismoth(human_mob))
-				GLOB.azure_round_stats[STATS_ALIVE_MOTHS]++
+				record_round_statistic(STATS_ALIVE_MOTHS)
 
+			// Chronicle statistics
+			if(human_mob.STASTR > highest_strength)
+				highest_strength = human_mob.STASTR
+				set_chronicle_stat(CHRONICLE_STATS_STRONGEST_PERSON, human_mob)
+			if(human_mob.STAINT > highest_intelligence)
+				highest_intelligence = human_mob.STAINT
+				set_chronicle_stat(CHRONICLE_STATS_WISEST_PERSON, human_mob)
+			if(human_mob.STALUC > highest_luck)
+				highest_luck = human_mob.STALUC
+				set_chronicle_stat(CHRONICLE_STATS_LUCKIEST_PERSON, human_mob)
+			if(human_mob.STASPD > highest_speed)
+				highest_speed = human_mob.STASPD
+				set_chronicle_stat(CHRONICLE_STATS_FASTEST_PERSON, human_mob)
+
+			var/wealth = get_mammons_in_atom(human_mob)
+			total_wealth += wealth
+			if(wealth > highest_wealth)
+				highest_wealth = wealth
+				set_chronicle_stat(CHRONICLE_STATS_RICHEST_PERSON, human_mob)
+
+			if(!lowest_intelligence)
+				lowest_intelligence = human_mob.STAINT
+				set_chronicle_stat(CHRONICLE_STATS_DUMBEST_PERSON, human_mob)
+			else if(human_mob.STAINT < lowest_intelligence)
+				lowest_intelligence = human_mob.STAINT
+				set_chronicle_stat(CHRONICLE_STATS_DUMBEST_PERSON, human_mob)
+
+			if(!lowest_speed)
+				lowest_speed = human_mob.STASPD
+				set_chronicle_stat(CHRONICLE_STATS_SLOWEST_PERSON, human_mob)
+			else if(human_mob.STASPD < lowest_speed)
+				lowest_speed = human_mob.STASPD
+				set_chronicle_stat(CHRONICLE_STATS_SLOWEST_PERSON, human_mob)
+
+			if(!lowest_luck)
+				lowest_luck = human_mob.STALUC
+				set_chronicle_stat(CHRONICLE_STATS_UNLUCKIEST_PERSON, human_mob)
+			else if(human_mob.STALUC < lowest_luck)
+				lowest_luck = human_mob.STALUC
+				set_chronicle_stat(CHRONICLE_STATS_UNLUCKIEST_PERSON, human_mob)
+
+			force_set_round_statistic(STATS_MAMMONS_HELD, total_wealth)
 
 /// Returns total follower influence for the given storyteller
 /datum/controller/subsystem/gamemode/proc/get_follower_influence(datum/storyteller/chosen_storyteller)
@@ -1287,6 +1510,8 @@ SUBSYSTEM_DEF(gamemode)
 			total_influence += max(min_mod, base_mod - (i - diminish_threshold))
 		else
 			total_influence += max(second_min_mod, base_mod - (i - diminish_threshold))
+
+	total_influence = total_influence * initialized_storyteller.influence_modifier
 
 	return total_influence
 
@@ -1342,4 +1567,12 @@ SUBSYSTEM_DEF(gamemode)
 
 #undef DEFAULT_STORYTELLER_VOTE_OPTIONS
 #undef MAX_POP_FOR_STORYTELLER_VOTE
+#undef LAST_ROUND_STATS_FILE
+#undef LAST_ROUND_STATS_STORYTELLER_VOTE
 #undef ROUNDSTART_VALID_TIMEFRAME
+#undef DESC_POPUP_WIDTH
+#undef DESC_POPUP_HEIGHT
+#undef TOWN_COMBATANT_ADDITIONAL_WEIGHT
+#undef HALF_COMBATANT_ADDITIONAL_WEIGHT
+
+#undef INIT_ORDER_GAMEMODE

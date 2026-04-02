@@ -156,7 +156,7 @@
 				update_inv_shirt()
 			if(wear_armor.breakouttime) //when equipping a straightjacket
 				stop_pulling() //can't pull if restrained
-				update_action_buttons_icon() //certain action buttons will no longer be usable.
+				update_mob_action_buttons() //certain action buttons will no longer be usable.
 			update_inv_armor()
 		if(SLOT_PANTS)
 
@@ -200,15 +200,15 @@
 		if(SLOT_IN_BACKPACK)
 			not_handled = TRUE
 			if(beltr)
-				testing("insert1")
+
 				if(SEND_SIGNAL(beltr, COMSIG_TRY_STORAGE_INSERT, I, src, TRUE))
 					not_handled = FALSE
 			if(beltl && not_handled)
-				testing("insert2")
+
 				if(SEND_SIGNAL(beltl, COMSIG_TRY_STORAGE_INSERT, I, src, TRUE))
 					not_handled = FALSE
 			if(belt && not_handled)
-				testing("insert3")
+
 				if(SEND_SIGNAL(belt, COMSIG_TRY_STORAGE_INSERT, I, src, TRUE))
 					not_handled = FALSE
 		else
@@ -237,6 +237,10 @@
 	. = ..() //See mob.dm for an explanation on this and some rage about people copypasting instead of calling ..() like they should.
 	if(!. || !I)
 		return
+	if(index)
+		update_a_intents()
+	if(IS_WEAKREF_OF(I, offered_item_ref))
+		stop_offering_item()
 	if(index && !QDELETED(src) && dna.species.mutanthands) //hand freed, fill with claws, skip if we're getting deleted.
 		put_in_hand(new dna.species.mutanthands(), index)
 	if(I == wear_armor)
@@ -244,7 +248,7 @@
 			dropItemToGround(s_store, TRUE, silent = silent) //It makes no sense for your suit storage to stay on you if you drop your suit.
 		if(wear_armor.breakouttime) //when unequipping a straightjacket
 			drop_all_held_items() //suit is restraining
-			update_action_buttons_icon() //certain action buttons may be usable again.
+			update_mob_action_buttons() //certain action buttons may be usable again.
 		wear_armor = null
 		if(!QDELETED(src)) //no need to update we're getting deleted anyway
 			if(I.flags_inv & HIDEJUMPSUIT)
@@ -345,6 +349,10 @@
 		if(!QDELETED(src))
 			update_inv_mouth()
 
+	// Armor class warning — must run after slot vars are nulled so check_armor_skill() sees the correct state
+	if(!QDELETED(src) && istype(I, /obj/item/clothing))
+		var/obj/item/clothing/C = I
+		C.warn_armor_class(src, removed = TRUE)
 
 //	if(!QDELETED(src))
 //		if(I.eweight)
@@ -399,6 +407,8 @@
 		return
 	var/obj/item/thing = get_active_held_item()
 	var/obj/item/equipped_back = get_item_by_slot(slot_id)
+	if(equip_scabbard(thing, equipped_back, slot_id))
+		return
 	if(!equipped_back) // We also let you equip a backpack like this
 		if(!thing)
 			to_chat(src, span_warning("I have no backpack to take something out of!"))
@@ -413,6 +423,9 @@
 			to_chat(src, span_warning("I can't fit anything in!"))
 		return
 	if(thing) // put thing in backpack
+		if(thing.inv_storage_delay)
+			if(!move_after(src, thing.inv_storage_delay, target = thing, progress = TRUE))
+				return
 		if(!SEND_SIGNAL(equipped_back, COMSIG_TRY_STORAGE_INSERT, thing, src))
 			to_chat(src, span_warning("I can't fit anything in!"))
 		return
@@ -422,14 +435,20 @@
 	var/obj/item/stored = equipped_back.contents[equipped_back.contents.len]
 	if(!stored || stored.on_found(src))
 		return
+	if(istype(stored, /obj/item/rogueweapon/scabbard))
+		var/obj/item/rogueweapon/scabbard/scab = stored
+		if(scab.hol_comp.sheathed)
+			stored.attack_right(src)
+			return
 	stored.attack_hand(src) // take out thing from backpack
-	return
 
 /mob/living/carbon/human/proc/smart_equipbelt() // put held thing in belt or take most recent item out of belt
 	if(incapacitated())
 		return
 	var/obj/item/thing = get_active_held_item()
 	var/obj/item/equipped_belt = get_item_by_slot(SLOT_BELT)
+	if(equip_scabbard(thing, equipped_belt, SLOT_BELT))
+		return
 	if(!equipped_belt) // We also let you equip a belt like this
 		if(!thing)
 			to_chat(src, span_warning("I have no belt to take something out of!"))
@@ -444,6 +463,9 @@
 			to_chat(src, span_warning("I can't fit anything in!"))
 		return
 	if(thing) // put thing in belt
+		if(thing.inv_storage_delay)
+			if(!move_after(src, thing.inv_storage_delay, target = thing, progress = TRUE))
+				return
 		if(!SEND_SIGNAL(equipped_belt, COMSIG_TRY_STORAGE_INSERT, thing, src))
 			to_chat(src, span_warning("I can't fit anything in!"))
 		return
@@ -453,5 +475,82 @@
 	var/obj/item/stored = equipped_belt.contents[equipped_belt.contents.len]
 	if(!stored || stored.on_found(src))
 		return
+	if(istype(stored, /obj/item/rogueweapon/scabbard))
+		var/obj/item/rogueweapon/scabbard/scab = stored
+		if(scab.hol_comp.sheathed)
+			stored.attack_right(src)
+			return
 	stored.attack_hand(src) // take out thing from belt
-	return
+
+/mob/living/carbon/human/proc/smart_equipcloak() // put held thing in cloak or take most recent item out of cloak
+    if(incapacitated())
+        return
+    var/obj/item/thing = get_active_held_item()
+    var/obj/item/equipped_cloak = get_item_by_slot(SLOT_CLOAK)
+    if(equip_scabbard(thing, equipped_cloak, SLOT_CLOAK))
+        return
+    if(!equipped_cloak) // We also let you equip a cloak like this
+        if(!thing)
+            to_chat(src, span_warning("I have no cloak to take something out of!"))
+            return
+        if(equip_to_slot_if_possible(thing, SLOT_CLOAK))
+            update_inv_hands()
+        return
+    if(!SEND_SIGNAL(equipped_cloak, COMSIG_CONTAINS_STORAGE)) // not a storage item
+        if(!thing)
+            equipped_cloak.attack_hand(src)
+        else
+            to_chat(src, span_warning("I can't fit anything in!"))
+        return
+    if(thing) // put thing in cloak
+        if(thing.inv_storage_delay)
+            if(!move_after(src, thing.inv_storage_delay, target = thing, progress = TRUE))
+                return
+        if(!SEND_SIGNAL(equipped_cloak, COMSIG_TRY_STORAGE_INSERT, thing, src))
+            to_chat(src, span_warning("I can't fit anything in!"))
+        return
+    if(!equipped_cloak.contents.len) // nothing to take out
+        to_chat(src, span_warning("There's nothing in your cloak to take out!"))
+        return
+    var/obj/item/stored = equipped_cloak.contents[equipped_cloak.contents.len]
+    if(!stored || stored.on_found(src))
+        return
+    if(istype(stored, /obj/item/rogueweapon/scabbard))
+        var/obj/item/rogueweapon/scabbard/scab = stored
+        if(scab.hol_comp.sheathed)
+            stored.attack_right(src)
+            return
+    stored.attack_hand(src) // take out thing from cloak
+
+/mob/living/carbon/human/proc/equip_scabbard(var/obj/item/thing, var/obj/item/equipped, slot_id)
+	var/obj/item/use_thing = null
+
+	if(!equipped)
+		return FALSE
+	var/datum/component/holster/HC = equipped.GetComponent(/datum/component/holster)
+	if(HC)
+		if(!HC.sheathed && thing)
+			HC.eat_sword(src, thing)
+		if(HC.sheathed && !thing)
+			HC.right_click(src, src)
+		return TRUE
+	if(!HC)
+		if(SEND_SIGNAL(equipped, COMSIG_CONTAINS_STORAGE))
+			if(!equipped.contents.len)
+				return FALSE
+			var/obj/item/stored = equipped.contents[equipped.contents.len]
+			if(!stored || stored.on_found(src))
+				return FALSE
+			if(!istype(stored, /obj/item/rogueweapon/scabbard))
+				return FALSE
+			use_thing = stored
+
+	if(use_thing)
+		HC = use_thing.GetComponent(/datum/component/holster)
+	if(!istype(HC))
+		return FALSE
+	if(!HC.sheathed && thing)
+		return HC.eat_sword(src, thing)
+	if(HC.sheathed && !thing)
+		return HC.right_click(src, src)
+

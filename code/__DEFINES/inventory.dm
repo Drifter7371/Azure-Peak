@@ -40,7 +40,7 @@
 #define ITEM_SLOT_DENYPOCKET	(1<<22) // this is to deny items with a w_class of WEIGHT_CLASS_SMALL or WEIGHT_CLASS_TINY to fit in pockets.
 #define ITEM_SLOT_BACKPACK		(1<<23)
 
-#define ITEM_SLOT_BACK			ITEM_SLOT_BACK_L | ITEM_SLOT_BACK_R
+#define ITEM_SLOT_BACK			(ITEM_SLOT_BACK_L | ITEM_SLOT_BACK_R)
 
 //SLOTS
 
@@ -167,6 +167,7 @@
 #define HIDECROTCH		(1<<13)
 #define HIDETAIL		(1<<14)
 #define HIDESNOUT		(1<<15)
+#define HIDEWINGS		(1<<16)
 
 //blocking_behavior var on clothing items
 #define BLOCKBOOTS		(1<<0)
@@ -203,7 +204,7 @@
 #define LEFT_EYE	(1<<18)
 #define HAIR		(1<<19)
 #define EYES		(LEFT_EYE | RIGHT_EYE)
-#define FACE		(MOUTH | NOSE | EYES)
+#define FACE		(MOUTH | NOSE | EYES | EARS)
 #define FULL_HEAD	(HEAD | MOUTH | NOSE | EYES | EARS | HAIR)
 #define BELOW_HEAD	(CHEST | GROIN | VITALS | ARMS | HANDS | LEGS | FEET)
 #define BELOW_CHEST	(GROIN | VITALS | LEGS | FEET) //for water

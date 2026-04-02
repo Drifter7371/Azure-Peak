@@ -85,13 +85,20 @@
 		to_chat(L, "*----*")
 		if(ishuman(usr))
 			var/mob/living/carbon/human/M = usr
-			if(M.charflaw)
-				to_chat(M, "<span class='info'>[M.charflaw.desc]</span>")
+			if(M.charflaws.len)
+				for(var/datum/charflaw/cf in M.charflaws)
+					var/datum/charflaw/addiction/ad_cf = null
+					if(istype(cf, /datum/charflaw/addiction))
+						ad_cf = cf
+					to_chat(M, span_danger("[cf.name] [ad_cf ? ad_cf.sated ? span_purple("SATED") : "" : ""]"))
+					to_chat(M, span_info("[cf.desc]"))
 				to_chat(M, "*----*")
 			if(M.mind)
 				if(M.mind.language_holder)
 					var/finn
 					for(var/X in M.mind.language_holder.languages)
+						if(!X || !ispath(X, /datum/language))
+							continue
 						var/datum/language/LA = new X()
 						finn = TRUE
 						to_chat(M, "<span class='info'>[LA.name] - ,[LA.key]</span>")
@@ -111,6 +118,9 @@
 		var/mob/living/carbon/human/H = usr
 		H.print_levels(H)
 
+/atom/movable/screen/skills/should_click_on_mouse_up(var/atom/original_object)
+	return FALSE
+
 /atom/movable/screen/craft
 	name = "crafting menu"
 	icon_state = "craft"
@@ -126,6 +136,10 @@
 	if(ishuman(usr))
 		var/mob/living/carbon/human/H = usr
 		if(modifiers["right"])
+			var/area/A = get_area(H)
+			if(!A.can_craft_here())
+				to_chat(H, span_warning("You cannot craft here."))
+				return
 			if(H.craftingthing && (H.mind?.lastrecipe != null))
 				last_craft = world.time
 				var/datum/component/personal_crafting/C = H.craftingthing
@@ -136,9 +150,12 @@
 			if(H.craftingthing)
 				last_craft = world.time
 				var/datum/component/personal_crafting/C = H.craftingthing
-				C.roguecraft(location, control, params, H)
+				if(H.client.legacycraft)
+					C.roguecraft(location, control, params, H)
+				else
+					C.ui_interact(H)
 			else
-				testing("what")
+
 
 /atom/movable/screen/area_creator
 	name = "create new area"
@@ -393,16 +410,16 @@
 			lol++
 			switch(lol)
 				if(1)
-					intent1 = image(icon='icons/mob/roguehud.dmi',icon_state=intenty.icon_state, pixel_x = 64, pixel_y = 16, layer = layer+0.02)
+					intent1 = image(icon=intenty.icon,icon_state=intenty.icon_state, pixel_x = 64, pixel_y = 16, layer = layer+0.02)
 					add_overlay(intent1, TRUE)
 				if(2)
-					intent2 = image(icon='icons/mob/roguehud.dmi',icon_state=intenty.icon_state, pixel_x = 96, pixel_y = 16, layer = layer+0.02)
+					intent2 = image(icon=intenty.icon,icon_state=intenty.icon_state, pixel_x = 96, pixel_y = 16, layer = layer+0.02)
 					add_overlay(intent2, TRUE)
 				if(3)
-					intent3 = image(icon='icons/mob/roguehud.dmi',icon_state=intenty.icon_state, pixel_x = 64, layer = layer+0.02)
+					intent3 = image(icon=intenty.icon,icon_state=intenty.icon_state, pixel_x = 64, layer = layer+0.02)
 					add_overlay(intent3, TRUE)
 				if(4)
-					intent4 = image(icon='icons/mob/roguehud.dmi',icon_state=intenty.icon_state, pixel_x = 96, layer = layer+0.02)
+					intent4 = image(icon=intenty.icon,icon_state=intenty.icon_state, pixel_x = 96, layer = layer+0.02)
 					add_overlay(intent4, TRUE)
 		if(ismob(usr))
 			var/mob/M = usr
@@ -544,7 +561,7 @@
 	var/_y = text2num(params2list(params)["icon-y"])
 
 	if(_y<=9)
-		usr.mmb_intent_change(QINTENT_STEAL)
+		usr.mmb_intent_change(QINTENT_SPECIAL)
 
 	else if(_y>=9 && _y<=16)
 		usr.mmb_intent_change(QINTENT_KICK)
@@ -618,12 +635,30 @@
 	var/list/modifiers = params2list(params)
 	if(isliving(usr))
 		var/mob/living/L = usr
-		L.playsound_local(L, 'sound/misc/click.ogg', 100)
 		if(modifiers["right"])
+			L.playsound_local(L, 'sound/misc/click.ogg', 100)
 			L.submit()
+		else if(modifiers["middle"])
+			if(L.mob_timers["complybutton"]) // I am fed up with trying to triage issues that new middle click code has. Here, have hacky workaround. - Zoktiik
+				if(world.time < (L.mob_timers["complybutton"] + 0.5 SECONDS))
+					return
+			L.mob_timers["complybutton"] = world.time
+			L.playsound_local(L, 'sound/misc/click.ogg', 100)
+			L.toggle_compliance()
+		else if(modifiers["shift"] && modifiers["left"])
+			to_chat(usr, span_info("* --- *\n\
+			Combat mode button.\n\
+			<b>Left click:</b> toggles combat mode at-will, allowing you to parry or dodge attacks. Usually costs energy (blue stamina) to keep active. Also allows some more destructive interactions with objects.\n\
+			<b>Right click:</b> makes you visibly surrender, showing a white flag above your head and rendering you temporarily unable to move or fight.\n\
+			<b>Middle click:</b> toggles compliance mode at-will, removing your defense against grapples and tackles. Also makes it faster to restrain and strip you.\n\
+			All of these have configurable keybinds; see the Keybinds settings in your preferences window."))
 		else
+			L.playsound_local(L, 'sound/misc/click.ogg', 100)
 			L.toggle_cmode()
 			update_icon()
+
+/atom/movable/screen/cmode/should_click_on_mouse_up(var/atom/original_object)
+	return FALSE
 
 /atom/movable/screen/mov_intent
 	name = "run/walk toggle"
@@ -801,7 +836,7 @@
 			iris.icon_state = "oeye_fixed"
 		else
 			iris.icon_state = "oeye"
-	iris.color = "#" + human.eye_color
+	iris.color = human.get_eye_color()
 	. += iris
 
 /atom/movable/screen/eye_intent/proc/toggle(mob/user)
@@ -898,7 +933,9 @@
 	if(modifiers["right"])
 		if(master)
 			var/obj/item/flipper = usr.get_active_held_item()
-			if((!usr.Adjacent(flipper) && !usr.DirectAccess(flipper)) || !isliving(usr) || usr.incapacitated())
+			if(!flipper)
+				return
+			if((!usr.Adjacent(flipper) && !usr.IsDirectlyAccessible(flipper)) || !isliving(usr) || usr.incapacitated())
 				return
 			var/old_width = flipper.grid_width
 			var/old_height = flipper.grid_height
@@ -943,7 +980,14 @@
 	var/overlay_icon = 'icons/mob/roguehud64.dmi'
 	var/static/list/hover_overlays_cache = list()
 	var/hovering
+	var/obj/effect/overlay/flash_layer
 	var/arrowheight = 0
+
+/atom/movable/screen/zone_sel/New()
+	..()
+	flash_layer = new
+	flash_layer.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	vis_contents += flash_layer
 
 /atom/movable/screen/zone_sel/Click(location, control,params)
 	if(isobserver(usr))
@@ -1276,9 +1320,10 @@
 
 	if(hud.mymob.stat != DEAD && ishuman(hud.mymob))
 		var/mob/living/carbon/human/H = hud.mymob
+		var/list/missing_bodyparts_zones = H.get_missing_limbs()
 		for(var/X in H.bodyparts)
 			var/obj/item/bodypart/BP = X
-			if(BP.body_zone in H.get_missing_limbs())
+			if(BP.body_zone in missing_bodyparts_zones)
 				continue
 			if(HAS_TRAIT(H, TRAIT_NOPAIN))
 				var/mutable_appearance/limby = mutable_appearance('icons/mob/roguehud64.dmi', "[H.gender == "male" ? "m" : "f"]-[BP.body_zone]")
@@ -1295,13 +1340,37 @@
 			. += limby
 			if(BP.get_bleed_rate())
 				. += mutable_appearance('icons/mob/roguehud64.dmi', "[H.gender == "male" ? "m" : "f"]-[BP.body_zone]-bleed") //apply healthy limb
-		for(var/X in H.get_missing_limbs())
+		for(var/X in missing_bodyparts_zones)
 			var/mutable_appearance/limby = mutable_appearance('icons/mob/roguehud64.dmi', "[H.gender == "male" ? "m" : "f"]-[X]") //missing limb
 			limby.color = "#2f002f"
 			. += limby
 
 	. += mutable_appearance(overlay_icon, "[hud.mymob.gender == "male" ? "m" : "f"]_[hud.mymob.zone_selected]")
 //	. += mutable_appearance(overlay_icon, "height_arrow[hud.mymob.aimheight]")
+
+/atom/movable/screen/zone_sel/proc/flash_limb(zone, limb_color="#FF0000") //Flashes when an attack hits a limb
+	if(!zone || !hud?.mymob)
+		return
+
+	var/gender_prefix = (hud.mymob.gender == FEMALE) ? "f" : "m"
+
+	var/obj/effect/overlay/highlight = new
+	highlight.icon = 'icons/mob/roguehud64.dmi'
+	highlight.icon_state = "[gender_prefix]-[zone]"
+	highlight.color = limb_color
+	highlight.alpha = 180
+	highlight.layer = ABOVE_HUD_LAYER
+	highlight.plane = ABOVE_HUD_PLANE-0.1
+	highlight.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+	flash_layer.vis_contents += highlight
+
+	animate(highlight, alpha = 0, time = 20, easing = EASE_IN)
+
+	spawn(20)
+		if(highlight in flash_layer.vis_contents)
+			flash_layer.vis_contents -= highlight
+		qdel(highlight)
 
 /atom/movable/screen/zone_sel/robot
 	icon = 'icons/mob/screen_cyborg.dmi'
@@ -1527,36 +1596,70 @@
 /atom/movable/screen/stress
 	name = "sanity"
 	icon = 'icons/mob/roguehud.dmi'
-	icon_state = "stressback"
+	icon_state = "mood_idle"
+
+/atom/movable/screen/stress/Initialize(mapload, ...)
+	. = ..()
+	var/image/mood_base = image(icon, null, "stressback")
+	mood_base.layer = layer - 0.01
+	add_overlay(mood_base)
 
 /atom/movable/screen/stress/update_icon()
-	cut_overlays()
-	var/state2use = "stress1"
-	if(ishuman(usr))
-		var/mob/living/carbon/human/H = usr
-		if(!HAS_TRAIT(H, TRAIT_NOMOOD))
-			var/stress_amt = H.get_stress_amount()
-			if(stress_amt > 0)
-				state2use = "stress2"
-			if(stress_amt >= 5)
-				state2use = "stress3"
-			if(stress_amt >= 15)
-				state2use = "stress4"
-			if(stress_amt >= 25)
-				state2use = "stress5"
-		if(H.has_status_effect(/datum/status_effect/buff/drunk))
-			state2use = "mood_drunk"
-		if(H.has_status_effect(/datum/status_effect/buff/druqks))
-			state2use = "mood_drunk"
-		if(H.InFullCritical())
-			state2use = "stress4"
-		if(H.mind)
-			if(H.mind.has_antag_datum(/datum/antagonist/zombie))
-				state2use = "stress4"
-		if(H.stat == DEAD)
-			state2use = "mood_dead"
-	add_overlay(state2use)
+	var/state2use = "mood_idle"
 
+	var/mob/our_mob = hud?.mymob
+	if(ishuman(our_mob))
+		var/mob/living/carbon/human/H = our_mob
+		//General stress moodlets
+		var/stress_amt = H.get_stress_amount()
+		switch(stress_amt)
+			if(1 to 4)
+				state2use = "stress"
+			if(5 to 14)
+				state2use = "stress2"
+			if(5 to 24)
+				state2use = "stress3"
+			if(25 to 999)
+				state2use = "stress4"
+			if(-4 to -1)
+				state2use = "peace"
+			if(-9 to -5)
+				state2use = "peace2"
+			if(-20 to -10)
+				state2use = "peace3"
+			if(-999 to -21)
+				state2use = "mood_nirvana"
+
+		//Regular overrides for stress
+		if(H.has_status_effect(/datum/status_effect/buff/drunk))
+			state2use = "mood_drunkorhigh"
+		if(H.has_status_effect(/datum/status_effect/buff/druqks))
+			state2use = "mood_drunkorhigh"
+		if(H.has_status_effect(/datum/status_effect/buff/starsugar))
+			state2use = "mood_starsugar"
+		if(H.has_status_effect(/datum/status_effect/buff/bloodrage))
+			state2use = "mood_ult"
+
+		//We go down a janky list of exceptions for total overrides
+		if(HAS_TRAIT(H, TRAIT_NOMOOD))
+			state2use = "mood_hopeless"
+		else if(H.stat == DEAD)
+			state2use = "mood_dead"
+		else if(H.mind?.has_antag_datum(/datum/antagonist/zombie))
+			state2use = "mood_zombidle"
+		else if(H.mind?.has_antag_datum(/datum/antagonist/lich))
+			state2use = "mood_boneidle"
+		else if(H.stat && H.IsSleeping())
+			state2use = "mood_sleep"
+		else if(H.nausea >= 100)
+			state2use = "mood_sick"
+	icon_state = state2use
+
+/atom/movable/screen/stress/proc/flick_pain(var/critical = FALSE)
+	if(critical)
+		flick("mood_ouch", src)
+	else
+		flick("mood_hurt", src)
 
 /atom/movable/screen/stress/Click(location,control,params)
 	var/list/modifiers = params2list(params)
@@ -1564,9 +1667,10 @@
 	if(ishuman(usr))
 		var/mob/living/carbon/human/M = usr
 		if(modifiers["left"])
-			if(M.charflaw)
+			if(M.charflaws.len)
 				to_chat(M, "*----*")
-				to_chat(M, span_info("[M.charflaw.desc]"))
+				for(var/datum/charflaw/cf in M.charflaws)
+					to_chat(M, span_info("[cf.desc]"))
 			to_chat(M, "*--------*")
 			var/list/already_printed = list()
 			var/list/pos_stressors = M.get_positive_stressors()
@@ -1611,10 +1715,10 @@
 			if(M.get_triumphs() <= 0)
 				to_chat(M, span_warning("I haven't TRIUMPHED."))
 				return
-			if(alert("Do you want to remember a TRIUMPH?", "", "Yes", "No") == "Yes")
+			if(alert("Do you want to remember a TRIUMPH?", "", "Yes (-3 TRI)", "No") == "Yes (-3 TRI)")
 				if(!M.has_stress_event(/datum/stressevent/triumph))
 					M.add_stress(/datum/stressevent/triumph)
-					M.adjust_triumphs(-1)
+					M.adjust_triumphs(-3)
 					M.playsound_local(M, 'sound/misc/notice (2).ogg', 100, FALSE)
 
 
@@ -1626,7 +1730,7 @@
 	var/showing = FALSE
 
 /atom/movable/screen/rmbintent/update_icon()
-	testing("overlayscut")
+
 	cut_overlays()
 	if(isliving(hud?.mymob))
 		var/mob/living/L = hud.mymob
@@ -1724,10 +1828,13 @@
 			to_chat(M, "<span class='info'>* --- *</span>")
 
 /mob/living/proc/swap_rmb_intent(type, num)
+	if(QDELETED(src))
+		return
 	if(!possible_rmb_intents?.len)
 		return
 	if(type)
 		if(type in possible_rmb_intents)
+			qdel(rmb_intent)
 			rmb_intent = new type()
 			if(hud_used?.rmb_intent)
 				hud_used.rmb_intent.update_icon()
@@ -1737,30 +1844,20 @@
 			return
 		var/A = possible_rmb_intents[num]
 		if(A)
+			qdel(rmb_intent)
 			rmb_intent = new A()
 			if(hud_used?.rmb_intent)
 				hud_used.rmb_intent.update_icon()
 				hud_used.rmb_intent.collapse_intents()
 
 /mob/living/proc/cycle_rmb_intent()
-    if(!possible_rmb_intents?.len)
-        return
+	if(!possible_rmb_intents?.len)
+		return
 
-    // Find the index of the current intent
-    var/index = possible_rmb_intents.Find(rmb_intent)
+	// Find the index of the current intent
+	var/index = possible_rmb_intents.Find(rmb_intent?.type)
 
-    if(index == -1)
-        rmb_intent = possible_rmb_intents[1]
-    else
-        // Calculate the next index, wrapping around if at the end
-        index = (index % possible_rmb_intents.len) + 1
-        rmb_intent = possible_rmb_intents[index]
-
-    if(hud_used?.rmb_intent)
-    {
-        hud_used.rmb_intent.update_icon()
-        hud_used.rmb_intent.collapse_intents()
-    }
+	index == -1 ? swap_rmb_intent(possible_rmb_intents[1]) : swap_rmb_intent(possible_rmb_intents[(index % possible_rmb_intents.len) + 1])
 
 /atom/movable/screen/time
 	name = "Sir Sun"
@@ -1794,11 +1891,26 @@
 	icon = 'icons/mob/rogueheat.dmi'
 	screen_loc = rogueui_fat
 
+/atom/movable/screen/stamina/examine_ui(mob/user)
+	if(isliving(user))
+		var/mob/living/L = user
+		var/remaining = max(L.max_stamina - L.stamina, 0)
+		to_chat(user, span_info("<b>Stamina:</b> [round(remaining, 0.1)] / [round(L.max_stamina, 0.1)]"))
+	else
+		..()
+
 /atom/movable/screen/energy
 	name = "energy"
 	icon_state = "energy100"
 	icon = 'icons/mob/rogueheat.dmi'
 	screen_loc = rogueui_fat
+
+/atom/movable/screen/energy/examine_ui(mob/user)
+	if(isliving(user))
+		var/mob/living/L = user
+		to_chat(user, span_info("<b>Energy:</b> [round(L.energy, 0.1)] / [round(L.max_energy, 0.1)]"))
+	else
+		..()
 
 /atom/movable/screen/heatstamover
 	name = ""
@@ -1847,12 +1959,16 @@
 	icon_state = ""
 	name = ""
 	screen_loc = "1,1"
-	layer = HUD_LAYER+0.01
 	plane = HUD_PLANE
 	alpha = 0
 	var/atom/movable/screen/readtext/textright
 	var/atom/movable/screen/readtext/textleft
 	var/reading
+
+/atom/movable/screen/read/Destroy()
+	. = ..()
+	textleft = null
+	textright = null
 
 /atom/movable/screen/read/Click(location, control, params)
 	. = ..()
@@ -1890,6 +2006,10 @@
 		animate(textleft, alpha = 255, time = 5, easing = EASE_IN)
 		animate(textright, alpha = 255, time = 5, easing = EASE_IN)
 
+#undef READ_RIGHT
+#undef READ_LEFT
+#undef READ_BOTH
+
 /atom/movable/screen/readtext
 	name = ""
 	icon = null
@@ -1916,3 +2036,111 @@
 /atom/movable/screen/daynight/New(client/C) //TODO: Make this use INITIALIZE_IMMEDIATE, except its not easy
 	. = ..()
 	icon_state = GLOB.tod
+
+/atom/movable/screen/bloodpool
+	appearance_flags = KEEP_TOGETHER
+	icon_state = "empty"
+	icon = 'icons/mob/rogueheat.dmi'
+	screen_loc = rogueui_vitae
+	var/width = 4
+	var/height = 43
+	var/orientation = NORTH
+	var/atom/movable/screen/bloodpool_maskpart/background
+	var/atom/movable/screen/bloodpool_maskpart/foreground
+	var/atom/movable/screen/bloodpool_maskpart/fill
+	var/atom/movable/screen/bloodpool_maskpart/mask
+
+/atom/movable/screen/bloodpool/Initialize(mapload, ...)
+	. = ..()
+	foreground = new /atom/movable/screen/bloodpool_maskpart/foreground(null, icon, src)
+	background = new /atom/movable/screen/bloodpool_maskpart/background(null, icon, src)
+	fill = new /atom/movable/screen/bloodpool_maskpart/fill(null, icon, src)
+	mask = new /atom/movable/screen/bloodpool_maskpart/mask(null, icon, src)
+
+	background.vis_contents += fill
+	mask.vis_contents += background
+	vis_contents.Add(mask, foreground) 
+
+/atom/movable/screen/bloodpool/Destroy()
+	QDEL_NULL(background)
+	QDEL_NULL(foreground)
+	QDEL_NULL(fill)
+	QDEL_NULL(mask)
+	return ..()
+
+/atom/movable/screen/bloodpool/proc/set_fill_color(new_color = "#ffffff")
+	fill.color = new_color
+
+/atom/movable/screen/bloodpool/proc/set_value(ratio = 1.0, duration = 0)
+	//constrain the ratio between 0 and 1
+	ratio = min(max(ratio,0),1)
+
+	//apply orientation factors for fill bar offsets
+	var/fx = 0, fy = 0
+	switch(orientation)
+		if(EAST)
+			fx = -1
+		if(WEST)
+			fx = 1
+		if(SOUTH)
+			fy = 1
+		if(NORTH)
+			fy = -1
+
+	//calculate the offset of the fill bar.
+	var/invratio = 1-ratio
+	var/epx = width * invratio * fx
+	var/epy = height * invratio * fy
+
+	//apply the offset to the fill bar
+	if(duration)
+		//if a time value has been supplied, animate the transition from the current position
+		animate(fill, pixel_w = epx,pixel_z = epy, time = duration)
+	else
+		//if a time value has not been supplied, instantly set to the new position
+		fill.pixel_w = epx
+		fill.pixel_z = epy
+
+	animate(fill, time = duration)
+
+/atom/movable/screen/bloodpool_maskpart
+	layer = FLOAT_LAYER
+	plane = FLOAT_PLANE
+	/// Ref to our parent screem, purely for examine purposes
+	var/atom/movable/screen/parent_screen
+
+/atom/movable/screen/bloodpool_maskpart/Initialize(mapload, icon, parent_screen)
+	. = ..()
+	src.icon = icon
+	src.parent_screen = parent_screen
+
+/atom/movable/screen/bloodpool_maskpart/examine_ui(mob/user)
+	return parent_screen?.examine_ui(user)
+
+/atom/movable/screen/bloodpool_maskpart/Destroy()
+	parent_screen = null
+	return ..()
+
+/atom/movable/screen/bloodpool_maskpart/background
+	icon_state = "mana_bg"
+	appearance_flags = KEEP_TOGETHER
+	blend_mode = BLEND_MULTIPLY
+
+/atom/movable/screen/bloodpool_maskpart/foreground
+	icon_state = "mana_fg"
+
+/atom/movable/screen/bloodpool_maskpart/fill
+	icon_state = "mana_fill"
+
+/atom/movable/screen/bloodpool_maskpart/mask
+	icon_state = "mana_mask"
+
+
+/atom/movable/screen/bloodpool/breath
+	name = "breath"
+	screen_loc = "WEST-1:3, CENTER+2" 
+
+/atom/movable/screen/bloodpool/breath/Initialize(mapload)
+	. = ..()
+	set_fill_color("#00eaff")
+	set_value(1.0)

@@ -62,9 +62,6 @@
 	setparrytime = 30
 	dodgetime = 30
 
-
-
-
 /mob/living/simple_animal/hostile/Initialize()
 	. = ..()
 	last_aggro_loss = world.time //so we delete even if we never found a target
@@ -72,10 +69,20 @@
 		targets_from = src
 	wanted_objects = typecacheof(wanted_objects)
 
-
 /mob/living/simple_animal/hostile/Destroy()
+	if(AIStatus != AI_OFF)
+		toggle_ai(AI_OFF)
+
+	if(target)
+		UnregisterSignal(target, COMSIG_PARENT_QDELETING)
+	target = null
 	targets_from = null
 	return ..()
+
+/mob/living/simple_animal/hostile/examine(mob/user)
+	. = ..()
+	if(user in friends)
+		. += span_notice("[src] seems friendly towards you.")
 
 /mob/living/simple_animal/hostile/Life()
 	. = ..()
@@ -84,6 +91,12 @@
 		return 0
 
 /mob/living/simple_animal/hostile/handle_automated_action()
+	if(QDELETED(src) || !loc)
+		return FALSE
+
+	if(!targets_from || QDELETED(targets_from) || !targets_from.loc)
+		targets_from = src
+
 	if(AIStatus == NPC_AI_OFF)
 		return 0
 	if(del_on_deaggro && last_aggro_loss && (world.time >= last_aggro_loss + del_on_deaggro))
@@ -91,13 +104,15 @@
 			return
 	if(has_buckled_mobs() && tame)
 		return 0
+	if(binded)
+		return FALSE
 	var/list/possible_targets = ListTargets() //we look around for potential targets and make it a list for later use.
 
 	if(environment_smash)
 		EscapeConfinement()
 
 	if(AICanContinue(possible_targets))
-		if(!QDELETED(target) && !targets_from.Adjacent(target))
+		if(!QDELETED(target) && targets_from && targets_from.loc && !targets_from.Adjacent(target))
 			DestroyPathToTarget()
 		if(!MoveToTarget(possible_targets))     //if we lose our target
 			if(AIShouldSleep(possible_targets))	// we try to acquire a new one
@@ -193,7 +208,7 @@
 			continue
 	var/Target = PickTarget(.)
 	if(Target)
-		testing("[src] givetarget [Target]")
+
 		GiveTarget(Target)
 	return Target //We now have a target
 
@@ -237,6 +252,9 @@
 	if(isturf(the_target) || !the_target || the_target.type == /atom/movable/lighting_object) // bail out on invalids
 		return FALSE
 
+	if(binded)
+		return FALSE
+
 	if(ismob(the_target)) //Target is in godmode, ignore it.
 		var/mob/M = the_target
 		if(M.status_flags & GODMODE)
@@ -267,8 +285,11 @@
 	return FALSE
 
 /mob/living/simple_animal/hostile/proc/GiveTarget(new_target)//Step 4, give us our selected target
-
+	if(target)
+		UnregisterSignal(target, COMSIG_PARENT_QDELETING)
 	target = new_target
+	if(target)
+		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(handle_target_del))
 	LosePatience()
 	if(target != null)
 		GainPatience()
@@ -276,8 +297,19 @@
 		Aggro()
 		return 1
 
+/mob/living/simple_animal/hostile/proc/handle_target_del(datum/source)
+	SIGNAL_HANDLER
+	last_aggro_loss = world.time
+	target = null
+	approaching_target = FALSE
+	in_melee = FALSE
+	walk(src, 0)
+	LoseAggro()
+
 //What we do after closing in
 /mob/living/simple_animal/hostile/proc/MeleeAction(patience = TRUE)
+	if(binded)
+		return FALSE
 	if(rapid_melee > 1)
 		var/datum/callback/cb = CALLBACK(src, PROC_REF(CheckAndAttack))
 		var/delay = SSnpcpool.wait / rapid_melee
@@ -297,6 +329,8 @@
 	if(!target || !CanAttack(target))
 		LoseTarget()
 		return 0
+	if(binded)
+		return FALSE
 	if(target in possible_targets)
 //		var/turf/T = get_turf(src)
 //		if(target.z != T.z)
@@ -309,9 +343,6 @@
 		if(ranged) //We ranged? Shoot at em
 			if(!target.Adjacent(targets_from) && ranged_cooldown <= world.time) //But make sure they're not in range for a melee attack and our range attack is off cooldown
 				OpenFire(target)
-		if(!Process_Spacemove()) //Drifting
-			walk(src,0)
-			return 1
 		if(retreat_distance != null) //If we have a retreat distance, check if we need to run from our target
 			if(target_distance <= retreat_distance) //If target's closer than our retreat distance, run
 				walk_away(src,target,retreat_distance,move_to_delay)
@@ -360,7 +391,7 @@
 	. = ..()
 	if(!ckey && !stat && search_objects < 3 && . > 0)//Not unconscious, and we don't ignore mobs
 		if(search_objects)//Turn off item searching and ignore whatever item we were looking at, we're more concerned with fight or flight
-			target = null
+			GiveTarget(null)
 			LoseSearchObjects()
 		if(AIStatus != AI_ON && AIStatus != NPC_AI_OFF)
 			toggle_ai(AI_ON)
@@ -380,10 +411,12 @@
 
 /mob/living/simple_animal/hostile/proc/Aggro()
 	vision_range = aggro_vision_range
-	if(target && emote_taunt.len && prob(taunt_chance))
-		emote("me", 1, "[pick(emote_taunt)] at [target].")
-		taunt_chance = max(taunt_chance-7,2)
-	emote("aggro")
+	if(world.time >= (mob_timers["npc_chatter"] + 15 SECONDS))
+		if(target && emote_taunt.len && prob(taunt_chance))
+			emote("me", 1, "[pick(emote_taunt)] at [target].")
+			taunt_chance = max(taunt_chance-7,2)
+		emote("aggro")
+		mob_timers["npc_chatter"] = world.time
 
 
 /mob/living/simple_animal/hostile/proc/LoseAggro()
@@ -394,11 +427,23 @@
 /mob/living/simple_animal/hostile/proc/LoseTarget()
 	if(target)
 		last_aggro_loss = world.time
+		UnregisterSignal(target, COMSIG_PARENT_QDELETING)
 	target = null
 	approaching_target = FALSE
 	in_melee = FALSE
 	walk(src, 0)
 	LoseAggro()
+
+/mob/living/simple_animal/hostile/proc/revalidate_target_on_faction_change()
+	if(!target || !isliving(target))
+		return
+	if(faction_check_mob(target))
+		LoseTarget()
+
+/mob/living/proc/notify_faction_change()
+	for(var/mob/living/simple_animal/hostile/H in orange(7, src))
+		if(H.target == src)
+			H.revalidate_target_on_faction_change()
 
 //////////////END HOSTILE MOB TARGETTING AND AGGRESSION////////////
 
@@ -425,6 +470,8 @@
 					return TRUE
 
 /mob/living/simple_animal/hostile/proc/OpenFire(atom/A)
+	if(binded)
+		return FALSE
 	if(CheckFriendlyFire(A))
 		return
 	visible_message(span_danger("<b>[src]</b> [ranged_message] at [A]!"))
@@ -455,8 +502,6 @@
 		P.fired_from = src
 		P.yo = targeted_atom.y - startloc.y
 		P.xo = targeted_atom.x - startloc.x
-		if(AIStatus != AI_ON)//Don't want mindless mobs to have their movement screwed up firing in space
-			newtonian_move(get_dir(targeted_atom, targets_from))
 		P.original = targeted_atom
 		P.preparePixelProjectile(targeted_atom, src)
 		P.fire()
@@ -470,8 +515,7 @@
 /mob/living/simple_animal/hostile/Move(atom/newloc, dir , step_x , step_y)
 	if(dodging && approaching_target && prob(dodge_prob) && moving_diagonally == 0 && isturf(loc) && isturf(newloc) && !incapacitated())
 		return dodge(newloc,dir)
-	else
-		return ..()
+	return ..()
 
 /mob/living/simple_animal/hostile/proc/dodge(moving_to,move_direction)
 	//Assuming we move towards the target we want to swerve toward them to get closer
@@ -494,13 +538,18 @@
 	for(var/obj/O in T.contents)
 		if(!O.Adjacent(targets_from))
 			continue
-		if((ismachinery(O) || isstructure(O)) && O.density && environment_smash >= ENVIRONMENT_SMASH_STRUCTURES && !O.IsObscured())
+		if((ismachinery(O) || isstructure(O)) && environment_smash >= ENVIRONMENT_SMASH_STRUCTURES && !O.IsObscured())
 			O.attack_animal(src)
 			return
 
 /mob/living/simple_animal/hostile/proc/DestroyPathToTarget()
 	var/dir_to_target = get_dir(targets_from, target)
 	if(environment_smash)
+		var/turf/V = get_turf(src)
+		for (var/obj/structure/O in V.contents)	//check for if a direction dense structure is on the same tile as the mob
+			if(isstructure(O))
+				O.attack_animal(src)
+				continue
 		EscapeConfinement()
 		var/dir_list = list()
 		if(dir_to_target in GLOB.diagonals) //it's diagonal, so we need two directions to hit
@@ -543,7 +592,7 @@
 
 /mob/living/simple_animal/hostile/RangedAttack(atom/A, params) //Player firing
 	if(ranged && ranged_cooldown <= world.time)
-		target = A
+		GiveTarget(A)
 		OpenFire(A)
 	..()
 
@@ -593,32 +642,13 @@
 	search_objects = value
 
 /mob/living/simple_animal/hostile/consider_wakeup()
-	..()
-	var/turf/T = get_turf(src)
+	for(var/datum/spatial_grid_cell/grid as anything in our_cells.member_cells)
+		if(length(grid.client_contents))
+			toggle_ai(AI_ON)
+			return TRUE
 
-	if (!T)
-		return
-
-//	if (!length(SSmobs.clients_by_zlevel[T.z])) // It's fine to use .len here but doesn't compile on 511
-//		toggle_ai(AI_Z_OFF)
-//		return
-
-//	var/cheap_search = isturf(T) && !is_station_level(T.z)
-//	if (cheap_search)
-//		tlist = ListTargetsLazy(T.z)
-//	else
-
-	if(world.time < next_seek)
-		return
-	next_seek = world.time + 3 SECONDS
-
-	var/list/tlist = ListTargets()
-
-	if(AIStatus == AI_IDLE && FindTarget(tlist, 1))
-//		if(cheap_search) //Try again with full effort
-//			FindTarget()
-		toggle_ai(AI_ON)
-		testing("becomeidle [src]")
+	toggle_ai(AI_OFF)
+	return FALSE
 
 /mob/living/simple_animal/hostile/proc/ListTargetsLazy(_Z)//Step 1, find out what we can see
 	. = list()
@@ -627,3 +657,8 @@
 		if (get_dist(M, src) < vision_range)
 			if (isturf(M.loc))
 				. += M
+
+/mob/living/simple_animal/hostile/checkdefense(datum/intent/intenty, mob/living/user)
+	if(user in friends)
+		return FALSE
+	return ..()

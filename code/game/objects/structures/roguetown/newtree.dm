@@ -17,6 +17,14 @@
 	//If the tree has been burn beforehand.
 	var/burnt = FALSE
 
+/obj/structure/flora/newtree/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Most trees can be toppled by hitting them with the 'CUT', 'CHOP', or 'REND' intents on bladed weapons. Nothing chops trees and foliage better, or quicker, than a good old fashioned axe.")
+	. += span_info("Left-clicking a tree while you're next to it will allow you to climb it. The higher your Climbing skill is, the quicker you can finish climbing up a level. Buckling yourself to an uprighted chair can help, too.")
+	. += span_info("Your Climbing skill determines the tier of wall you can scale, as well. Most people can climb trees and rock walls without trouble, but mossy walls and fortifications can only be surmounted by a few.")
+	. += span_info("Press the 'Shift' button and the 'F' key at the same time to look up a level. If there's nothing to stand on - like a branch or unoccupied tile - adjacent to your direction, climbing up might cause you to fall back down.")
+	. += span_info("Note that this behavior mostly applies to trees and walls that're only one level tall. Those with higher Climbing skills can 'cling' to higher walls, allowing them to scale multiple levels without falling.")
+
 /obj/structure/flora/newtree/fire_act(added, maxstacks)
 	. = ..()
 	if(.)
@@ -26,17 +34,9 @@
 			update_icon()
 
 /obj/structure/flora/newtree/attack_right(mob/user)
-	if(user.mind && isliving(user))
-		if(user.mind.special_items && user.mind.special_items.len)
-			var/item = input(user, "What will I take?", "STASH") as null|anything in user.mind.special_items
-			if(item)
-				if(user.Adjacent(src))
-					if(user.mind.special_items[item])
-						var/path2item = user.mind.special_items[item]
-						user.mind.special_items -= item
-						var/obj/item/I = new path2item(user.loc)
-						user.put_in_hands(I)
-			return
+	if(user.cmode)
+		return
+	handle_special_items_retrieval(user, src)
 
 /obj/structure/flora/newtree/obj_destruction(damage_flag)//this proc is stupidly long for a destruction proc
 	var/turf/NT = get_turf(src)
@@ -124,22 +124,20 @@
 	if(.)
 		if(!was_destroyed && obj_destroyed)
 			record_featured_stat(FEATURED_STATS_TREE_FELLERS, user)
-			GLOB.azure_round_stats[STATS_TREES_CUT]++
+			record_round_statistic(STATS_TREES_CUT)
 
-/obj/structure/flora/newtree/update_icon()
-	icon_state = ""
+/obj/structure/flora/newtree/update_icon_state()
+	icon_state = burnt ? "burnt" : ""
+
+/obj/structure/flora/newtree/update_overlays()
+	. = ..()
 	if(burnt)
-		icon_state = "burnt"
-		cut_overlays()
 		return
-	cut_overlays()
-	var/mutable_appearance/M
 	if(base_state)
-		M = mutable_appearance(icon, "[base_state]")
-		add_overlay(M)
-	M = mutable_appearance(icon, "tree[tree_type]")
+		. += mutable_appearance(icon, "[base_state]")
+	var/mutable_appearance/M = mutable_appearance(icon, "tree[tree_type]")
 	M.dir = dir
-	add_overlay(M)
+	. += M
 
 /obj/structure/flora/newtree/Initialize()
 	. = ..()
@@ -204,28 +202,32 @@
 
 /obj/structure/flora/newbranch
 	name = "branch"
-	desc = "A stable branch, should be safe to walk on."
+	desc = "A branch of a tree. It looks stable enough to walk on, and could \
+	alternately make for good firewood."
 	icon = 'icons/roguetown/misc/tree.dmi'
 	icon_state = "branch-end1"
 	attacked_sound = 'sound/misc/woodhit.ogg'
 //	var/tree_type = 1
 	var/base_state = TRUE
 	obj_flags = CAN_BE_HIT | BLOCK_Z_OUT_DOWN
+	plane = FLOOR_PLANE
 	static_debris = list(/obj/item/grown/log/tree/stick = 1)
 	density = FALSE
 	max_integrity = 30
 
-/obj/structure/flora/newbranch/update_icon()
+/obj/structure/flora/newbranch/update_icon_state()
 	icon_state = ""
-	cut_overlays()
+
+/obj/structure/flora/newbranch/update_overlays()
+	. = ..()
 	var/mutable_appearance/M
 	if(base_state)
 		M = mutable_appearance(icon, "[base_state]")
 		M.dir = pick(GLOB.cardinals)
-		add_overlay(M)
+		. += M
 	M = mutable_appearance(icon, "branch-end[rand(1,2)]")
 	M.dir = dir
-	add_overlay(M)
+	. += M
 
 /obj/structure/flora/newbranch/Initialize()
 	. = ..()
@@ -237,27 +239,31 @@
 /obj/structure/flora/newbranch/connector
 	icon_state = "branch-extend"
 
-/obj/structure/flora/newbranch/connector/update_icon()
+/obj/structure/flora/newbranch/connector/update_icon_state()
 	icon_state = ""
-	cut_overlays()
+
+/obj/structure/flora/newbranch/connector/update_overlays()
+	. = ..()
 	var/mutable_appearance/M
 	if(base_state)
 		M = mutable_appearance(icon, "[base_state]")
 		M.dir = pick(GLOB.cardinals)
-		add_overlay(M)
+		. += M
 	M = mutable_appearance(icon, "branch-extend")
 	M.dir = dir
-	add_overlay(M)
+	. += M
 
 /obj/structure/flora/newbranch/leafless
 	base_state = FALSE
 
-/obj/structure/flora/newbranch/leafless/update_icon()
+/obj/structure/flora/newbranch/leafless/update_icon_state()
 	icon_state = ""
-	cut_overlays()
+
+/obj/structure/flora/newbranch/leafless/update_overlays()
+	. = ..()
 	var/mutable_appearance/M = mutable_appearance(icon, "branch-end[rand(1,2)]")
 	M.dir = dir
-	add_overlay(M)
+	. += M
 
 /// LEAF
 
@@ -274,6 +280,7 @@
 
 /obj/structure/flora/newleaf
 	name = "leaves"
+	desc = "You can see straight through this thicket of leaves to the ground. You'd have to possess a particular talent to walk over this without falling through."
 	icon = 'icons/roguetown/misc/tree.dmi'
 	icon_state = "center-leaf1"
 	density = FALSE

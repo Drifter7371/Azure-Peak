@@ -6,8 +6,9 @@
 	icon = 'icons/turf/walls/wall.dmi'
 	icon_state = "wall"
 	explosion_block = 1
+	flags_1 = CHECK_RICOCHET_1
 
-	baseturfs = list(/turf/open/floor/rogue/dirt/road)
+	baseturfs = /turf/open/floor/rogue/dirt/road
 
 	var/hardness = 40 //lower numbers are harder. Used to determine the probability of a hulk smashing through.
 	var/slicing_duration = 100  //default time taken to slice the wall
@@ -30,17 +31,6 @@
 /turf/closed/wall/attack_tk()
 	return
 
-/turf/closed/wall/handle_ricochet(obj/projectile/P)			//A huge pile of shitcode!
-	var/turf/p_turf = get_turf(P)
-	var/face_direction = get_dir(src, p_turf)
-	var/face_angle = dir2angle(face_direction)
-	var/incidence_s = GET_ANGLE_OF_INCIDENCE(face_angle, (P.Angle + 180))
-	if(abs(incidence_s) > 90 && abs(incidence_s) < 270)
-		return FALSE
-	var/new_angle_s = SIMPLIFY_DEGREES(face_angle + incidence_s)
-	P.setAngle(new_angle_s)
-	return TRUE
-
 /turf/closed/wall/turf_destruction()
 	visible_message("<span class='notice'>\The [src] crumbles!</span>")
 	if(thiefmessage)
@@ -50,6 +40,7 @@
 /turf/closed/wall/proc/dismantle_wall(devastated=0, explode=0)
 	playsound(src, 'sound/blank.ogg', 100, TRUE)
 	ScrapeAway()
+	QUEUE_SMOOTH_NEIGHBORS(src)
 
 /turf/closed/wall/proc/break_wall()
 //	new sheet_type(src, sheet_amount)
@@ -60,25 +51,64 @@
 //	if(girder_type)
 //		new /obj/item/stack/sheet/metal(src)
 
-/turf/closed/wall/ex_act(severity, target)
-	if(target == src)
-		dismantle_wall(1,1)
-		return
-	switch(severity)
-		if(1)
-			//SN src = null
-			var/turf/NT = ScrapeAway()
-			NT.contents_explosion(severity, target)
+/turf/closed/wall/ex_act(severity, target, epicenter, devastation_range, heavy_impact_range, light_impact_range, flame_range)
+	if(isnull(epicenter))
+		if(target == src)
+			dismantle_wall(1, 1)
 			return
-		if(2)
-			if (prob(50))
-				dismantle_wall(0,1)
-			else
-				dismantle_wall(1,1)
-		if(3)
-			if (prob(hardness))
-				dismantle_wall(0,1)
-	if(!density)
+			
+		switch(severity)
+			if(EXPLODE_DEVASTATE)
+				var/turf/NT = ScrapeAway()
+				NT.contents_explosion(severity, target)
+				return
+			if(EXPLODE_HEAVY)
+				if(prob(50))
+					dismantle_wall(0,1)
+				else
+					dismantle_wall(1,1)
+			if(EXPLODE_LIGHT)
+				if(prob(hardness))
+					dismantle_wall(0,1)
+		return
+	if(target == src)
+		dismantle_wall(1, 1)
+		return
+	var/ddist = max(0, devastation_range)
+	var/hdist = max(0, heavy_impact_range)
+	var/ldist = max(0, light_impact_range)
+	var/fdist = max(0, flame_range)
+
+	var/fodist = get_dist(src, epicenter)
+	var/dmgmod = CLAMP(round(rand(0.1, 2), 0.1), 0.1, 2)
+
+	var/brute_loss = 0
+	switch(severity)
+		if(EXPLODE_DEVASTATE) brute_loss = (1500 + 250*ddist) - (250*fodist)*dmgmod
+		if(EXPLODE_HEAVY)     brute_loss = (100*hdist) - (100*fodist)*dmgmod
+		if(EXPLODE_LIGHT)     brute_loss = (25*ldist) - (25*fodist)*dmgmod
+
+	if(fodist == 0)
+		brute_loss *= 2
+	brute_loss = max(0, brute_loss)
+
+	var/extra_integrity = 300
+	switch(severity)
+		if(EXPLODE_DEVASTATE) extra_integrity = 1000
+		if(EXPLODE_HEAVY)     extra_integrity = 400
+		if(EXPLODE_LIGHT)     extra_integrity = 200
+
+	var/total_damage = round(CLAMP(brute_loss + extra_integrity, 0, max_integrity))
+
+	if(total_damage > 0 && !QDELETED(src))
+		take_damage(total_damage, BRUTE, "blunt", 0)
+
+	if(fdist && !QDELETED(src))
+		var/stacks = max(0, (fdist - fodist) * 2)
+		if(stacks > 0)
+			fire_act(stacks)
+
+	if(!QDELETED(src) && !density)
 		..()
 
 /turf/closed/wall/attack_paw(mob/living/user)
@@ -99,7 +129,7 @@
 	if(.)
 		return
 	user.changeNext_move(CLICK_CD_MELEE)
-	to_chat(user, span_notice("I push the wall but nothing happens!"))
+	feel_turf(user)
 	playsound(src, 'sound/blank.ogg', 25, TRUE)
 	add_fingerprint(user)
 
@@ -169,7 +199,7 @@
 					var/inputty = stripped_input(user, "What would you like to engrave here?", "ENGRAVE THE CANT", null, 200)
 					if(inputty && !thiefmessage)
 						playsound(src, 'sound/items/wood_sharpen.ogg', 100)
-						var/obj/effect/track/thievescant/new_track = new(src)
+						var/obj/effect/track/thievescant/new_track = SStracks.get_track(/obj/effect/track/thievescant, src)
 						new_track.handle_creation(user, inputty)
 						thiefmessage = new_track
 						new_track.add_knower(user)

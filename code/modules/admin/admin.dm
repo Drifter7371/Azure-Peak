@@ -5,6 +5,11 @@
 		if(check_rights_for(C, R_ADMIN))
 			to_chat(C, msg)
 
+/proc/spawn_message_admins(msg)
+	msg = "<span class=\"admin\"><span class=\"prefix\">ADMIN LOG:</span> <span class=\"message linkify\">[msg]</span></span>"
+	for(var/client/C in GLOB.admins)
+		if(check_rights_for(C, R_ADMIN) && (C.prefs.admin_chat_toggles & CHAT_ADMINSPAWN))
+			to_chat(C, msg)
 
 /proc/relay_msg_admins(msg)
 	msg = "<span class=\"admin\"><span class=\"prefix\">RELAY:</span> <span class=\"message linkify\">[msg]</span></span>"
@@ -25,7 +30,7 @@
 	body += "html, body { height: 100%; margin: 0; padding: 0; overflow-x: hidden; }"
 	body += "#container { display: flex; flex-direction: row; align-items: flex-start; width: 100%; overflow-x: hidden; flex-wrap: nowrap; }"
 	body += "#left { flex: 2; padding-right: 10px; min-width: 0; }"
-	body += "#skills-section, #languages-section, #stats-section { display: none; background: white; border: 1px solid black; padding: 10px; width: 100%; box-sizing: border-box; max-width: 100%; overflow-x: hidden; word-wrap: break-word; }"
+	body += "#skills-section, #languages-section, #stats-section, #patron-section { display: none; background: white; border: 1px solid black; padding: 10px; width: 100%; box-sizing: border-box; max-width: 100%; overflow-x: hidden; word-wrap: break-word; }"
 	body += "#right { flex: 1; border-left: 2px solid black; padding-left: 10px; max-height: 500px; overflow-y: auto; width: 250px; min-width: 250px; box-sizing: border-box; position: relative; }"
 	body += "#right-header { display: flex; justify-content: space-around; padding: 5px; background: white; border-bottom: 2px solid black; position: sticky; top: 0; z-index: 10; }"
 	body += "#right-header button { flex: 1; margin: 2px; padding: 5px; cursor: pointer; font-weight: bold; border: none; background-color: #ddd; border-radius: 5px; }"
@@ -39,6 +44,7 @@
 	body += "    document.getElementById('skills-section').style.display = (section === 'skills') ? 'block' : 'none';"
 	body += "    document.getElementById('languages-section').style.display = (section === 'languages') ? 'block' : 'none';"
 	body += "	 document.getElementById('stats-section').style.display = (section === 'stats') ? 'block' : 'none';"
+	body += "    document.getElementById('patron-section').style.display = (section === 'patron') ? 'block' : 'none';"
 	body += "}"
 
 	body += "function refreshAndKeepSection(section) {"
@@ -89,6 +95,20 @@
 			var/mob/living/living = M
 			patron = initial(living.patron.name)
 		body += "<br><br>Current Patron: [patron]"
+
+		// Role and Advclass display
+		body += "<br>Role: [M.job ? M.job : "None"]"
+		body += "<br>Advclass: [M.advjob ? M.advjob : "None"]"
+
+		var/idstatus = "<br>ID Status: "
+		if(!M.ckey)
+			idstatus += "No key!"
+		else if(!M.check_agevet())
+			idstatus += "Unverified"
+		else
+			var/vetadmin = LAZYACCESS(GLOB.agevetted_list, M.ckey)
+			idstatus += "<b>Age Verified</b> by [vetadmin]"
+		body += idstatus
 
 		//Azure port. Incompatibility.
 		/*var/curse_string = ""
@@ -148,8 +168,10 @@
 	body += "<br><br>"
 	body += "<A href='?_src_=holder;[HrefToken()];traitor=[REF(M)]'>Traitor panel</A> | "
 	body += "<A href='?_src_=holder;[HrefToken()];narrateto=[REF(M)]'>Narrate to</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];subtlemessage=[REF(M)]'>Subtle message</A> | "
+	body += "<A href='?_src_=holder;[HrefToken()];subtlemessage=[REF(M)]'>Subtle message</A>"
 	//body += "<A href='?_src_=holder;[HrefToken()];languagemenu=[REF(M)]'>Language Menu</A>"
+	body += "<br><A href='?_src_=holder;[HrefToken()];heal_panel=[REF(M)]'>Heal Panel</A> | "
+	body += "<A href='?_src_=holder;[HrefToken()];inventory_panel=[REF(M)]'>Inventory Panel</A>"
 
 	body += "</div>"
 
@@ -158,20 +180,20 @@
 	body += "<button onclick=\"toggleSection('skills')\">Skills</button>"
 	body += "<button onclick=\"toggleSection('languages')\">Languages</button>"
 	body += "<button onclick=\"toggleSection('stats')\">Stats</button>"
+	body += "<button onclick=\"toggleSection('patron')\">Patron</button>"
 	body += "</div>"
 
 
 	body += "<div id='skills-section'>"
 	body += "<h3>Skills</h3><ul>"
-	if(M.mind)
-		for(var/skill_type in SSskills.all_skills)
-			var/datum/skill/skill = GetSkillRef(skill_type)
-			if(skill in M.skills?.known_skills)
-				body += "<li>[initial(skill.name)]: [M.skills?.known_skills[skill]] "
-			else
-				body += "<li>[initial(skill.name)]: 0"
-			body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];increase_skill=[REF(M)];skill=[skill.type]'>+</a> "
-			body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];decrease_skill=[REF(M)];skill=[skill.type]'>-</a></li>"
+	for(var/skill_type in SSskills.all_skills)
+		var/datum/skill/skill = GetSkillRef(skill_type)
+		var/skill_level = 0
+		if(skill in M.skills?.known_skills)
+			skill_level = M.skills?.known_skills[skill]
+		body += "<li>[initial(skill.name)]: <a href='?_src_=holder;[HrefToken()];set_skill=[REF(M)];skill=[skill.type]'>[skill_level]</a> "
+		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];increase_skill=[REF(M)];skill=[skill.type]'>+</a> "
+		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];decrease_skill=[REF(M)];skill=[skill.type]'>-</a></li>"
 	body += "</ul></div>"
 
 	body += "<div id='languages-section'>"
@@ -189,35 +211,53 @@
 	body += "<h3>Stats</h3><ul>"
 	if(isliving(M)) // Ensure M is a living mob
 		var/mob/living/living = M // Explicitly cast M to /mob/living
-		body += "<li>Strength: [living.STASTR] "
+		body += "<li>Strength: <a href='?_src_=holder;[HrefToken()];set_stat=[REF(M)];stat=strength'>[living.STASTR]</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];add_stat=[REF(M)];stat=strength'>+</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];lower_stat=[REF(M)];stat=strength'>-</a></li>"
 
-		body += "<li>Perception: [living.STAPER] "
+		body += "<li>Perception: <a href='?_src_=holder;[HrefToken()];set_stat=[REF(M)];stat=perception'>[living.STAPER]</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];add_stat=[REF(M)];stat=perception'>+</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];lower_stat=[REF(M)];stat=perception'>-</a></li>"
 
-		body += "<li>Endurance: [living.STAEND] "
-		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];add_stat=[REF(M)];stat=endurance'>+</a> "
-		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];lower_stat=[REF(M)];stat=endurance'>-</a></li>"
+		body += "<li>Willpower: <a href='?_src_=holder;[HrefToken()];set_stat=[REF(M)];stat=willpower'>[living.STAWIL]</a> "
+		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];add_stat=[REF(M)];stat=willpower'>+</a> "
+		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];lower_stat=[REF(M)];stat=willpower'>-</a></li>"
 
-		body += "<li>Constitution: [living.STACON] "
+		body += "<li>Constitution: <a href='?_src_=holder;[HrefToken()];set_stat=[REF(M)];stat=constitution'>[living.STACON]</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];add_stat=[REF(M)];stat=constitution'>+</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];lower_stat=[REF(M)];stat=constitution'>-</a></li>"
 
-		body += "<li>Intelligence: [living.STAINT] "
+		body += "<li>Intelligence: <a href='?_src_=holder;[HrefToken()];set_stat=[REF(M)];stat=intelligence'>[living.STAINT]</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];add_stat=[REF(M)];stat=intelligence'>+</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];lower_stat=[REF(M)];stat=intelligence'>-</a></li>"
 
-		body += "<li>Speed: [living.STASPD] "
+		body += "<li>Speed: <a href='?_src_=holder;[HrefToken()];set_stat=[REF(M)];stat=speed'>[living.STASPD]</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];add_stat=[REF(M)];stat=speed'>+</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];lower_stat=[REF(M)];stat=speed'>-</a></li>"
 
-		body += "<li>Luck: [living.STALUC] "
+		body += "<li>Luck: <a href='?_src_=holder;[HrefToken()];set_stat=[REF(M)];stat=fortune'>[living.STALUC]</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];add_stat=[REF(M)];stat=fortune'>+</a> "
 		body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];lower_stat=[REF(M)];stat=fortune'>-</a></li>"
 		body += "</ul>"
-
+		body += "</div>"
+		
+		// Patron Section
+		body += "<div id='patron-section'>"
+		body += "<h3>Patron</h3>"
+		body += "<p>Current: [living.patron ? initial(living.patron.name) : "None"]</p>"
+		body += "<ul>"
+		for(var/patron_type in GLOB.patronlist)
+			// Skip Undivided and Science patrons
+			if(patron_type == /datum/patron/divine/undivided || patron_type == /datum/patron/godless)
+				continue
+			var/datum/patron/P = GLOB.patronlist[patron_type]
+			// Skip if patron is null or has no name
+			if(!P || !initial(P.name))
+				continue
+			body += "<li>[initial(P.name)] "
+			body += "<a class='skill-btn' href='?_src_=holder;[HrefToken()];set_patron=[REF(M)];patron=[patron_type]'>Set</a></li>"
+		body += "</ul></div>"
+		
 
 		body += "</div>"
 		body += "</div>"
@@ -237,7 +277,7 @@
 	if(!check_rights())
 		return
 
-	M.fully_heal(admin_revive = TRUE)
+	M.fully_heal(admin_revive = TRUE, break_restraints = TRUE)
 	message_admins(span_danger("Admin [key_name_admin(usr)] healed [key_name_admin(M)]!"))
 	log_admin("[key_name(usr)] healed [key_name(M)].")
 
@@ -292,6 +332,7 @@
 	if(S)
 		M.remove_status_effect(S)
 		M.set_resting(FALSE, TRUE)
+		M.fallingas = FALSE
 	else
 		M.SetSleeping(999999)
 	message_admins(span_danger("Admin [key_name_admin(usr)] toggled [key_name_admin(M)]'s sleeping state!"))
@@ -347,7 +388,7 @@
 	if(!check_rights(R_ADMIN,0))
 		amt2change = CLAMP(amt2change, -20, 20)
 	var/raisin = stripped_input("State a short reason for this change", "Game Master", "", null)
-	if(!amt2change && !raisin)
+	if((!isnull(amt2change) && amt2change != 0) && !raisin)
 		return
 	adjust_playerquality(amt2change, ckey, admin, raisin)
 	to_chat(M.client, "<span class=\"admin\"><span class=\"prefix\">ADMIN LOG:</span> <span class=\"message linkify\">Your PQ has been adjusted by [amt2change] by [admin] for reason: [raisin]</span></span>")
@@ -877,5 +918,33 @@
 		if(S)
 			M.remove_status_effect(S)
 			M.set_resting(FALSE, TRUE)
+			M.fallingas = FALSE
 
 	message_admins("[key_name(usr)] used Toggle Wake In View.")
+
+GLOBAL_VAR_INIT(extend_round_timestamp, 0)
+/datum/admins/proc/extend_round()
+	set name = "Extend Round"
+	set category = "-Server-"
+	set hidden = FALSE
+
+	if(!check_rights(R_ADMIN))
+		return
+
+	if(alert("Prolong the end of the round by 30 minutes. This delays the vote, or delays the end after the vote is successful. Are you sure?",,"Yes","Cancel") == "Cancel")
+		return
+
+	if(world.time < GLOB.extend_round_timestamp + (1 MINUTES))
+		to_chat(usr, "<span class='notice'>Someone recently pressed this button! Wait a minute before pressing it again.</span>")
+		return
+
+	if((GLOB.round_timer > world.time + (3 * ROUND_EXTENSION_TIME)) || SSgamemode.round_ends_at - world.time > (3 * ROUND_EXTENSION_TIME))
+		to_chat(usr, "<span class='notice'>Failsafe! Round end is already over 3 times out! Ignoring.</span>")
+		return
+	if(SSgamemode.round_ends_at != 0) // End round is already ticking.
+		SSgamemode.round_ends_at += ROUND_EXTENSION_TIME
+	else //We push back the automated endround vote.
+		GLOB.round_timer = GLOB.round_timer + ROUND_EXTENSION_TIME
+	log_admin("[key_name(usr)] extended the round by 30 minutes.")
+	message_admins("[key_name(usr)] extended the round by 30 minutes.")
+	GLOB.extend_round_timestamp = world.time

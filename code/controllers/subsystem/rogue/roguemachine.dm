@@ -7,13 +7,19 @@ PROCESSING_SUBSYSTEM_DEF(roguemachine)
 	var/list/hermailers = list()
 	var/list/cameras = list()
 	var/list/scomm_machines = list()
+	var/list/broadcaster_machines = list()
 	var/list/stock_machines = list()
 	var/list/noticeboards = list()
 	var/hermailermaster
 	var/list/death_queue = list()
 	var/last_death_report
 	var/obj/item/clothing/head/roguetown/crown/serpcrown/crown
+	var/obj/item/rogueweapon/martyrweapon
 	var/obj/item/key
+	var/obj/structure/roguemachine/talkstatue/mercenary/mercenary_statue
+	var/list/mercenary_statues = list()
+
+	var/obj/structure/roguemachine/talkstatue/church/church_statue
 
 /datum/controller/subsystem/processing/roguemachine/fire(resumed = 0)
 	. = ..()
@@ -60,14 +66,3 @@ PROCESSING_SUBSYSTEM_DEF(roguemachine)
 	if(is_type_in_typecache(the_area.type, safe_areas))
 		return TRUE
 	return FALSE
-
-#ifdef TESTING
-/mob/living/verb/maxzcdec()
-	set category = "DEBUGTEST"
-	set name = "IsInRoguetown"
-	set desc = ""
-	if(is_in_roguetown(src))
-		to_chat(src, "\n<font color='purple'>IS IN</font>")
-	else
-		to_chat(src, "\n<font color='purple'>IS NOT IN</font>")
-#endif

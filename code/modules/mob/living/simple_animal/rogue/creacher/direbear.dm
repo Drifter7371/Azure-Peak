@@ -1,6 +1,7 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/direbear	//This way don't need new unqiue AI controller. Wolves are modular anyway.
 	icon = 'icons/roguetown/mob/monster/direbear.dmi'
 	name = "direbear"
+	desc = "Renowned as a symbol of strength and rebirth by followers of Dendor, these mighty beasts are said to sleep for months on end without ever starving. While highly sought for their furs and hides, these claim as many hunters as they are claimed by."
 	icon_state = "direbear"
 	icon_living = "direbear"
 	icon_dead = "direbear_dead"
@@ -21,12 +22,14 @@
 	perfect_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 3,
 									/obj/item/natural/hide = 3,
 									/obj/item/natural/fur/direbear = 2,
-									/obj/item/alch/sinew = 2, 
-									/obj/item/alch/bone = 1, 
+									/obj/item/alch/sinew = 2,
+									/obj/item/alch/bone = 1,
 									/obj/item/alch/viscera = 2,
-									/obj/item/natural/bone = 4,
-									/obj/item/natural/head/direbear = 1)
+									/obj/item/natural/bone = 4)
+	head_butcher = /obj/item/natural/head/direbear
 	faction = list("bears")		//This mf will kill undead - swapped to its own faction, doesn't trigger ambushes
+	threat_point = THREAT_DANGEROUS
+	ambush_faction = "wildlife"
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	melee_damage_lower = 50		// Ey, bo-bo!
 	melee_damage_upper = 60		// We're gonna take his pick-in-ick basket!
@@ -74,6 +77,7 @@
 
 /obj/effect/decal/remains/bear
 	name = "remains"
+	desc = "This appears to be the remains of a mighty direbear. Never have the greatest not fallen as assuredly as the meekest."
 	gender = PLURAL
 	icon_state = "bones"
 	icon = 'icons/roguetown/mob/monster/direbear.dmi'

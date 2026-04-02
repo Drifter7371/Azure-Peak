@@ -44,6 +44,10 @@
 				playsound(loc, 'sound/misc/beep.ogg', 100, FALSE, -1)
 				update_icon()
 				return attack_hand(user)
+	if(istype(P, /obj/item/roguecoin/aalloy))
+		return
+	if(istype(P, /obj/item/roguecoin/inqcoin))	
+		return			
 	if(istype(P, /obj/item/roguecoin))
 		budget += P.get_real_price()
 		qdel(P)
@@ -81,11 +85,14 @@
 				full_price = held_items[O]["PRICE"]
 			if(budget >= full_price)
 				budget -= full_price
+				record_round_statistic(STATS_PURITY_VALUE_SPENT, full_price)
 				recent_payments += held_items[O]["PRICE"]
 				if(!(drugrade_flags & DRUGRADE_NOTAX))
 					SStreasury.give_money_treasury(tax_amt, "purity import tax")
 					record_featured_stat(FEATURED_STATS_TAX_PAYERS, human_mob, tax_amt)
-					GLOB.azure_round_stats[STATS_TAXES_COLLECTED] += tax_amt
+					record_round_statistic(STATS_TAXES_COLLECTED, tax_amt)
+				else
+					record_round_statistic(STATS_TAXES_EVADED, tax_amt)
 			else
 				say("Not enough!")
 				return
@@ -219,7 +226,8 @@
 
 /obj/structure/roguemachine/drugmachine/obj_break(damage_flag)
 	..()
-	budget2change(budget)
+	var/turf/T = get_turf(src)
+	budget2change(budget, custom_turf = T)
 	set_light(0)
 	update_icon()
 	icon_state = "streetvendor0"
@@ -247,13 +255,25 @@
 	held_items[/obj/item/reagent_containers/powder/moondust] = list("PRICE" = rand(13,25),"NAME" = "moondust")
 	held_items[/obj/item/clothing/mask/cigarette/rollie/cannabis] = list("PRICE" = rand(12,18),"NAME" = "swampweed zig")
 	held_items[/obj/item/clothing/mask/cigarette/rollie/nicotine] = list("PRICE" = rand(5,10),"NAME" = "zig")
-/*	held_items[/obj/item/reagent_containers/glass/bottle/rogue/wine] = list("PRICE" = rand(35,77),"NAME" = "vino")
-	held_items[/obj/item/rogueweapon/huntingknife/idagger] = list("PRICE" = rand(20,33),"NAME" = "kinfe")
-	held_items[/obj/item/clothing/cloak/half] = list("PRICE" = rand(103,110),"NAME" = "black halfcloak")
-	held_items[/obj/item/clothing/gloves/roguetown/fingerless] = list("PRICE" = rand(16,31),"NAME" = "gloves with 6 holes")
-	held_items[/obj/item/clothing/head/roguetown/roguehood/black] = list("PRICE" = rand(43,45),"NAME" = "black hood")
-	held_items[/obj/item/gun/ballistic/revolver/grenadelauncher/crossbow] = list("PRICE" = rand(58,88),"NAME" = "crossed bow")
-	held_items[/obj/item/quiver/bolts] = list("PRICE" = rand(33,57),"NAME" = "quiver w/ bolts")*/
+	held_items[/obj/item/clothing/mask/cigarette/rollie/mentha] = list("PRICE" = rand(6,11),"NAME" = "mentha zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/blackberry ] = list("PRICE" = rand(13,18),"NAME" = "blackberry zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/apple] = list("PRICE" = rand(6,11),"NAME" = "apple zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/menthaapple] = list("PRICE" = rand(9,17),"NAME" = "mentha-apple zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/strawberry] = list("PRICE" = rand(15,20),"NAME" = "strawberry zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/carrot] = list("PRICE" = rand(6,11),"NAME" = "carrot zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/lime] = list("PRICE" = rand(6,11),"NAME" = "lime zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/salvia] = list("PRICE" = rand(6,11),"NAME" = "salvia zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/jacksberries] = list("PRICE" = rand(6,11),"NAME" = "jacksberries zig")
+	held_items[/obj/item/clothing/mask/cigarette/rollie/ziggara] = list("PRICE" = rand(20,35),"NAME" = "ziggara")
+	// azure peak addition start - lipstick
+	held_items[/obj/item/lipstick] = list("PRICE" = rand(33,50),"NAME" = "red lipstick")
+	held_items[/obj/item/lipstick/jade] = list("PRICE" = rand(33,50),"NAME" = "jade lipstick")
+	held_items[/obj/item/lipstick/purple] = list("PRICE" = rand(33,50),"NAME" = "purple lipstick")
+	held_items[/obj/item/lipstick/black] = list("PRICE" = rand(33,50),"NAME" = "black lipstick")
+	//azure peak addition - zigbox
+	held_items[/obj/item/storage/belt/rogue/pouch/zigarrete] = list("PRICE" = rand(5,10), "NAME" = "zigbox, empty")
+	held_items[/obj/item/reagent_containers/glass/bottle/alchemical/fermented_crab] = list("PRICE" = rand(50,70), "NAME" = "fermented crab")
+	// azure peak addition end
 
 #undef DRUGRADE_MONEYA
 #undef DRUGRADE_MONEYB

@@ -1,7 +1,7 @@
 /datum/time_of_day
 	var/name = ""
 	var/color = ""
-	var/start = 216000 // 6:00 am
+	var/start = 6 HOURS // 6:00 am
 
 /datum/time_of_day/dawn
 	name = "Dawn"
@@ -59,16 +59,21 @@ SUBSYSTEM_DEF(outdoor_effects)
 	                                                   new /datum/time_of_day/sunset(),
 	                                                   new /datum/time_of_day/dusk(),
 	                                                   new /datum/time_of_day/midnight())
+	var/alist/turf_weather_affectable_z_levels = alist()												   
+	var/next_day = FALSE // Resets when station_time is less than the next start time.
 
-
-
-/datum/controller/subsystem/outdoor_effects/proc/fullPlonk()
-	for (var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
-		for (var/turf/T in block(locate(1,1,z), locate(world.maxx,world.maxy,z)))
-			GLOB.SUNLIGHT_QUEUE_WORK += T
+// /datum/controller/subsystem/outdoor_effects/proc/fullPlonk()
+// 	for(var/zlevel in SSmapping.levels_by_trait(ZTRAIT_WEATHER_STUFF))
+// 		if(SSmapping.level_trait(zlevel, ZTRAIT_IGNORE_WEATHER_TRAIT))
+// 			continue
+// 		turf_weather_affectable_z_levels[zlevel] = TRUE
 
 /datum/controller/subsystem/outdoor_effects/Initialize(timeofday)
 	if(!initialized)
+		for(var/zlevel in SSmapping.levels_by_trait(ZTRAIT_WEATHER_STUFF))
+			if(SSmapping.level_trait(zlevel, ZTRAIT_IGNORE_WEATHER_TRAIT))
+				continue
+			turf_weather_affectable_z_levels[zlevel] = TRUE
 		get_time_of_day()
 		InitializeTurfs()
 		initialized = TRUE
@@ -80,21 +85,32 @@ SUBSYSTEM_DEF(outdoor_effects)
 	return ..()
 
 /datum/controller/subsystem/outdoor_effects/proc/InitializeTurfs(list/targets)
-	for (var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
-		init_z_turfs(z)
+	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		if(SSmapping.level_trait(z, ZTRAIT_IGNORE_WEATHER_TRAIT))
+			continue
+		GLOB.SUNLIGHT_QUEUE_WORK += Z_TURFS(z)
+	for(var/z in SSmapping.levels_by_trait(ZTRAIT_CENTCOM))
+		if(SSmapping.level_trait(z, ZTRAIT_IGNORE_WEATHER_TRAIT))
+			continue
+		GLOB.SUNLIGHT_QUEUE_WORK += Z_TURFS(z)
 
-/datum/controller/subsystem/outdoor_effects/proc/init_z_turfs(z)
-	for (var/turf/T in block(locate(1,1,z), locate(world.maxx,world.maxy,z)))
-		GLOB.SUNLIGHT_QUEUE_WORK += T
 
 /datum/controller/subsystem/outdoor_effects/proc/check_cycle()
-	if(station_time() > next_step_datum.start)
+	if(!next_step_datum)
 		get_time_of_day()
 		return TRUE
+
+	if(station_time() > next_step_datum.start)
+		if(next_day)
+			return FALSE
+		get_time_of_day()
+		return TRUE
+	else if (next_day) // It is now the next morning, reset our next day
+		next_day = FALSE
+
 	return FALSE
 
 /datum/controller/subsystem/outdoor_effects/proc/get_time_of_day()
-
 	//Set our current color as last_color so newly initialized sunlight screens have a color
 	if(current_step_datum)
 		last_color = picked_color
@@ -117,6 +133,10 @@ SUBSYSTEM_DEF(outdoor_effects)
 	current_step_datum = new_step
 	picked_color = pick(current_step_datum.color)
 
+	// If the next start time is less than the current start time (i.e 10 PM vs 5 AM) then set our NextDay value
+	if(next_step_datum.start <= current_step_datum.start)
+		next_day = TRUE
+
 	//If it is round-start, we wouldn't have had a current_step_datum, so set our last_color to the current one
 	if(!last_color)
 		last_color = picked_color
@@ -130,22 +150,23 @@ SUBSYSTEM_DEF(outdoor_effects)
 
 	//Add our weather particle obj to any new weather screens
 	if(SSParticleWeather.initialized)
-		for (i in 1 to weather_planes_need_vis.len)
-			var/atom/movable/screen/plane_master/weather_effect/W = weather_planes_need_vis[i]
-			if(W)
-				W.vis_contents = list(SSParticleWeather.getweatherEffect())
-			if(init_tick_checks)
-				CHECK_TICK
-			else if (MC_TICK_CHECK)
-				break
-		if (i)
-			weather_planes_need_vis.Cut(1, i+1)
-			i = 0
+		if(length(weather_planes_need_vis))
+			for (i in 1 to weather_planes_need_vis.len)
+				var/atom/movable/screen/plane_master/weather_effect/W = weather_planes_need_vis[i]
+				if(W)
+					W.vis_contents = list(SSParticleWeather.getweatherEffect())
+				if(init_tick_checks)
+					CHECK_TICK
+				else if (MC_TICK_CHECK)
+					break
+			if (i)
+				weather_planes_need_vis.Cut(1, i+1)
+				i = 0
 
 	for (i in 1 to GLOB.SUNLIGHT_QUEUE_WORK.len)
 		var/turf/T = GLOB.SUNLIGHT_QUEUE_WORK[i]
 		if(T)
-			T.get_sky_and_weather_states()
+			T.update_sky_and_weather_states()
 			if(T.outdoor_effect)
 				GLOB.SUNLIGHT_QUEUE_UPDATE += T.outdoor_effect
 
@@ -181,12 +202,13 @@ SUBSYSTEM_DEF(outdoor_effects)
 
 	for (i in 1 to GLOB.SUNLIGHT_QUEUE_CORNER.len)
 		var/turf/T = GLOB.SUNLIGHT_QUEUE_CORNER[i]
+		T.turf_flags &= ~TURF_SUNLIGHT_QUEUED
 		var/atom/movable/outdoor_effect/U = T.outdoor_effect
 
 		/* if we haven't initialized but we are affected, create new and check state */
 		if(!U)
 			T.outdoor_effect = new /atom/movable/outdoor_effect(T)
-			T.get_sky_and_weather_states()
+			T.update_sky_and_weather_states()
 			U = T.outdoor_effect
 
 			/* in case we aren't indoor somehow, wack us into the proc queue, we will be skipped on next indoor check */
@@ -234,10 +256,10 @@ SUBSYSTEM_DEF(outdoor_effects)
 		var/static/datum/lighting_corner/dummy/dummy_lighting_corner = new
 
 		var/list/corners = OE.source_turf.corners
-		var/datum/lighting_corner/cr = corners[3] || dummy_lighting_corner
-		var/datum/lighting_corner/cg = corners[2] || dummy_lighting_corner
-		var/datum/lighting_corner/cb = corners[4] || dummy_lighting_corner
-		var/datum/lighting_corner/ca = corners[1] || dummy_lighting_corner
+		var/datum/lighting_corner/cr = (corners && corners.len >= 3 && corners[3]) ? corners[3] : dummy_lighting_corner
+		var/datum/lighting_corner/cg = (corners && corners.len >= 2 && corners[2]) ? corners[2] : dummy_lighting_corner
+		var/datum/lighting_corner/cb = (corners && corners.len >= 4 && corners[4]) ? corners[4] : dummy_lighting_corner
+		var/datum/lighting_corner/ca = (corners && corners.len >= 1 && corners[1]) ? corners[1] : dummy_lighting_corner
 
 		var/fr = cr.sunFalloff
 		var/fg = cg.sunFalloff

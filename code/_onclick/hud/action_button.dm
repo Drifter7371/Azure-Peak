@@ -1,16 +1,41 @@
-#define ACTION_BUTTON_DEFAULT_BACKGROUND "default"
+#define AB_MAX_COLUMNS 12
 
 /atom/movable/screen/movable/action_button
 	var/datum/action/linked_action
+	var/datum/hud/our_hud
 	var/actiontooltipstyle = ""
 	screen_loc = null
+	nomouseover = FALSE
 
-	var/button_icon_state
-	var/appearance_cache
+	/// The icon state of our active overlay, used to prevent re-applying identical overlays
+	var/active_overlay_icon_state
+	/// The icon state of our active underlay, used to prevent re-applying identical underlays
+	var/active_underlay_icon_state
+
+	var/mutable_appearance/button_overlay
+
+	/// Where we are currently placed on the hud. SCRN_OBJ_DEFAULT asks the linked action what it thinks
+	var/location = SCRN_OBJ_DEFAULT
 	locked = TRUE
+	/// A unique bitflag, combined with the name of our linked action this lets us persistently remember any user changes to our position
 	var/id
 	var/ordered = TRUE //If the button gets placed into the default bar
-	nomouseover = FALSE
+	/// A weakref of the last thing we hovered over
+	var/datum/weakref/last_hovored_ref
+
+	/// AP: maptext holder for cooldown display on old proc_holder spells
+	var/atom/movable/screen/maptext_holder/maptext_holder
+
+/atom/movable/screen/movable/action_button/Destroy()
+	if(our_hud)
+		var/mob/viewer = our_hud.mymob
+		viewer?.client?.screen -= src
+		linked_action?.viewers -= our_hud
+		viewer?.update_action_buttons()
+		our_hud = null
+	linked_action = null
+	QDEL_NULL(maptext_holder)
+	return ..()
 
 /atom/movable/screen/movable/action_button/proc/can_use(mob/user)
 	if (linked_action)
@@ -44,7 +69,7 @@
 		return
 
 	var/list/modifiers = params2list(params)
-	if(modifiers["shift"])
+	if(modifiers["alt"])
 		if(locked)
 			to_chat(usr, span_warning("Action button \"[name]\" is locked, unlock it first."))
 			return TRUE
@@ -56,6 +81,17 @@
 		to_chat(usr, span_notice("Action button \"[name]\" [locked ? "" : "un"]locked."))
 		if(id && usr.client) //try to (un)remember position
 			usr.client.prefs.action_buttons_screen_locs["[name]_[id]"] = locked ? moved : null
+		return TRUE
+	if(modifiers["shift"])
+		var/datum/action/spell_action/SA = linked_action
+		if(istype(SA))
+			SA.examine(usr)
+		else
+			var/datum/action/cooldown/spell/v2_spell = linked_action
+			if(istype(v2_spell))
+				v2_spell.examine(usr)
+			else
+				examine_ui(usr)
 		return TRUE
 	if(usr.next_click > world.time)
 		return
@@ -114,9 +150,11 @@
 			usr.client.prefs.action_buttons_screen_locs["[name]_[id]"] = locked ? moved : null
 		return TRUE
 	if(modifiers["alt"])
-		for(var/V in usr.actions)
-			var/datum/action/A = V
-			var/atom/movable/screen/movable/action_button/B = A.button
+		var/datum/hud/usr_hud = usr.hud_used
+		for(var/datum/action/A as anything in usr.actions)
+			var/atom/movable/screen/movable/action_button/B = A.viewers[usr_hud]
+			if(!B)
+				continue
 			B.moved = FALSE
 			if(B.id && usr.client)
 				usr.client.prefs.action_buttons_screen_locs["[B.name]_[B.id]"] = null
@@ -139,9 +177,11 @@
 	usr.update_action_buttons()
 
 /atom/movable/screen/movable/action_button/hide_toggle/AltClick(mob/user)
-	for(var/V in user.actions)
-		var/datum/action/A = V
-		var/atom/movable/screen/movable/action_button/B = A.button
+	var/datum/hud/user_hud = user.hud_used
+	for(var/datum/action/A as anything in user.actions)
+		var/atom/movable/screen/movable/action_button/B = A.viewers[user_hud]
+		if(!B)
+			continue
 		B.moved = FALSE
 	if(moved)
 		moved = FALSE
@@ -165,13 +205,7 @@
 	else
 		. += hide_appearance
 
-/atom/movable/screen/movable/action_button/MouseEntered(location,control,params)
-	if(!QDELETED(src))
-		openToolTip(usr,src,params,title = name,content = desc,theme = actiontooltipstyle)
-	..()
-
 /atom/movable/screen/movable/action_button/MouseExited()
-	closeToolTip(usr)
 	..()
 
 /datum/hud/proc/get_action_buttons_icons()
@@ -186,10 +220,10 @@
 
 //see human and alien hud for specific implementations.
 
-/mob/proc/update_action_buttons_icon(status_only = FALSE)
-	for(var/X in actions)
-		var/datum/action/A = X
-		A.UpdateButtonIcon(status_only)
+/// Updates all action button icons for this mob.
+/mob/proc/update_mob_action_buttons(update_flags = ALL, force = FALSE)
+	for(var/datum/action/current_action as anything in actions)
+		current_action.build_all_button_icons(update_flags, force)
 
 //This is the proc used to update all the action buttons.
 /mob/proc/update_action_buttons(reload_screen)
@@ -202,14 +236,20 @@
 	var/button_number = 0
 
 	if(hud_used.action_buttons_hidden)
-		for(var/datum/action/A in actions)
-			A.button.screen_loc = null
+		for(var/datum/action/A as anything in actions)
+			A.build_all_button_icons()
+			var/atom/movable/screen/movable/action_button/B = A.viewers[hud_used]
+			if(!B)
+				continue
+			B.screen_loc = null
 			if(reload_screen)
-				client.screen += A.button
+				client.screen += B
 	else
-		for(var/datum/action/A in actions)
-			A.UpdateButtonIcon()
-			var/atom/movable/screen/movable/action_button/B = A.button
+		for(var/datum/action/A as anything in actions)
+			A.build_all_button_icons()
+			var/atom/movable/screen/movable/action_button/B = A.viewers[hud_used]
+			if(!B)
+				continue
 			if(B.ordered)
 				button_number++
 			if(B.moved)
@@ -218,21 +258,6 @@
 				B.screen_loc = hud_used.ButtonNumberToScreenCoords(button_number)
 			if(reload_screen)
 				client.screen += B
-
-//		if(!button_number)
-//			hud_used.hide_actions_toggle.screen_loc = null
-//			return
-
-//	if(!hud_used.hide_actions_toggle.moved)
-//		hud_used.hide_actions_toggle.screen_loc = hud_used.ButtonNumberToScreenCoords(button_number+1)
-//	else
-//		hud_used.hide_actions_toggle.screen_loc = hud_used.hide_actions_toggle.moved
-//	if(reload_screen)
-//		client.screen += hud_used.hide_actions_toggle
-
-
-
-#define AB_MAX_COLUMNS 12
 
 /datum/hud/proc/ButtonNumberToScreenCoords(number) // TODO : Make this zero-indexed for readabilty
 	var/row = round((number - 1)/AB_MAX_COLUMNS)
@@ -254,3 +279,31 @@
 	var/matrix/M = matrix()
 	M.Translate(x_offset,y_offset)
 	button.transform = M
+
+/atom/movable/screen/movable/action_button/proc/update_maptext(cd_time_deciseconds, color_cd = "#800000", color_neutral = "#ffffff")
+	if(!istype(maptext_holder))
+		maptext_holder = new(src)
+		vis_contents.Add(maptext_holder)
+
+	maptext_holder.update_maptext(cd_time_deciseconds, color_cd, color_neutral)
+
+/atom/movable/screen/maptext_holder
+	layer = ABOVE_HUD_LAYER
+	maptext_x = 8
+	maptext_y = 4
+
+/atom/movable/screen/maptext_holder/proc/update_maptext(cd_time_deciseconds, color_cd = "#800000", color_neutral = "#ffffff")
+	if(cd_time_deciseconds <= 0)
+		maptext = null
+		color = color_neutral
+		return
+	var/seconds_left = round(cd_time_deciseconds / (1 SECONDS), 0.1)
+	if(seconds_left >= 60)
+		var/mins = round(seconds_left / 60)
+		var/secs = round(seconds_left) % 60
+		maptext = MAPTEXT("[mins]:[secs < 10 ? "0[secs]" : "[secs]"]")
+	else
+		maptext = MAPTEXT("[seconds_left]s")
+	color = color_cd
+
+#undef AB_MAX_COLUMNS

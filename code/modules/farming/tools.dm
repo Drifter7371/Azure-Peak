@@ -2,9 +2,9 @@
 	force = 10
 	force_wielded = 15
 	possible_item_intents = list(MACE_STRIKE)
-	gripped_intents = list(/datum/intent/flailthresh,MACE_STRIKE)
+	gripped_intents = list(/datum/intent/flail/thresh, /datum/intent/flail/smash, MACE_STRIKE) 
 	name = "thresher"
-	desc = "A shredding tool for farmers."
+	desc = "A soilson's lyfeline, chiseled into a studded halflog that's tethered to a staff. It crushes produce into seeds, turns stalks into food, and melds the skulls of thieves into powdery debris."
 	icon_state = "flail"
 	icon = 'icons/roguetown/weapons/tools.dmi'
 	item_state = "mace_greyscale"
@@ -13,13 +13,15 @@
 	sharpness = IS_BLUNT
 	//dropshrink = 0.8
 	slot_flags = ITEM_SLOT_BACK
-	wlength = 33
+	wlength = WLENGTH_NORMAL
 	gripsprite = TRUE
 	drop_sound = 'sound/foley/dropsound/wooden_drop.ogg'
 	smeltresult = /obj/item/ingot/iron
+	swingsound = BLUNTWOOSH_LARGE
 
-/datum/intent/flailthresh
+/datum/intent/flail/thresh
 	name = "thresh"
+	desc = "Throttle stalks into fiber-and-food with a swift blow."
 	icon_state = "inthresh"
 	chargetime = 0
 	noaa = TRUE
@@ -27,9 +29,10 @@
 	misscost = 0
 	no_attack = TRUE
 
-/obj/item/rogueweapon/thresher/examine(mob/user)
+/obj/item/rogueweapon/thresher/get_mechanics_examine(mob/user)
 	. = ..()
-	. += span_notice("Use on STRIKE intent to break up produce for seeds. THRESH on stalks to beat out grains.")
+	. += span_notice("Left-click a piece of produce with the 'STRIKE' intent to mash it into seeds, which can be used to plant more crops.")
+	. += span_notice("Left-click harvested stalks with the 'THRESH' intent to shuck them, turning them into piles of useable fibers, grains, oats, and rice.")
 
 /obj/item/rogueweapon/thresher/getonmobprop(tag)
 	. = ..()
@@ -40,7 +43,7 @@
 			if("onbelt") return list("shrink" = 0.7,"sx" = 5,"sy" = 2,"nx" = -1,"ny" = 2,"wx" = 0,"wy" = 4,"ex" = 1,"ey" = 3,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 8,"sflip" = 0,"wflip" = 8,"eflip" = 0,"northabove" = 1,"southabove" = 0,"eastabove" = 0,"westabove" = 0)
 
 /obj/item/rogueweapon/thresher/afterattack(obj/target, mob/user, proximity)
-	if(user.used_intent.type == /datum/intent/flailthresh)
+	if(user.used_intent.type == /datum/intent/flail/thresh)
 		if(isturf(target.loc))
 			var/turf/T = target.loc
 			var/found = FALSE
@@ -57,12 +60,22 @@
 
 /obj/item/rogueweapon/thresher/aalloy
 	name = "decrepit thresher"
-	desc = "A withered old thresher. Aeon's grasp is upon it."
+	desc = "A thresher of wrought bronze; from when the wheat was plentiful, and when Man wasn't burdened with the weight of sin."
 	force = 5
 	force_wielded = 7
 	icon_state = "athresh"
 	smeltresult = /obj/item/ingot/aalloy
+	color = "#bb9696"
+	sellprice = 15
 
+/obj/item/rogueweapon/thresher/bronze
+	name = "bronze thresher"
+	desc = "Threshed stalks beget grains to eat, and stricken grains beget seeds to grow. This cycle, humble as it is, is the sole reason why Psydonia's many inhabitants still lyve todae."
+	force = 15
+	force_wielded = 20
+	icon_state = "bronzethresh"
+	smeltresult = /obj/item/ingot/bronze
+	max_integrity = 300
 
 /obj/item/rogueweapon/sickle
 	force = 10
@@ -76,14 +89,14 @@
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	sharpness = IS_SHARP
 	//dropshrink = 0.8
-	wlength = 10
+	wlength = WLENGTH_SHORT
 	slot_flags = ITEM_SLOT_HIP
-	max_blade_int = 50
+	max_blade_int = 300
 	smeltresult = /obj/item/ingot/iron
 
 /obj/item/rogueweapon/sickle/examine(mob/user)
 	. = ..()
-	. += span_notice("Use on any plant to instantly harvest it. HERBS turn to fiber when attacked.")
+	. += span_notice("Left-click a crop, plant, or bushel of herbs to instantly harvest them. Lone herbs can be left-clicked again to turn them into fibers.")
 
 /obj/item/rogueweapon/sickle/getonmobprop(tag)
 	. = ..()
@@ -94,7 +107,19 @@
 
 /obj/item/rogueweapon/sickle/aalloy
 	name = "decrepit sickle"
+	desc = "Her thought was simple; to seperate the wheat from the chaff. By removing the limitations set upon one's spirit by lyfe, only then could divinity be obtained. She was correct - yet Her ascension had gone terribly awry, all-the-same."
 	icon_state = "asickle"
+	color = "#bb9696"
+	sellprice = 15
+	smeltresult = /obj/item/ingot/aaslag
+
+/obj/item/rogueweapon/sickle/bronze
+	name = "bronze sickle"
+	desc = "Wheat from the chaff, flesh from the bone. Carve a meal from the stalks, and cultivate your own kingdom upon the soil."
+	force = 15
+	icon_state = "bronzesickle"
+	smeltresult = /obj/item/ingot/bronze
+	max_integrity = 300
 
 /obj/item/rogueweapon/sickle/copper
 	name = "copper sickle"
@@ -105,9 +130,9 @@
 	force = 10
 	force_wielded = 15
 	possible_item_intents = list(/datum/intent/pick)
-	gripped_intents = list(/datum/intent/pick,SPEAR_BASH,TILL_INTENT)
+	gripped_intents = list(TILL_INTENT, /datum/intent/pick, SPEAR_BASH)
 	name = "hoe"
-	desc = "A tool for tiling soil. It's all dirty and worn."
+	desc = "A humble tool for humble tillage. Would you be more concerned if it wasn't dirty and worn?"
 	icon_state = "hoe"
 	slot_flags = ITEM_SLOT_BACK
 	icon = 'icons/roguetown/weapons/tools.dmi'
@@ -116,7 +141,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/polearms_righthand.dmi'
 	sharpness = IS_BLUNT
 	//dropshrink = 0.8
-	wlength = 33
+	wlength = WLENGTH_NORMAL
 	drop_sound = 'sound/foley/dropsound/wooden_drop.ogg'
 	smeltresult = /obj/item/ingot/iron
 	var/hoe_damage = null //the durability damage recieved for every work cycle
@@ -124,19 +149,31 @@
 
 /obj/item/rogueweapon/hoe/aalloy
 	name = "decrepit hoe"
+	desc = "Food is what cultivates lyfe; and without lyfe, there would be nothing left. At least, that is what His children would want you to believe."
 	icon_state = "ahoe"
 	smeltresult = /obj/item/ingot/aalloy
+	color = "#bb9696"
+	sellprice = 15
 
 /obj/item/rogueweapon/hoe/copper
 	name = "copper hoe"
 	icon_state = "choe"
 	smeltresult = /obj/item/ingot/copper
 
+/obj/item/rogueweapon/hoe/bronze
+	force = 15
+	force_wielded = 20
+	name = "bronze hoe"
+	desc = "Till the soil, so that it may receive your seed. Alongside the sickle and thresher, it forms the holy trinity of agriculturality. Don't ask about the pitchfork."
+	icon_state = "bronzehoe"
+	smeltresult = /obj/item/ingot/bronze
+	max_integrity = 300
+
 /obj/item/rogueweapon/hoe/stone
 	force = 7
 	force_wielded = 12
 	name = "stone hoe"
-	desc = "A makeshift hoe made out of stone, brittle."
+	desc = "A makeshift hoe made out of stone, aeons late to the art of cultivation."
 	icon_state = "stonehoe"
 	//dropshrink = 0.8
 	smeltresult = null
@@ -145,9 +182,10 @@
 	hoe_damage = 25
 	work_time = 15 SECONDS
 
-/obj/item/rogueweapon/hoe/examine(mob/user)
+/obj/item/rogueweapon/hoe/get_mechanics_examine(mob/user)
 	. = ..()
-	. += span_notice("TILT intent allows you to make new plots for plants. Using it (on any intent) on a plot that already has something planted removes WEEDS.")
+	. += span_notice("Left-clicking a patch of dirt on the 'TILL' intent allows you to make a new plot, fit for planting-and-farming crops.")
+	. += span_notice("Left-clicking a plot with crops already planted on it will attempt to remove any weeds present. A deweeded crop is a healthy crop!")
 
 /obj/item/rogueweapon/hoe/getonmobprop(tag)
 	. = ..()
@@ -247,6 +285,7 @@
 
 /datum/intent/till
 	name = "hoe"
+	desc = "Till dirt into soil, and tear weeds from crops with a swift motion."
 	icon_state = "inhoe"
 	chargetime = 0
 	noaa = TRUE
@@ -274,13 +313,12 @@
 	..()
 */
 /obj/item/rogueweapon/pitchfork
-
 	force = 10
 	force_wielded = 15
 	possible_item_intents = list(SPEAR_BASH)
-	gripped_intents = list(SPEAR_BASH,SPEAR_THRUST,DUMP_INTENT)
+	gripped_intents = list(DUMP_INTENT, SPEAR_BASH, SPEAR_THRUST)
 	name = "pitchfork"
-	desc = "Iron tines on a sturdy shaft essential for farmlike labour."
+	desc = "A thrice-pronged staff that scoops crops, nitesoil, and refuse without further dirtying one's hands. It pairs quite nicely with a lit torch, whenever the need to hunt vile creechers and lords arises."
 	icon_state = "pitchfork"
 	icon = 'icons/roguetown/weapons/tools.dmi'
 	item_state = "pitchfork"
@@ -289,15 +327,17 @@
 	sharpness = IS_BLUNT
 	associated_skill = /datum/skill/combat/polearms
 	//dropshrink = 0.8
-	wlength = 33
+	wlength = WLENGTH_GREAT
 	var/list/forked = list()
 	slot_flags = ITEM_SLOT_BACK
 	drop_sound = 'sound/foley/dropsound/wooden_drop.ogg'
 	smeltresult = /obj/item/ingot/iron
 
-/obj/item/rogueweapon/pitchfork/examine(mob/user)
+/obj/item/rogueweapon/pitchfork/get_mechanics_examine(mob/user)
 	. = ..()
-	. += span_notice("Use RIGHT CLICK to flip compost in the bin. While wielded SCOOP intent allows you to pick up large amount (19) stalks.")
+	. += span_notice("Right-click a composter to flip it around. This helps to accelerate the transformation of compost into fertilizer, which can be used to improve the health of many crops.")
+	. += span_notice("Left-click with the 'SCOOP' intent selected to gather stalks. A single pitchfork can hold up to nineteen pieces of such at any given time.")
+	. += span_notice("Once gathered, left-clicking an adjacent tile or unwielding the pitchfork will dump all gathered stalks out onto it.")
 
 /obj/item/rogueweapon/pitchfork/getonmobprop(tag)
 	. = ..()
@@ -309,21 +349,29 @@
 
 /obj/item/rogueweapon/pitchfork/aalloy
 	name = "decrepit pitchfork"
+	desc = "Do not fault the layman for fearing Her disciples, nor for driving them out of the villages with pitchforks-and-torches. They, too, will come to see the blessings of Zizo, all in due tyme." 
 	icon_state = "apitchfork"
 	smeltresult = /obj/item/ingot/aalloy
+	color = "#bb9696"
+	sellprice = 15
+
+/obj/item/rogueweapon/pitchfork/bronze
+	force = 15
+	force_wielded = 20
+	name = "bronze pitchfork"
+	desc = "'Ah, there you are! I tell you, the others simply do not appreciate the labors I pull to keep their hands clean. I'd like to see a hoe try to scoop a whole cart's worth of wheat on its own - see how that fares!'"
+	icon_state = "bronzepitchfork"
+	smeltresult = /obj/item/ingot/bronze
+	max_integrity = 300
 
 /obj/item/rogueweapon/pitchfork/copper
 	name = "copper pitchfork"
-	icon = 'icons/roguetown/weapons/64.dmi'
-	pixel_y = -16
-	pixel_x = -16
-	inhand_x_dimension = 64
-	inhand_y_dimension = 64
-	icon_state = "cfork"
+	icon_state = "cpitchfork"
 	smeltresult = /obj/item/ingot/copper
 
 /datum/intent/pforkdump
 	name = "scoop"
+	desc = "Gather stalks, compost, and other refuse without needing to get your hands dirty."
 	icon_state = "inscoop"
 	chargetime = 0
 	noaa = TRUE
@@ -334,7 +382,7 @@
 /obj/item/rogueweapon/pitchfork/afterattack(obj/target, mob/user, proximity)
 	if((!proximity) || (!wielded))
 		return ..()
-	testing("fuck")
+
 	if(isopenturf(target))
 		if(forked.len)
 			for(var/obj/item/I in forked)

@@ -20,7 +20,14 @@
 	drop_sound = 'sound/foley/dropsound/shovel_drop.ogg'
 	smeltresult = /obj/item/ingot/iron
 	associated_skill = /datum/skill/combat/axes		//Not an axe but fuck it - you're logging anyway.
-	max_blade_int = 50
+	max_blade_int = 300
+
+/obj/item/rogueweapon/handsaw/bronze
+	name = "bronze handsaw"
+	icon_state = "bronzehandsaw"
+	desc = "The serrated half of a bronzen pair, keen to saw away at its problems."
+	max_blade_int = 400
+	smeltresult = /obj/item/ingot/bronze
 
 //................	Chisel	............... //
 /obj/item/rogueweapon/chisel
@@ -44,7 +51,7 @@
 	swingsound = list('sound/combat/wooshes/blunt/shovel_swing.ogg','sound/combat/wooshes/blunt/shovel_swing2.ogg')
 	drop_sound = 'sound/foley/dropsound/shovel_drop.ogg'
 	associated_skill = /datum/skill/combat/knives	//Not a knife but kinda similar to etching so..
-	max_blade_int = 50
+	max_blade_int = 300
 	dropshrink = 0.9
 	var/already_assembled
 
@@ -98,6 +105,101 @@
 		qdel(src)
 		return
 
+	else if(istype(W, /obj/item/rogueweapon/hammer/blacksteel))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/hammerblacksteel/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
+	else if(istype(W, /obj/item/rogueweapon/hammer/bronze))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/hammerbronze/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
+//
+
+/obj/item/rogueweapon/chisel/bronze
+	name = "bronze chisel"
+	desc = "The blunted half of a bronzen pair, for issues requiring a steady trepanning. Add something to strike it with before doing stonework, like a mallet or a stone."
+	max_blade_int = 400
+	icon_state = "bronzechisel"
+	smeltresult = /obj/item/ingot/bronze
+
+/obj/item/rogueweapon/chisel/bronze/attackby(obj/item/W, mob/living/user, params)
+	. = ..()
+	if(already_assembled)
+		return
+
+	if(istype(W,/obj/item/natural/stoneblock))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/stoneblock/bronze/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
+	else if(istype(W,/obj/item/natural/stone))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/stone/bronze/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
+	else if(istype(W, /obj/item/rogueweapon/hammer/steel))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/hammerclaw/bronze/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
+	else if(istype(W, /obj/item/rogueweapon/hammer/iron))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/hammer/bronze/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
+	else if(istype(W, /obj/item/rogueweapon/hammer/wood))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/mallet/bronze/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
+	else if(istype(W, /obj/item/rogueweapon/hammer/bronze))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/hammerbronze/bronze/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
+	else if(istype(W, /obj/item/rogueweapon/hammer/blacksteel))
+		playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+		user.visible_message("<span class='info'>[user] adds a striking tool to the chisel set.</span>")
+		var/obj/item/rogueweapon/chisel/assembly/hammerblacksteel/bronze/F = new(src.loc)
+		qdel(W)
+		user.put_in_hands(F)
+		qdel(src)
+		return
+
 //................	Chisel toolset	............... //
 /obj/item/rogueweapon/chisel/assembly	// template
 	name = "chisel set"
@@ -132,9 +234,22 @@
 	qdel(src)
 	user.put_in_hands(F)
 
+/obj/item/rogueweapon/chisel/assembly/hammerbronze
+	icon_state = "chiselbronzeh"
+	item_state = "hammer_bronze"
+
+/obj/item/rogueweapon/chisel/assembly/hammerbronze/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/F = new(user.loc)
+	var/obj/item/rogueweapon/hammer/bronze/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
 /obj/item/rogueweapon/chisel/assembly/hammerclaw
 	icon_state = "chiselc"
 	item_state = "hammer_s"
+
 /obj/item/rogueweapon/chisel/assembly/hammerclaw/attack_right(mob/user)
 	var/obj/item/rogueweapon/chisel/F = new(user.loc)
 	var/obj/item/rogueweapon/hammer/steel/E = new(user.loc)
@@ -143,9 +258,22 @@
 	qdel(src)
 	user.put_in_hands(F)
 
+/obj/item/rogueweapon/chisel/assembly/hammerblacksteel
+	icon_state = "chiselbh"
+	item_state = "bs_masterhammer"
+
+/obj/item/rogueweapon/chisel/assembly/hammerblacksteel/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/F = new(user.loc)
+	var/obj/item/rogueweapon/hammer/blacksteel/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
 /obj/item/rogueweapon/chisel/assembly/stone
 	icon_state = "chisels"
 	item_state = "stone"
+
 /obj/item/rogueweapon/chisel/assembly/stone/attack_right(mob/user)
 	var/obj/item/rogueweapon/chisel/F = new(user.loc)
 	var/obj/item/natural/stone/E = new(user.loc)
@@ -157,6 +285,7 @@
 /obj/item/rogueweapon/chisel/assembly/stoneblock
 	icon_state = "chiselb"
 	item_state = "block"
+
 /obj/item/rogueweapon/chisel/assembly/stoneblock/attack_right(mob/user)
 	var/obj/item/rogueweapon/chisel/F = new(user.loc)
 	var/obj/item/natural/stoneblock/E = new(user.loc)
@@ -165,6 +294,93 @@
 	qdel(src)
 	user.put_in_hands(F)
 
+//
+
+/obj/item/rogueweapon/chisel/assembly/mallet/bronze
+	icon_state = "bronzechiselm"
+	item_state = "hammer_w"
+
+/obj/item/rogueweapon/chisel/assembly/mallet/bronze/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/bronze/F = new(user.loc)
+	var/obj/item/rogueweapon/hammer/wood/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
+/obj/item/rogueweapon/chisel/assembly/hammer/bronze
+	icon_state = "bronzechiselh"
+	item_state = "hammer_i"
+
+/obj/item/rogueweapon/chisel/assembly/hammer/bronze/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/bronze/F = new(user.loc)
+	var/obj/item/rogueweapon/hammer/iron/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
+/obj/item/rogueweapon/chisel/assembly/hammerclaw/bronze
+	icon_state = "bronzechiselc"
+	item_state = "hammer_s"
+
+/obj/item/rogueweapon/chisel/assembly/hammerclaw/bronze/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/bronze/F = new(user.loc)
+	var/obj/item/rogueweapon/hammer/steel/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
+/obj/item/rogueweapon/chisel/assembly/hammerblacksteel/bronze
+	icon_state = "bronzechiselbh"
+	item_state = "bs_masterhammer"
+
+/obj/item/rogueweapon/chisel/assembly/hammerblacksteel/bronze/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/bronze/F = new(user.loc)
+	var/obj/item/rogueweapon/hammer/blacksteel/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
+/obj/item/rogueweapon/chisel/assembly/hammerbronze/bronze
+	icon_state = "bronzechiselbronzeh"
+	item_state = "hammer_bronze"
+
+/obj/item/rogueweapon/chisel/assembly/hammerbronze/hammer/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/bronze/F = new(user.loc)
+	var/obj/item/rogueweapon/hammer/bronze/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
+/obj/item/rogueweapon/chisel/assembly/stone/bronze
+	icon_state = "bronzechisels"
+	item_state = "stone"
+
+/obj/item/rogueweapon/chisel/assembly/stone/bronze/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/bronze/F = new(user.loc)
+	var/obj/item/natural/stone/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
+/obj/item/rogueweapon/chisel/assembly/stoneblock/bronze
+	icon_state = "bronzechiselb"
+	item_state = "block"
+
+/obj/item/rogueweapon/chisel/assembly/stoneblock/bronze/attack_right(mob/user)
+	var/obj/item/rogueweapon/chisel/bronze/F = new(user.loc)
+	var/obj/item/natural/stoneblock/E = new(user.loc)
+	user.put_in_hands(E)
+	playsound(get_turf(user.loc), 'sound/foley/brickdrop.ogg', 100)
+	qdel(src)
+	user.put_in_hands(F)
+
+//
 
 /datum/intent/chisel
 	name = "chisel"
@@ -176,3 +392,5 @@
 	blade_class = BCLASS_CHISEL
 	chargetime = 0
 	swingdelay = 3
+
+#undef BCLASS_CHISEL

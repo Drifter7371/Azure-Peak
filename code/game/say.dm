@@ -18,7 +18,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	"[FREQ_CTF_BLUE]" = "blueteamradio"
 	))
 
-/atom/movable/proc/say(message, bubble_type, list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null)
+/atom/movable/proc/say(message, bubble_type, list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null, message_range = 7, message_mode = null)
 	if(!can_speak())
 		return
 	if(message == "" || !message)
@@ -26,7 +26,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	spans |= speech_span
 	if(!language)
 		language = get_default_language()
-	send_speech(message, 7, src, , spans, message_language=language)
+	send_speech(message, message_range, src, , spans, message_language=language, message_mode = message_mode)
 
 /atom/movable/proc/Hear(message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, message_mode)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_HEAR, args)
@@ -36,9 +36,12 @@ GLOBAL_LIST_INIT(freqtospan, list(
 
 /atom/movable/proc/send_speech(message, range = 7, obj/source = src, bubble_type, list/spans, datum/language/message_language = null, message_mode)
 	var/rendered = compose_message(src, message_language, message, , spans, message_mode)
-	for(var/_AM in get_hearers_in_view(range, source))
-		var/atom/movable/AM = _AM
-		AM.Hear(rendered, src, message_language, message, , spans, message_mode)
+	for(var/atom/movable/hearing_movable as anything in get_hearers_in_view(range, source))
+		if(!hearing_movable) // Should not get nulls, but just in case.
+			stack_trace("somehow theres a null returned from get_hearers_in_view() in send_speech!")
+			continue
+
+		hearing_movable.Hear(rendered, src, message_language, message, , spans, message_mode)
 
 /atom/movable/proc/compose_message(atom/movable/speaker, datum/language/message_language, raw_message, radio_freq, list/spans, message_mode, face_name = FALSE)
 	//This proc uses text() because it is faster than appending strings. Thanks BYOND.
@@ -64,14 +67,23 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	//End name span.
 	var/endspanpart = "</span></span>"
 
+	var/list/processed_spans = handle_language_spans(length(spans) ? spans.Copy() : null)
+
 	//Message
-	var/messagepart = " <span class='message'>[lang_treat(speaker, message_language, raw_message, spans, message_mode)]</span></span>"
+	var/messagepart = " <span class='message'>[lang_treat(speaker, message_language, raw_message, processed_spans, message_mode)]</span></span>"
 
 	var/arrowpart = ""
 
 	if(istype(src,/mob/living))
+		var/atom/movable/tocheck = src
+		// Check relay instead.
+		if(isdullahan(src))
+			var/mob/living/carbon/human = src
+			var/datum/species/dullahan/dullahan = human.dna.species
+			if(dullahan.headless)
+				tocheck = dullahan.my_head
 		var/turf/speakturf = get_turf(speaker)
-		var/turf/sourceturf = get_turf(src)
+		var/turf/sourceturf = get_turf(tocheck)
 		if(istype(speakturf) && istype(sourceturf) && !(speakturf in get_hear(7, sourceturf)))
 			switch(get_dir(src,speaker))
 				if(NORTH)
@@ -94,7 +106,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 				arrowpart += " ⇈"
 			if(speakturf.z < sourceturf.z)
 				arrowpart += " ⇊"
-			
+
 			var/hidden = TRUE
 			if(HAS_TRAIT(src, TRAIT_KEENEARS))
 				if(ishuman(speaker) && ishuman(src))
@@ -110,7 +122,10 @@ GLOBAL_LIST_INIT(freqtospan, list(
 			else
 				hidden = TRUE
 			if(hidden)
-				if(istype(speaker, /mob/living))
+				if(ishuman(speaker))
+					var/mob/living/carbon/human/human = speaker
+					namepart = human.get_alt_name(TRUE)
+				else if(isliving(speaker))
 					var/mob/living/L = speaker
 					namepart = "Unknown [(L.gender == FEMALE) ? "Woman" : "Man"]"
 				else
@@ -118,11 +133,37 @@ GLOBAL_LIST_INIT(freqtospan, list(
 			spanpart1 = "<span class='smallyell'>"
 
 	var/languageicon = ""
-	var/datum/language/D = GLOB.language_datum_instances[message_language]
-	if(istype(D) && D.display_icon(src))
-		languageicon = "[D.get_icon()] "
+	if(message_language && show_language_icon())
+		var/datum/language/D = GLOB.language_datum_instances[message_language]
+		if(istype(D) && D.display_icon(src))
+			languageicon = SPAN_TOOLTIP_DANGEROUS_HTML("<b>[D.name]</b>[D.desc ? "<br>" + D.desc : ""]", "<span style=\"position: relative; bottom: 4px;\">[D.get_icon()] </span>")
 
 	return "[spanpart1][spanpart2][colorpart][freqpart][languageicon][compose_track_href(speaker, namepart)][namepart][compose_job(speaker, message_language, raw_message, radio_freq)][arrowpart][endspanpart][messagepart]"
+
+/atom/movable/proc/handle_language_spans(list/spans)
+	return spans
+
+/mob/handle_language_spans(list/spans)
+	if(client?.prefs?.no_language_fonts)
+		for(var/language_span in LANGUAGE_SPANS)
+			spans -= language_span
+	return spans
+
+/atom/movable/proc/show_language_icon()
+	return TRUE
+
+/mob/show_language_icon(list/spans)
+	if(client?.prefs?.no_language_icon)
+		return FALSE
+	return TRUE
+
+/atom/movable/proc/show_redflash()
+	return TRUE
+
+/mob/show_redflash()
+	if(client?.prefs?.no_redflash)
+		return FALSE
+	return TRUE
 
 /atom/movable/proc/compose_track_href(atom/movable/speaker, message_langs, raw_message, radio_freq)
 	return ""

@@ -7,7 +7,7 @@
 	hud_possible = list(ANTAG_HUD)
 	hud_type = /datum/hud/human
 	base_intents = list(INTENT_HELP, INTENT_DISARM, INTENT_GRAB, INTENT_HARM)
-	possible_mmb_intents = list(INTENT_STEAL, INTENT_JUMP, INTENT_KICK, INTENT_BITE, INTENT_GIVE)
+	possible_mmb_intents = list(INTENT_SPECIAL, INTENT_JUMP, INTENT_KICK, INTENT_BITE, INTENT_GIVE)
 	can_buckle = TRUE
 	buckle_lying = FALSE
 	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
@@ -46,9 +46,9 @@
 	var/accessory = "None"
 	var/detail = "None"
 	var/marking = "None"
-
+	
 	var/shavelevel = 0
-
+	var/breathe_tick = 0 // Used for gas mask delays.
 	var/socks = "Nude" //Which socks the player wants
 	var/backpack = DBACKPACK		//Which backpack type the player has chosen.
 	var/jumpsuit_style = PREF_SUIT		//suit/skirt
@@ -60,8 +60,8 @@
 	var/obj/item/belt = null
 	var/obj/item/beltl = null
 	var/obj/item/beltr = null
-	var/obj/item/wear_ring = null
-	var/obj/item/wear_wrists = null
+	var/obj/item/clothing/wear_ring = null
+	var/obj/item/clothing/wear_wrists = null
 	var/obj/item/r_store = null
 	var/obj/item/l_store = null
 	var/obj/item/s_store = null
@@ -71,6 +71,9 @@
 	var/special_voice = "" // For changing our voice. Used by a symptom.
 
 	var/name_override //For temporary visible name changes
+
+	var/merctype = 0 // Used for mercenary backgrounds - check mail.dm
+	var/tokenclaimed = FALSE // Check for having received my medal. FUTURE: Persistent medals.
 
 	var/datum/physiology/physiology
 
@@ -105,18 +108,34 @@
 	var/funeral = FALSE // Whether the body has received rites or not.
 
 	var/datum/devotion/devotion = null // Used for cleric_holder for priests
+	var/datum/inspiration/inspiration = null
 
 	var/headshot_link = null
+	var/standard_headshot_link = null //used to store headshots when swapping for antag ones
 	var/flavortext = null
-	var/flavortext_display = null
+	/// For setpose
+	var/pose_text = ""
 	var/ooc_notes = null
-	var/ooc_notes_display = null
-	var/ooc_extra_link
 	var/ooc_extra
-	var/is_legacy = FALSE
+	var/rumour = null
+	var/noble_gossip = null
+	var/song_title
+	var/song_artist
 	var/received_resident_key = FALSE
+	var/nsfwflavortext = null
+	var/erpprefs = null
 
-	var/has_confessed = FALSE // Used to track if they have confessed it was written onto a confession paper
+	// Cached version
+	var/flavortext_cached = ""
+	var/nsfwflavortext_cached = ""
+	var/ooc_notes_cached = ""
+	var/erpprefs_cached = ""
+
+	/// Per-character theme override for examine panel viewers
+	var/examine_theme
+	var/list/img_gallery = list()
+	var/list/nsfw_img_gallery = list()
+	
 
 	possible_rmb_intents = list(/datum/rmb_intent/feint,\
 	/datum/rmb_intent/aimed,\
@@ -131,6 +150,61 @@
 	var/datum/statpack/statpack = null // Lethalstone Port - statpacks for greater customization
 	var/second_voice	// Virtue-specific. Can be swapped to / from and changed.
 	var/original_voice
+	//setting up vars for vampire color values
+	var/vampire_skin = null
+	var/vampire_eyes = null
+	var/vampire_hair = null
+	var/vampire_ears = null
+	//An alternative headshot link that can be used when users want to use it for a special role like while a vampire, werewolf, bandit, etc.
+	var/vampire_headshot_link
+	var/lich_headshot_link
+	//setting up the hooks for this, but not shown yet
+	var/werewolf_headshot_link
 
 	/// Whether our FOV cone is overridden to be hidden. Simple bool.
 	var/viewcone_override
+
+	/// Whether our job title is adaptive to our skills.
+	var/adaptive_name
+
+	/// Ref to orison-like sunder object
+	var/sunder_light_obj = null
+
+	/// Assoc list of culinary preferences of the mob
+	var/list/culinary_preferences = list()
+
+	/// List of mobs that have attacked us. Only relevant to someone with TRAIT_TEMPO.
+	var/list/tempo_attackers = list()
+
+	var/next_tempo_cull
+
+
+	var/list/charflaws = list()
+
+	// curse list and cooldown
+	var/list/curses = list()
+	COOLDOWN_DECLARE(priest_announcement)
+	COOLDOWN_DECLARE(guildmaster_announcement) //This is not for priest but if you are looking for GUILDMASTER announcements it's here, more so convinence than anything.
+	COOLDOWN_DECLARE(crier_announcement)
+	COOLDOWN_DECLARE(priest_sermon)
+	COOLDOWN_DECLARE(priest_apostasy)
+	COOLDOWN_DECLARE(priest_excommunicate)
+	COOLDOWN_DECLARE(priest_curse)
+	COOLDOWN_DECLARE(priest_change_miracles)
+	COOLDOWN_DECLARE(hag_transform_lockout)
+
+	// bait stacks for aimed intent
+	var/bait_stacks
+
+	// werewolf mob storage (this is bad and probably causes hard dels)
+	var/mob/stored_mob = null
+
+	var/mob/living/carbon/human/hostagetaker //Stores the person that took us hostage in a var, allows us to force them to attack the mob and such
+	var/mob/living/carbon/human/hostage //What hostage we have
+
+	// Boolean. Usually set only to TRUE for non-Eoran church roles.
+	var/virginity = FALSE
+	// Used to prevent certain antag from having sex
+	var/can_do_sex = TRUE
+
+	fovangle = FOV_DEFAULT

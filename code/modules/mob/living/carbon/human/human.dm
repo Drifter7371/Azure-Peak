@@ -24,7 +24,7 @@
 				if(do_after(user, 50, needhand = 1, target = src))
 					facial_hairstyle = "None"
 					update_hair()
-					GLOB.azure_round_stats[STATS_BEARDS_SHAVED]++
+					record_round_statistic(STATS_BEARDS_SHAVED)
 					if(dna?.species)
 						if(dna.species.id == "dwarf")
 							add_stress(/datum/stressevent/dwarfshaved)
@@ -45,20 +45,38 @@
 					underwear.forceMove(get_turf(src))
 					src.put_in_hands(underwear)
 					underwear = null
+		if((user.zone_selected == BODY_ZONE_L_LEG) || (user.zone_selected == BODY_ZONE_R_LEG))
+			if(get_location_accessible(src, BODY_ZONE_PRECISE_GROIN, skipundies = TRUE))
+				if(!legwear_socks)
+					return
+				src.visible_message(span_notice("[src] begins to take off [legwear_socks]..."))
+				if(do_after(user, 30, needhand = 1, target = src))
+					var/obj/item/bodypart/chest = get_bodypart(BODY_ZONE_CHEST)
+					chest.remove_bodypart_feature(legwear_socks.legwears_feature)
+					legwear_socks.forceMove(get_turf(src))
+					src.put_in_hands(legwear_socks)
+					legwear_socks = null
+		if(user.zone_selected == BODY_ZONE_CHEST)
+			if(!piercings_item)
+				return
+			var/under_clothes = get_location_accessible(src, BODY_ZONE_CHEST, skipundies = TRUE)
+			src.visible_message(span_notice("[src] begins to take off [piercings_item][under_clothes ? " from under their clothes" : ""]..."))
+			var/delay = under_clothes ? 25 : 40
+			if(do_after(user, delay, target = src))
+				var/obj/item/bodypart/chest = get_bodypart(BODY_ZONE_CHEST)
+				chest.remove_bodypart_feature(piercings_item.piercings_feature)
+				piercings_item.forceMove(get_turf(src))
+				src.put_in_hands(piercings_item)
+				piercings_item = null
+				regenerate_icons()
 #endif
 
 /mob/living/carbon/human/Initialize()
-#ifdef MATURESERVER
-	sexcon = new /datum/sex_controller(src)
-#endif
-	verbs += /mob/living/proc/mob_sleep
 	verbs += /mob/living/proc/lay_down
-
-	icon_state = ""		//Remove the inherent human icon that is visible on the map editor. We're rendering ourselves limb by limb, having it still be there results in a bug where the basic human icon appears below as south in all directions and generally looks nasty.
+	icon_state = "" //Remove the inherent human icon that is visible on the map editor. We're rendering ourselves limb by limb, having it still be there results in a bug where the basic human icon appears below as south in all directions and generally looks nasty.
 
 	//initialize limbs first
 	create_bodyparts()
-
 	setup_human_dna()
 
 	if(dna.species)
@@ -70,22 +88,33 @@
 
 	. = ..()
 
+	AddComponent(/datum/component/arousal)
+	
+
 	RegisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT, PROC_REF(clean_blood))
 	AddComponent(/datum/component/personal_crafting)
 	AddComponent(/datum/component/footstep, footstep_type, 1, 2)
 	GLOB.human_list += src
+	unarmed_special = new /datum/special_intent/upper_cut()
+
+	max_breath = 10
+	breath_remaining = 10
+	addtimer(CALLBACK(src, PROC_REF(update_breath_hud)), 1)
+
+	our_cells = new(interesting_dist, interesting_dist, 1)
+	set_new_cells()
 
 /mob/living/carbon/human/ZImpactDamage(turf/T, levels)
 	var/obj/item/bodypart/affecting
 	var/dam = levels * rand(10,50)
 	add_stress(/datum/stressevent/felldown)
-	GLOB.azure_round_stats[STATS_MOAT_FALLERS]-- // If you get your ankles broken you fall. This makes sure only those that DIDN'T get damage get counted.
-	GLOB.azure_round_stats[STATS_ANKLES_BROKEN]++
+	record_round_statistic(STATS_MOAT_FALLERS, -1)
+	record_round_statistic(STATS_ANKLES_BROKEN)
 	var/chat_message
 	switch(rand(1,4))
 		if(1)
 			affecting = get_bodypart(pick(BODY_ZONE_R_LEG, BODY_ZONE_L_LEG))
-			chat_message = span_danger("I fall on my [affecting]!")
+			chat_message = span_danger("I fall on my [lowertext(affecting.name)]!")
 		if(2)
 			affecting = get_bodypart(pick(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM))
 			chat_message = span_danger("I fall on my arm!")
@@ -114,25 +143,20 @@
 	randomize_human(src)
 	dna.initialize_dna()
 
-/mob/living/carbon/human/ComponentInitialize()
-	. = ..()
-	if(!CONFIG_GET(flag/disable_human_mood))
-		AddComponent(/datum/component/mood)
-
 /mob/living/carbon/human/Destroy()
-	QDEL_NULL(sexcon)
 	STOP_PROCESSING(SShumannpc, src)
 	QDEL_NULL(physiology)
+	QDEL_NULL(sunder_light_obj)
 	GLOB.human_list -= src
 	return ..()
 
 /mob/living/carbon/human/Stat()
 	..()
 	if(mind)
-		var/datum/antagonist/vampirelord/VD = mind.has_antag_datum(/datum/antagonist/vampirelord)
+		var/datum/antagonist/vampire/VD = mind.has_antag_datum(/datum/antagonist/vampire)
 		if(VD)
 			if(statpanel("Stats"))
-				stat("Vitae:",VD.vitae)
+				stat("Vitae:", bloodpool)
 		if((mind.assigned_role == "Shepherd") || (mind.assigned_role == "Inquisitor"))
 			if(statpanel("Status"))
 				stat("Confessions sent: [GLOB.confessors.len]")
@@ -271,6 +295,9 @@
 #ifdef MATURESERVER
 	if(get_location_accessible(src, BODY_ZONE_PRECISE_GROIN, skipundies = TRUE))
 		dat += "<tr><td><BR><B>Underwear:</B> <A href='?src=[REF(src)];undiesthing=1'>[!underwear ? "Nothing" : "Remove"]</A></td></tr>"
+	dat += "<tr><td><hr></td></tr>"
+	if(get_location_accessible(src, BODY_ZONE_PRECISE_GROIN, skipundies = TRUE))
+		dat += "<tr><td><BR><B>Legwear:</B> <A href='?src=[REF(src)];legwearsthing=1'>[!legwear_socks ? "Nothing" : "Remove"]</A></td></tr>"
 #endif
 
 	dat += {"</table>"}
@@ -287,18 +314,6 @@
 
 /mob/living/carbon/human/proc/canUseHUD()
 	return (mobility_flags & MOBILITY_USE)
-
-///Checking if the unit can bite
-/mob/living/carbon/human/proc/can_bite()
-	//if(mouth?.muteinmouth && mouth?.type != /obj/item/grabbing/bite) //This one allows continued first biting rather than having to chew
-	if(mouth?.muteinmouth)
-		return FALSE
-	for(var/obj/item/grabbing/grab in grabbedby) //Grabbed by the mouth
-		if(grab.sublimb_grabbed == BODY_ZONE_PRECISE_MOUTH)
-			return FALSE
-			
-	return TRUE
-
 
 /mob/living/carbon/human/can_inject(mob/user, error_msg, target_zone, penetrate_thick = 0)
 	. = 1 // Default to returning true.
@@ -360,7 +375,6 @@
 			return
 
 		src.visible_message(span_notice("[src] performs CPR on [C.name]!"), span_notice("I perform CPR on [C.name]."))
-		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "perform_cpr", /datum/mood_event/perform_cpr)
 		C.cpr_time = world.time
 		log_combat(src, C, "CPRed")
 
@@ -436,6 +450,18 @@
 			R.fields["name"] = newname
 
 /mob/living/carbon/human/get_total_tint()
+	if(isdullahan(src))
+		var/datum/species/dullahan/species = dna.species
+		var/obj/item/bodypart/head/dullahan/user_head = species.my_head
+		if(species.headless && user_head)
+			var/obj/item/organ/dullahan_vision/vision = getorganslot(ORGAN_SLOT_HUD)
+
+			if(vision && vision.viewing_head && user_head.eyes)
+				. = user_head.eyes.tint
+			else
+				. = INFINITY
+			return
+
 	. = ..()
 	if(glasses)
 		. += glasses.tint
@@ -455,40 +481,68 @@
 		if(hud_used.bloods)
 			var/bloodloss = ((BLOOD_VOLUME_NORMAL - blood_volume) / BLOOD_VOLUME_NORMAL) * 100
 
-			var/burnhead = 0
-			var/brutehead = 0
-			var/obj/item/bodypart/head = get_bodypart(BODY_ZONE_HEAD)
-			if(head)
-				burnhead = (head.burn_dam / head.max_damage) * 100
-				brutehead = (head.brute_dam / head.max_damage) * 100
-
 			var/toxloss = getToxLoss()
-			var/oxloss = getOxyLoss()
+			var/oxyloss = getOxyLoss()
+			var/painpercent = get_complex_pain() / pain_threshold
+			painpercent = painpercent * 100
 
-			var/hungloss = nutrition*-1 //this is smart i think
 
 			var/usedloss = 0
 			if(bloodloss > 0)
 				usedloss = bloodloss
-			if(burnhead > usedloss)
-				usedloss = burnhead
-			if(brutehead > usedloss)
-				usedloss = brutehead
-			if(toxloss > usedloss)
-				usedloss = toxloss
-			if(oxloss > usedloss)
-				usedloss = oxloss
-			if(hungloss > usedloss)
-				usedloss = hungloss
 
+			hud_used.bloods.cut_overlays()
 			if(usedloss <= 0)
 				hud_used.bloods.icon_state = "dam0"
+				if(toxloss > 0)
+					var/toxoverlay
+					switch(toxloss)
+						if(1 to 20)
+							toxoverlay = "toxloss20"
+						if(21 to 49)
+							toxoverlay = "toxloss40"
+						if(50 to 79)
+							toxoverlay = "toxloss60"
+						if(80 to 99)
+							toxoverlay = "toxloss80"
+						if(100 to 999)
+							toxoverlay = "toxloss100"
+					hud_used.bloods.add_overlay(toxoverlay)
+
+				if(oxyloss > 0)
+					var/oxyoverlay
+					switch(oxyloss)
+						if(1 to 20)
+							oxyoverlay = "oxyloss20"
+						if(21 to 49)
+							oxyoverlay = "oxyloss40"
+						if(50 to 79)
+							oxyoverlay = "oxyloss60"
+						if(80 to 99)
+							oxyoverlay = "oxyloss80"
+						if(100 to 999)
+							oxyoverlay = "oxyloss100"
+					hud_used.bloods.add_overlay(oxyoverlay)
 			else
 				var/used = round(usedloss, 10)
 				if(used <= 80)
 					hud_used.bloods.icon_state = "dam[used]"
 				else
 					hud_used.bloods.icon_state = "damelse"
+			if(painpercent > 0)
+				var/painoverlay
+				switch(painpercent)
+					if(1 to 29)
+						painoverlay = "painloss20"
+					if(30 to 59)
+						painoverlay = "painloss40"
+					if(60 to 79)
+						painoverlay = "painloss60"
+					if(80 to 99)
+						painoverlay = "painloss80"
+					if(100 to 999)
+						painoverlay = "painloss100"
+				hud_used.bloods.add_overlay(painoverlay)
 
 /*		if(hud_used.healthdoll)
 			hud_used.healthdoll.cut_overlays()
@@ -525,24 +579,44 @@
 				. = 1
 				if(stamina >= max_stamina)
 					hud_used.stamina.icon_state = "stam0"
+				else if(stamina > max_stamina*0.95)
+					hud_used.stamina.icon_state = "stam5"
 				else if(stamina > max_stamina*0.90)
 					hud_used.stamina.icon_state = "stam10"
+				else if(stamina > max_stamina*0.85)
+					hud_used.stamina.icon_state = "stam15"
 				else if(stamina > max_stamina*0.80)
 					hud_used.stamina.icon_state = "stam20"
+				else if(stamina > max_stamina*0.75)
+					hud_used.stamina.icon_state = "stam25"
 				else if(stamina > max_stamina*0.70)
 					hud_used.stamina.icon_state = "stam30"
+				else if(stamina > max_stamina*0.65)
+					hud_used.stamina.icon_state = "stam35"
 				else if(stamina > max_stamina*0.60)
 					hud_used.stamina.icon_state = "stam40"
+				else if(stamina > max_stamina*0.55)
+					hud_used.stamina.icon_state = "stam45"
 				else if(stamina > max_stamina*0.50)
 					hud_used.stamina.icon_state = "stam50"
+				else if(stamina > max_stamina*0.45)
+					hud_used.stamina.icon_state = "stam55"
 				else if(stamina > max_stamina*0.40)
 					hud_used.stamina.icon_state = "stam60"
+				else if(stamina > max_stamina*0.35)
+					hud_used.stamina.icon_state = "stam65"
 				else if(stamina > max_stamina*0.30)
 					hud_used.stamina.icon_state = "stam70"
+				else if(stamina > max_stamina*0.25)
+					hud_used.stamina.icon_state = "stam75"
 				else if(stamina > max_stamina*0.20)
 					hud_used.stamina.icon_state = "stam80"
+				else if(stamina > max_stamina*0.15)
+					hud_used.stamina.icon_state = "stam85"
 				else if(stamina > max_stamina*0.10)
 					hud_used.stamina.icon_state = "stam90"
+				else if(stamina > max_stamina*0.05)
+					hud_used.stamina.icon_state = "stam95"
 				else if(stamina >= 0)
 					hud_used.stamina.icon_state = "stam100"
 		if(hud_used.energy)
@@ -550,31 +624,51 @@
 				. = 1
 				if(energy <= 0)
 					hud_used.energy.icon_state = "energy0"
-				else if(energy > max_energy*0.90)
+				else if(energy > max_energy*0.95)
 					hud_used.energy.icon_state = "energy100"
-				else if(energy > max_energy*0.80)
+				else if(energy > max_energy*0.90)
+					hud_used.energy.icon_state = "energy95"
+				else if(energy > max_energy*0.85)
 					hud_used.energy.icon_state = "energy90"
-				else if(energy > max_energy*0.70)
+				else if(energy > max_energy*0.80)
+					hud_used.energy.icon_state = "energy85"
+				else if(energy > max_energy*0.75)
 					hud_used.energy.icon_state = "energy80"
-				else if(energy > max_energy*0.60)
+				else if(energy > max_energy*0.70)
+					hud_used.energy.icon_state = "energy75"
+				else if(energy > max_energy*0.65)
 					hud_used.energy.icon_state = "energy70"
-				else if(energy > max_energy*0.50)
+				else if(energy > max_energy*0.60)
+					hud_used.energy.icon_state = "energy65"
+				else if(energy > max_energy*0.55)
 					hud_used.energy.icon_state = "energy60"
-				else if(energy > max_energy*0.40)
+				else if(energy > max_energy*0.50)
+					hud_used.energy.icon_state = "energy55"
+				else if(energy > max_energy*0.45)
 					hud_used.energy.icon_state = "energy50"
-				else if(energy > max_energy*0.30)
+				else if(energy > max_energy*0.40)
+					hud_used.energy.icon_state = "energy45"
+				else if(energy > max_energy*0.35)
 					hud_used.energy.icon_state = "energy40"
-				else if(energy > max_energy*0.20)
+				else if(energy > max_energy*0.30)
+					hud_used.energy.icon_state = "energy35"
+				else if(energy > max_energy*0.25)
 					hud_used.energy.icon_state = "energy30"
-				else if(energy > max_energy*0.10)
+				else if(energy > max_energy*0.20)
+					hud_used.energy.icon_state = "energy25"
+				else if(energy > max_energy*0.15)
 					hud_used.energy.icon_state = "energy20"
-				else if(energy > 0)
+				else if(energy > max_energy*0.10)
+					hud_used.energy.icon_state = "energy15"
+				else if(energy > max_energy*0.05)
 					hud_used.energy.icon_state = "energy10"
+				else if(energy > 0)
+					hud_used.energy.icon_state = "energy5"
 
 		if(hud_used.zone_select)
 			hud_used.zone_select.update_icon()
 
-/mob/living/carbon/human/fully_heal(admin_revive = FALSE)
+/mob/living/carbon/human/fully_heal(admin_revive = FALSE, break_restraints = FALSE)
 	dna?.species.spec_fully_heal(src)
 	if(admin_revive)
 		regenerate_limbs()
@@ -582,7 +676,7 @@
 	spill_embedded_objects()
 	set_heartattack(FALSE)
 	drunkenness = 0
-	..()
+	return ..()
 
 /mob/living/carbon/human/check_weakness(obj/item/weapon, mob/living/attacker)
 	. = ..()
@@ -600,11 +694,6 @@
 /mob/living/carbon/human/can_hold_items()
 	return TRUE
 
-/mob/living/carbon/human/update_gravity(has_gravity,override = 0)
-	if(dna && dna.species) //prevents a runtime while a human is being monkeyfied
-		override = dna.species.override_float
-	..()
-
 /mob/living/carbon/human/vomit(lost_nutrition = 10, blood = 0, stun = 1, distance = 0, message = 1, toxic = 0)
 	if(blood && (NOBLOOD in dna.species.species_traits) && !HAS_TRAIT(src, TRAIT_TOXINLOVER))
 		if(message)
@@ -619,7 +708,6 @@
 	. = ..()
 	VV_DROPDOWN_OPTION("", "---------")
 	VV_DROPDOWN_OPTION(VV_HK_REAPPLY_PREFS, "Reapply Preferences")
-	VV_DROPDOWN_OPTION(VV_HK_COPY_OUTFIT, "Copy Outfit")
 	VV_DROPDOWN_OPTION(VV_HK_SET_SPECIES, "Set Species")
 	VV_DROPDOWN_OPTION(VV_HK_PURGE_PARTOF_SLOT, "Purge Part of Slot")
 	VV_DROPDOWN_OPTION(VV_HK_PURGE_SLOT, "Purge Slot")
@@ -631,29 +719,30 @@
 			return
 		if(!client || !client.prefs)
 			return
-		if(alert(usr,"This will irreversibly an INDIVIDUAL PORTION of this slot. Is this what you want?","DON'T FATFINGER THIS","PURGE","Nevermind") == "PURGE")
-			if(alert(usr,"The next prompt will not have a Nevermind option. Are you sure you want this?","ITS NOT REVERSIBLE","Yes","Nevermind") == "Yes")
-				var/choice = alert(usr,"What would you like to purge?","ITS TOO LATE NOW","Flavor","Notes","Extra")
+		if(alert(usr,"This will irreversibly purge an INDIVIDUAL PORTION of this slot. Is this what you want?","DON'T FATFINGER THIS","PURGE","Nevermind") == "PURGE")
+			if(alert(usr,"The next prompt will not have a Nevermind option. Are you sure you want this?","IT'S NOT REVERSIBLE","Yes","Nevermind") == "Yes")
+				var/choice = alert(usr,"What would you like to purge?","IT'S TOO LATE NOW","Flavor","Notes","Extra")
 				if(choice)
 					switch(choice)
 						if("Flavor")
-							is_legacy = FALSE
 							flavortext = null
-							flavortext_display = null
+							nsfwflavortext = null
 							client.prefs?.flavortext = null
-							client.prefs?.flavortext_display = null
 						if("Notes")
-							is_legacy = FALSE
 							ooc_notes = null
-							ooc_notes_display = null
+							erpprefs = null
 							client.prefs?.ooc_notes = null
-							client.prefs?.ooc_notes_display = null
 						if("Extra")
-							is_legacy = FALSE
-							ooc_extra_link = null
 							ooc_extra = null
+							song_artist = null
+							song_title = null
+							client.prefs?.song_artist = null
+							client.prefs?.song_title = null
 							client.prefs?.ooc_extra = null
-							client.prefs?.ooc_extra_link = null
+							img_gallery = list()
+							nsfw_img_gallery = list()
+							client.prefs?.img_gallery = list()
+							client.prefs?.nsfw_img_gallery = list()
 						else
 							return
 					client.prefs?.save_preferences()
@@ -667,20 +756,24 @@
 		if(alert(usr,"This will irreversibly purge this ENTIRE character's slot (OOC, FT, OOC Ex.)","PURGE","PURGE","Nevermind") == "PURGE")
 			if(alert(usr,"This cannot be undone. Are you sure?","DON'T FATFINGER THIS","Yes","No") == "Yes")
 				flavortext = null
-				flavortext_display = null
-				is_legacy = FALSE
+				nsfwflavortext = null
+				erpprefs = null
 				ooc_notes = null
-				ooc_notes_display = null
 				ooc_extra = null
-				ooc_extra_link = null
+				song_artist = null
+				song_title = null
+				img_gallery = list()
+				nsfw_img_gallery = list()
 				if(client)
 					client.prefs?.flavortext = null
-					client.prefs?.flavortext_display = null
-					client.prefs?.is_legacy = FALSE
+					client.prefs?.nsfwflavortext = null
+					client.prefs?.erpprefs = null
 					client.prefs?.ooc_notes = null
-					client.prefs?.ooc_notes_display = null
 					client.prefs?.ooc_extra = null
-					client.prefs?.ooc_extra_link = null
+					client.prefs?.song_artist = null
+					client.prefs?.song_title = null
+					client.prefs?.img_gallery = list()
+					client.prefs?.nsfw_img_gallery = list()
 					client.prefs?.save_preferences()
 					client.prefs?.save_character()
 					to_chat(usr, span_warn("Slot purged successfully."))
@@ -692,10 +785,6 @@
 		if(!client || !client.prefs)
 			return
 		client.prefs.copy_to(src, TRUE, FALSE)
-	if(href_list[VV_HK_COPY_OUTFIT])
-		if(!check_rights(R_SPAWN))
-			return
-		copy_outfit()
 	if(href_list[VV_HK_SET_SPECIES])
 		if(!check_rights(R_SPAWN))
 			return
@@ -705,27 +794,50 @@
 			admin_ticket_log("[key_name_admin(usr)] has modified the bodyparts of [src] to [result]")
 			set_species(newtype)
 
-/mob/living/carbon/human/MouseDrop_T(mob/living/target, mob/living/user)
-	if(pulling == target && stat == CONSCIOUS)
-		//If they dragged themselves and we're currently aggressively grabbing them try to piggyback (not on cmode)
-		if(user == target && can_piggyback(target))
-			if(cmode)
-				to_chat(target, span_warning("[src] won't let you on!"))
-				return FALSE
+/mob/living/carbon/human/MouseDrop_T(atom/dragged, mob/living/user)
+	if(istype(dragged, /mob/living))
+		var/mob/living/target = dragged
+		if(stat == CONSCIOUS)
+			var/has_grab = FALSE
+			var/obj/item/grabbing/grab = get_active_held_item()
+			if(istype(grab) && grab.grabbed == target)
+				has_grab = TRUE
+			// If the target is grabbed and can be firemanned, we fireman carry them
+			if(has_grab && can_be_firemanned(target))
+				fireman_carry(target)
+				return TRUE
+	else if(istype(dragged, /obj/item/bodypart/head/dullahan/))
+		var/obj/item/bodypart/head/dullahan/item_head = dragged
+		item_head.show_inv(user)
+	. = ..()
+
+/mob/living/carbon/human/RightMouseDrop_T(atom/dragged, mob/living/user)
+	var/atom/item_in_hand = user.get_active_held_item()
+	if(!item_in_hand && isliving(dragged))
+		var/mob/living/target = dragged
+		// If the target is not grabbed, we prompt them to ask if they want to be piggybacked
+		if(stat == CONSCIOUS && can_piggyback(target))
+			// if the user dragged themselves onto the person, prompt the person
+			if(user == target)
+				to_chat(user, span_notice("You request a piggyback ride from [src]..."))
+				var/response = tgui_alert(src, "[user.name] is requesting a piggyback ride.", "Piggyback Ride", list("Yes, let them on", "No"))
+				if(response == "No")
+					to_chat(user, span_warning("[src] has denied you a piggyback ride!"))
+					return TRUE
+			// if the person dragged the user onto themselves, prompt the user
+			else
+				to_chat(src, span_notice("You offer a piggyback ride to [target]..."))
+				var/response = tgui_alert(target, "[src.name] is offering to give you a piggyback ride.", "Piggyback Ride", list("Yes, get on", "No"))
+				if(response == "No")
+					to_chat(src, span_warning("[target] has denied your piggyback ride!"))
+					return TRUE
 			piggyback(target)
 			return TRUE
-		//If you dragged them to you and you're aggressively grabbing try to carry them
-		else if(user != target && can_be_firemanned(target))
-			var/obj/G = get_active_held_item()
-			if(G)
-				if(istype(G, /obj/item/grabbing))
-					fireman_carry(target)
-					return TRUE
-	. = ..()
+	return ..()
 
 //src is the user that will be carrying, target is the mob to be carried
 /mob/living/carbon/human/proc/can_piggyback(mob/living/carbon/target)
-	return (istype(target) && target.stat == CONSCIOUS)
+	return (istype(target) && target.stat == CONSCIOUS && !cmode && !target.cmode)
 
 /mob/living/carbon/human/proc/can_be_firemanned(mob/living/carbon/target)
 	return (ishuman(target) && !(target.mobility_flags & MOBILITY_STAND))
@@ -759,7 +871,13 @@
 				if(target.incapacitated(FALSE, TRUE) || incapacitated(FALSE, TRUE))
 					to_chat(target, span_warning("I can't piggyback ride [src]."))
 					return
-				buckle_mob(target, TRUE, TRUE, FALSE, 0, 0)
+				if(buckle_mob(target, TRUE, TRUE, FALSE, 0, 0) && HAS_TRAIT(src, TRAIT_MOUNTABLE))
+					var/datum/component/riding/human/riding_datum = LoadComponent(/datum/component/riding/human)
+					riding_datum.vehicle_move_delay = 4
+					if(target.mind)
+						var/riding_skill = target.get_skill_level(/datum/skill/misc/riding)
+						if(riding_skill)
+							riding_datum.vehicle_move_delay = max(1, 3 - (riding_skill * 0.2))
 	else
 		to_chat(target, span_warning("I can't piggyback ride [src]."))
 
@@ -832,6 +950,9 @@
 
 /mob/living/carbon/human/adjust_nutrition(change) //Honestly FUCK the oldcoders for putting nutrition on /mob someone else can move it up because holy hell I'd have to fix SO many typechecks
 	if(HAS_TRAIT(src, TRAIT_NOHUNGER))
+		remove_status_effect(/datum/status_effect/debuff/hungryt1)
+		remove_status_effect(/datum/status_effect/debuff/hungryt2)
+		remove_status_effect(/datum/status_effect/debuff/hungryt3)
 		return FALSE
 	return ..()
 
@@ -842,6 +963,9 @@
 
 /mob/living/carbon/human/adjust_hydration(change)
 	if(HAS_TRAIT(src, TRAIT_NOHUNGER))
+		remove_status_effect(/datum/status_effect/debuff/thirstyt1)
+		remove_status_effect(/datum/status_effect/debuff/thirstyt2)
+		remove_status_effect(/datum/status_effect/debuff/thirstyt3)
 		return FALSE
 	return ..()
 
@@ -849,6 +973,86 @@
 	if(HAS_TRAIT(src, TRAIT_NOHUNGER))
 		return FALSE
 	return ..()
+
+/// copies the physical cosmetic features of another human mob.
+/mob/living/carbon/human/proc/copy_physical_features(mob/living/carbon/human/target)
+	if(!istype(target))
+		return
+
+	icon = target.icon
+
+	copy_bodyparts(target)
+
+	target.dna.transfer_identity(src)
+
+	updateappearance(mutcolor_update = TRUE)
+
+	job = target.job // NOT assigned_role
+	faction = target.faction
+	deathsound = target.deathsound
+	gender = target.gender
+	real_name = target.real_name
+	voice_color = target.voice_color
+	voice_pitch = target.voice_pitch
+	detail_color = target.detail_color
+	skin_tone = target.skin_tone
+	lip_style = target.lip_style
+	lip_color = target.lip_color
+	age = target.age
+	underwear = target.underwear
+	shavelevel = target.shavelevel
+	socks = target.socks
+	has_stubble = target.has_stubble
+	headshot_link = target.headshot_link
+	flavortext = target.flavortext
+
+	var/obj/item/bodypart/head/target_head = target.get_bodypart(BODY_ZONE_HEAD)
+	if(!isnull(target_head))
+		var/obj/item/bodypart/head/user_head = get_bodypart(BODY_ZONE_HEAD)
+		user_head.bodypart_features = target_head.bodypart_features
+
+	regenerate_icons()
+
+
+/mob/living/carbon/human/proc/copy_bodyparts(mob/living/carbon/human/target)
+	var/mob/living/carbon/human/self = src
+	var/list/target_missing = target.get_missing_limbs()
+	var/list/my_missing = self.get_missing_limbs()
+
+	// Store references to bodyparts
+	var/list/original_parts = list()
+	var/list/target_parts = list()
+
+	var/list/full = list(
+		BODY_ZONE_HEAD,
+		BODY_ZONE_CHEST,
+		BODY_ZONE_R_ARM,
+		BODY_ZONE_L_ARM,
+		BODY_ZONE_R_LEG,
+		BODY_ZONE_L_LEG,
+	)
+
+	for(var/zone in full)
+		original_parts[zone] = self.get_bodypart(zone)
+		target_parts[zone] = target.get_bodypart(zone)
+
+	bodyparts = list()
+
+	// Rebuild bodyparts list with typepaths
+	for(var/zone_2 in full)
+		var/obj/item/bodypart/target_part = target_parts[zone_2]
+		var/obj/item/bodypart/my_part = original_parts[zone_2]
+
+		if(zone_2 in my_missing)
+			continue
+		else if(zone_2 in target_missing)
+			if(my_part)
+				bodyparts += my_part.type
+		else
+			if(target_part)
+				bodyparts += target_part.type
+
+	create_bodyparts()
 
 /mob/living/carbon/human/species
 	var/race = null
@@ -880,15 +1084,19 @@
 	var/obj/item/organ/testicles/testicles = getorganslot(ORGAN_SLOT_TESTICLES)
 	return testicles.virility
 
-/*/mob/living/carbon/human/proc/update_heretic_commune()
-	if(HAS_TRAIT(src, TRAIT_COMMIE) || HAS_TRAIT(src, TRAIT_CABAL) || HAS_TRAIT(src, TRAIT_HORDE) || HAS_TRAIT(src, TRAIT_DEPRAVED))
-		verbs |= /mob/living/carbon/human/verb/commune
-		verbs |= /mob/living/carbon/human/verb/show_heretics
-		verbs |= /mob/living/carbon/human/verb/bad_omen
-	else
-		verbs -= /mob/living/carbon/human/verb/commune
-		verbs -= /mob/living/carbon/human/verb/show_heretics
-		verbs -= /mob/living/carbon/human/verb/bad_omen*/
+/mob/living/carbon/human/update_mobility()
+	. = ..()
+	if(!(mobility_flags & MOBILITY_CANSTAND) && mouth?.spitoutmouth)
+		visible_message(span_warning("[src] spits out [mouth]."))
+		dropItemToGround(mouth, silent = FALSE)
 
 /mob/living/carbon/human/Topic(href, href_list)
 	..()
+
+/mob/living/carbon/human/do_attack_animation(atom/A, visual_effect_icon, obj/item/used_item, no_effect, item_animation_override, datum/intent/used_intent, simplified)
+	update_proj_parry_timer()
+	. = ..()
+
+///This is used to allow the thrown item "deflect". Minor and mostly just for aurafarming. Hooks into do_attack_animation because it's the most reliable access to a "valid" attack.
+/mob/living/carbon/human/proc/update_proj_parry_timer()
+	projectile_parry_timer = (world.time + PROJ_PARRY_TIMER)

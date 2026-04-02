@@ -2,6 +2,8 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/infernal/hellhound
 	icon = 'icons/mob/summonable/32x32.dmi'
 	name = "hell hound"
+	desc = "This is a canine-shaped creature formed of billowing heat and snaking flames! Its maw resembles a furnace; \
+	better not fall into it."
 	icon_state = "hellhound"
 	icon_living = "hellhound"
 	icon_dead = "vvd"
@@ -16,20 +18,19 @@
 	move_to_delay = 3
 	base_intents = list(/datum/intent/simple/bite)
 	butcher_results = list()
+	death_loot = list(/obj/item/magic/infernal/fang = 2)
 	faction = list("infernal")
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
-	health = 170
-	maxHealth = 170
+	health = 270
+	maxHealth = 270
 	melee_damage_lower = 15
 	melee_damage_upper = 17
 	vision_range = 7
 	aggro_vision_range = 9
-	environment_smash = ENVIRONMENT_SMASH_NONE
+	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
 	simple_detect_bonus = 20
-	ranged = TRUE
-	projectiletype = /obj/projectile/magic/firebolt
-	retreat_distance = 4
-	minimum_distance = 3
+	retreat_distance = 0
+	minimum_distance = 0
 	food_type = list()
 	footstep_type = FOOTSTEP_MOB_BAREFOOT
 	pooptype = null
@@ -39,8 +40,9 @@
 	simple_detect_bonus = 20
 	deaggroprob = 0
 	defprob = 40
+	candodge = TRUE
 	// del_on_deaggro = 44 SECONDS
-	retreat_health = 0.3
+	retreat_health = 0
 	food = 0
 	attack_sound = list('sound/vo/mobs/vw/attack (1).ogg','sound/vo/mobs/vw/attack (2).ogg','sound/vo/mobs/vw/attack (3).ogg','sound/vo/mobs/vw/attack (4).ogg')
 	dodgetime = 30
@@ -49,17 +51,10 @@
 
 /mob/living/simple_animal/hostile/retaliate/rogue/infernal/hellhound/Initialize()
 	. = ..()
+	ADD_TRAIT(src, TRAIT_SILVER_WEAK, TRAIT_GENERIC)
 
 /mob/living/simple_animal/hostile/retaliate/rogue/infernal/hellhound/death(gibbed)
 	..()
-	var/turf/deathspot = get_turf(src)
-	new /obj/item/magic/hellhoundfang(deathspot)
-	new /obj/item/magic/hellhoundfang(deathspot)
-	new /obj/item/magic/hellhoundfang(deathspot)
-	new /obj/item/magic/hellhoundfang(deathspot)
-	new /obj/item/magic/infernalash(deathspot)
-	new /obj/item/magic/infernalash(deathspot)
-	new /obj/item/magic/infernalash(deathspot)
 	update_icon()
 	spill_embedded_objects()
 	qdel(src)
@@ -76,8 +71,8 @@
 		var/mob/living/targetted = target
 		if(!isliving(target))
 			return
-		targetted.adjust_fire_stacks(5)
-		targetted.IgniteMob()
+		targetted.adjust_fire_stacks(3)
+		targetted.ignite_mob()
 		targetted.visible_message(span_danger("[src] sets [target] on fire!"))
 		src.flame_cd = world.time
 	if(!QDELETED(target))

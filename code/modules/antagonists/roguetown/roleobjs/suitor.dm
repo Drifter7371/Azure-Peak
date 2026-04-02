@@ -1,6 +1,9 @@
-/datum/antagonist/suitor
+/*/datum/antagonist/suitor
 	name = "Suitor"
 	increase_votepwr = FALSE
+
+/datum/antagonist/suitor/get_antag_cap_weight()
+	return 0
 
 /datum/antagonist/suitor/on_gain()
 	if(!(locate(/datum/objective/marry) in objectives))
@@ -49,5 +52,5 @@
 		to_chat(owner.current, span_redtext("I've failed to secure a marriage into the throne of Azuria! My house will be disappointed!"))
 		to_chat(world, span_redtext("[owner.current.real_name] failed to secure a marriage with the throne!"))
 		if(owner?.current)
-			owner.current.playsound_local(get_turf(owner.current), 'sound/misc/fail.ogg', 100, FALSE, pressure_affected = FALSE)
+			owner.current.playsound_local(get_turf(owner.current), 'sound/misc/fail.ogg', 100, FALSE, pressure_affected = FALSE)*/
 

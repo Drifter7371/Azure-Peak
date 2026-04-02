@@ -8,7 +8,7 @@
 /datum/outfit/job/roguetown/fablefield/goliard/pre_equip(mob/living/carbon/human/H)
 	..()
 	head = /obj/item/clothing/head/roguetown/bardhat
-	neck = /obj/item/storage/belt/rogue/pouch/coins/mid
+	neck = /obj/item/storage/belt/rogue/pouch/coins/rich
 	shoes = /obj/item/clothing/shoes/roguetown/boots
 	pants = /obj/item/clothing/under/roguetown/tights/random
 	shirt = /obj/item/clothing/suit/roguetown/shirt/shortshirt
@@ -33,10 +33,10 @@
 	H.adjust_skillrank(/datum/skill/combat/unarmed, 2, TRUE)
 	H.adjust_skillrank(/datum/skill/craft/crafting, 1, TRUE)
 	H.adjust_skillrank(/datum/skill/craft/cooking, 1, TRUE)
-	H.change_stat("speed", 2)
-	H.change_stat("perception", 2)
-	H.change_stat("intelligence", 1)
-	H.change_stat("endurance", 1)
+	H.change_stat(STATKEY_SPD, 2)
+	H.change_stat(STATKEY_PER, 2)
+	H.change_stat(STATKEY_INT, 1)
+	H.change_stat(STATKEY_WIL, 1)
 	H.verbs |= /mob/living/carbon/human/proc/ventriloquate
 
 	ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
@@ -54,7 +54,7 @@
 /datum/outfit/job/roguetown/fablefield/troubadour/pre_equip(mob/living/carbon/human/H)
 	..()
 	head = /obj/item/clothing/head/roguetown/bardhat
-	neck = /obj/item/storage/belt/rogue/pouch/coins/poor
+	neck = /obj/item/storage/belt/rogue/pouch/coins/mid
 	shoes = /obj/item/clothing/shoes/roguetown/boots
 	pants = /obj/item/clothing/under/roguetown/tights/random
 	shirt = /obj/item/clothing/suit/roguetown/shirt/shortshirt
@@ -79,10 +79,10 @@
 	H.adjust_skillrank(/datum/skill/magic/holy, 1, TRUE) //Futureproofing, does nothing for now.
 	H.adjust_skillrank(/datum/skill/craft/crafting, 1, TRUE)
 	H.adjust_skillrank(/datum/skill/craft/cooking, 1, TRUE)
-	H.change_stat("perception", 2)
-	H.change_stat("speed", 1)
-	H.change_stat("intelligence", 1)
-	H.change_stat("endurance", 1)
+	H.change_stat(STATKEY_PER, 2)
+	H.change_stat(STATKEY_SPD, 1)
+	H.change_stat(STATKEY_INT, 1)
+	H.change_stat(STATKEY_WIL, 1)
 
 	ADD_TRAIT(H, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 	ADD_TRAIT(H, TRAIT_EMPATH, TRAIT_GENERIC)

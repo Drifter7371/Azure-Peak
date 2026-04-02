@@ -1,6 +1,8 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/fae/glimmerwing
 	icon = 'icons/mob/summonable/32x32.dmi'
 	name = "glimmerwing"
+	desc = "A middlingly-sized fae-creature, held aloft upon fluttering wings and glimmering with unearthly \
+	light. Both wonderous and capricious, and the subjects of many cautionary tales."
 	icon_state = "glimmerwing"
 	icon_living = "glimmerwing"
 	icon_dead = "vvd"
@@ -15,21 +17,22 @@
 	move_to_delay = 6
 	base_intents = list(/datum/intent/simple/bite)
 	butcher_results = list()
+	death_loot = list(/obj/item/magic/fae/iridescentscale = 2)
 	faction = list("fae")
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
-	health = 170
-	maxHealth = 170
+	health = 270
+	maxHealth = 270
 	melee_damage_lower = 15
 	melee_damage_upper = 17
 	vision_range = 7
 	aggro_vision_range = 9
-	environment_smash = ENVIRONMENT_SMASH_NONE
+	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
 	simple_detect_bonus = 20
 	ranged = FALSE
 	retreat_distance = 0
 	minimum_distance = 0
 	food_type = list()
-	footstep_type = FOOTSTEP_MOB_BAREFOOT
+	movement_type = FLYING
 	pooptype = null
 	STACON = 7
 	STASTR = 9
@@ -37,8 +40,9 @@
 	simple_detect_bonus = 20
 	deaggroprob = 0
 	defprob = 40
+	candodge = TRUE
 	// del_on_deaggro = 44 SECONDS
-	retreat_health = 0.3
+	retreat_health = 0
 	food = 0
 	attack_sound = 'sound/blank.ogg'
 	dodgetime = 40
@@ -46,19 +50,11 @@
 	var/drug_cd
 
 /mob/living/simple_animal/hostile/retaliate/rogue/fae/glimmerwing/Initialize()
+	src.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
 	. = ..()
 
 /mob/living/simple_animal/hostile/retaliate/rogue/fae/glimmerwing/death(gibbed)
 	..()
-	var/turf/deathspot = get_turf(src)
-	new /obj/item/magic/iridescentscale(deathspot)
-	new /obj/item/magic/iridescentscale(deathspot)
-	new /obj/item/magic/iridescentscale(deathspot)
-	new /obj/item/magic/iridescentscale(deathspot)
-	new /obj/item/magic/fairydust(deathspot)
-	new /obj/item/magic/fairydust(deathspot)
-	new /obj/item/magic/fairydust(deathspot)
-	new /obj/item/magic/fairydust(deathspot)
 	update_icon()
 	spill_embedded_objects()
 	qdel(src)

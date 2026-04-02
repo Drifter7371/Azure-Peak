@@ -4,12 +4,12 @@
 #define STATKEY_PER "perception"
 #define STATKEY_INT "intelligence"
 #define STATKEY_CON "constitution"
-#define STATKEY_END "endurance"
+#define STATKEY_WIL "willpower"
 #define STATKEY_SPD "speed"
 #define STATKEY_LCK "fortune"
 
 //This was previously in vampirelord.dm and mob/living/stats.dm, the person defined it twice because vampirelord came in below that stats file, so now both of them can get it here.
-#define MOBSTATS list("strength", "perception", "intelligence", "constitution", "endurance", "speed", "fortune")
+#define MOBSTATS list(STATKEY_STR, STATKEY_PER, STATKEY_INT, STATKEY_CON, STATKEY_WIL, STATKEY_SPD, STATKEY_LCK)
 
 //Misc mob defines
 
@@ -41,6 +41,9 @@
 #define BLOOD_VOLUME_OKAY 336
 #define BLOOD_VOLUME_BAD 224
 #define BLOOD_VOLUME_SURVIVE 122
+
+/// Blood pool regeneration in non-vampiric living mobs per SSmobs tick. 
+#define BLOODPOL_REGEN 2
 
 //Sizes of mobs, used by mob/living/var/mob_size
 #define MOB_SIZE_TINY 0
@@ -181,12 +184,14 @@
 #define NUTRITION_LEVEL_FULL 1000
 #define NUTRITION_LEVEL_FAT 800
 #define NUTRITION_LEVEL_WELL_FED 700
+#define NUTRITION_LEVEL_DEATHLESS 700
 #define NUTRITION_LEVEL_FED 500
 #define NUTRITION_LEVEL_HUNGRY 350
 #define NUTRITION_LEVEL_STARVING 100
 
 #define HYDRATION_LEVEL_FULL 1000
 #define HYDRATION_LEVEL_HYDRATED 999
+#define HYDRATION_LEVEL_DEATHLESS 700
 #define HYDRATION_LEVEL_SMALLTHIRST 600
 #define HYDRATION_LEVEL_THIRSTY 350
 #define HYDRATION_LEVEL_DEHYDRATED 100
@@ -252,6 +257,7 @@
 #define NPC_AI_RETREAT	3
 #define NPC_AI_HUNT		4
 #define NPC_AI_FLEE		5
+#define NPC_AI_SLEEP    6
 
 //determines if a mob can smash through it
 #define ENVIRONMENT_SMASH_NONE			0
@@ -277,6 +283,8 @@
 #define SHOCK_ILLUSION (1 << 2)
 ///The shock doesn't stun.
 #define SHOCK_NOSTUN (1 << 3)
+///Visual and sound effects only, no damage applied.
+#define SHOCK_VISUAL_ONLY (1 << 4)
 
 #define INCORPOREAL_MOVE_BASIC 1
 #define INCORPOREAL_MOVE_SHADOW 2 // leaves a trail of shadows
@@ -411,15 +419,26 @@
 #define SKIN_COLOR_OBSIDIAN "3b2e27"
 #define SKIN_COLOR_BRIMSTONE "271f1a"
 #define SKIN_COLOR_JADE "d6bea9"
+#define SKIN_COLOR_CERAGYRITE "4c4a4f"
 
 //DARK ELF SKIN TONES
 #define SKIN_COLOR_COMMORAH "9796a9"
 #define SKIN_COLOR_GLOOMHAVEN "897489"
 #define SKIN_COLOR_DARKPILA "938f9c"
-#define SKIN_COLOR_SSHANNTYNLAN "737373"
+#define SKIN_COLOR_SSHANNTYNLAN "746e6e"
 #define SKIN_COLOR_LLURTH_DREIR "6a616d"
 #define SKIN_COLOR_TAFRAVMA "5f5f70"
 #define SKIN_COLOR_YUETHINDRYNN "2f2f38"
+#define SKIN_COLOR_KOREDYNN "32356b"
+#define SKIN_COLOR_AISEEDRYNN "a3c1c9"
+#define SKIN_COLOR_GRENDUSKRA "8b8585"
+#define SKIN_COLOR_HUNSEK "6c6799"
+
+//GNOME UNIQUE SKIN TONES
+#define SKIN_COLOR_ASHEN "A79E96"
+#define SKIN_COLOR_UNDERDARK "7C8A97"
+#define SKIN_COLOR_BEACH "BE9D7B"
+#define SKIN_COLOR_PALM "795138"
 
 //WOOD ELF SKIN TONES
 #define SKIN_COLOR_GRENZEL_WOODS "fff0e9"
@@ -436,6 +455,18 @@
 #define SKIN_COLOR_TIMBERBORN "5d4c41"
 #define SKIN_COLOR_LOTUS_COAST "eae1C8"
 
+//SUN ELF SKIN TONES
+#define SKIN_COLOR_DAWN "eaCebe"
+#define SKIN_COLOR_MORNING "dbaB8f"
+#define SKIN_COLOR_NOON "be8f73"
+#define SKIN_COLOR_EVENING "a57962"
+#define SKIN_COLOR_SUNSET "7B5752"  
+#define SKIN_COLOR_DUSK "564044" 
+#define SKIN_COLOR_GILDED "e1b772"
+#define SKIN_COLOR_SELFAMBER "c9aa79"
+#define SKIN_COLOR_SELFTOPAZ "b19d68"
+#define SKIN_COLOR_SELFBRASS "d6a35b"
+
 //HUMEN SKIN TONES
 #define SKIN_COLOR_GRENZELHOFT "fff0e9"
 #define SKIN_COLOR_HAMMERHOLD "ffe0d1"
@@ -450,6 +481,12 @@
 #define SKIN_COLOR_NALEDI "4e3729"
 #define SKIN_COLOR_KAZENGUN "dbcca9"
 #define SKIN_COLOR_NALEDI_LIGHT "5d4c41"
+
+//DULLAHAN SKIN TONES
+#define SKIN_COLOR_PALE_GRENZELHOFT "ebdad2"
+#define SKIN_COLOR_PALE_HAMMERHOLD "ffe0d1"
+#define SKIN_COLOR_PALE_EBON "54463d"
+#define SKIN_COLOR_PALE_KAZENGUN "c9a893"
 
 //AASIMAR SKIN TONES
 #define SKIN_COLOR_CULTOR "b5a4a4"
@@ -503,6 +540,16 @@
 #define SKIN_COLOR_CALVUS "E0CED8"
 #define SKIN_COLOR_VOIBION "53392f"
 #define SKIN_COLOR_CHYERNO "252e41"
+#define SKIN_COLOR_DREMA "D16A51"
+#define SKIN_COLOR_CHIR "549ab6"
+#define SKIN_COLOR_VESYL "7a2525"
+#define SKIN_COLOR_KROSEC "f9f9f9"
+#define SKIN_COLOR_ASZA "7a5497"
+#define SKIN_COLOR_KRIZZSHA "a191cc"
+#define SKIN_COLOR_TOSIZ "5b7343"
+#define SKIN_COLOR_VELOTHEL "87a665"
+#define SKIN_COLOR_XIR "dbb189"
+#define SKIN_COLOR_ESSE "886537"
 
 //GOBLIN SKIN TONES
 #define SKIN_COLOR_OCHRE "968127"
@@ -517,6 +564,7 @@
 #define SKIN_COLOR_FROST "6486b0"
 #define SKIN_COLOR_ABYSS "2a6986"
 #define SKIN_COLOR_HADAL "24353d"
+#define SKIN_COLOR_PEA	"a9b994"
 
 //ARGONIAN SKIN TONES
 #define SKIN_COLOR_AQUARELA "ffff88"

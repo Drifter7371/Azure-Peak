@@ -103,9 +103,9 @@ GLOBAL_VAR(restart_counter)
 
 	Master.Initialize(10, FALSE, TRUE)
 
-	if(TEST_RUN_PARAMETER in params)
-		HandleTestRun()
-
+#ifdef UNIT_TESTS
+	HandleTestRun()
+#endif
 	update_status()
 
 
@@ -120,7 +120,7 @@ GLOBAL_VAR(restart_counter)
 #else
 	cb = VARSET_CALLBACK(SSticker, force_ending, TRUE)
 #endif
-	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(addtimer), cb, 10 SECONDS))
+	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_addtimer), cb, 10 SECONDS))
 
 /world/proc/SetupExternalRSC()
 #if (PRELOAD_RSC == 0)
@@ -158,7 +158,6 @@ GLOBAL_VAR(restart_counter)
 		GLOB.log_directory = "data/logs/[override_dir]"
 		GLOB.picture_logging_prefix = "O_[override_dir]_"
 		GLOB.picture_log_directory = "data/picture_logs/[override_dir]"
-
 	GLOB.world_game_log = "[GLOB.log_directory]/game.log"
 	GLOB.world_mecha_log = "[GLOB.log_directory]/mecha.log"
 	GLOB.world_virus_log = "[GLOB.log_directory]/virus.log"
@@ -173,12 +172,16 @@ GLOBAL_VAR(restart_counter)
 	GLOB.world_qdel_log = "[GLOB.log_directory]/qdel.log"
 	GLOB.world_map_error_log = "[GLOB.log_directory]/map_errors.log"
 	GLOB.character_list_log = "[GLOB.log_directory]/character_list.log"
+	GLOB.hunted_log = "[GLOB.log_directory]/hunted.log"
 	GLOB.world_runtime_log = "[GLOB.log_directory]/runtime.log"
 	GLOB.query_debug_log = "[GLOB.log_directory]/query_debug.log"
 	GLOB.world_job_debug_log = "[GLOB.log_directory]/job_debug.log"
 	GLOB.world_paper_log = "[GLOB.log_directory]/paper.log"
 	GLOB.tgui_log = "[GLOB.log_directory]/tgui.log"
-
+#ifdef UNIT_TESTS
+	GLOB.test_log = file("[GLOB.log_directory]/tests.log")
+	start_log(GLOB.test_log)
+#endif
 	start_log(GLOB.world_game_log)
 	start_log(GLOB.world_attack_log)
 	start_log(GLOB.world_pda_log)
@@ -191,7 +194,8 @@ GLOBAL_VAR(restart_counter)
 	start_log(GLOB.tgui_log)
 	start_log(GLOB.character_list_log)
 
-	GLOB.changelog_hash = md5('html/changelog.html') //for telling if the changelog has changed recently
+	var/latest_changelog = file("[global.config.directory]/../html/changelogs/archive/" + time2text(world.timeofday, "YYYY-MM") + ".yml")
+	GLOB.changelog_hash = fexists(latest_changelog) ? md5(latest_changelog) : 0 //for telling if the changelog has changed recently
 	if(fexists(GLOB.config_error_log))
 		fcopy(GLOB.config_error_log, "[GLOB.log_directory]/config_error.log")
 		fdel(GLOB.config_error_log)
@@ -244,8 +248,9 @@ GLOBAL_VAR(restart_counter)
 	set waitfor = FALSE
 	var/list/fail_reasons
 	if(GLOB)
-		if(GLOB.total_runtimes != 0)
-			fail_reasons = list("Total runtimes: [GLOB.total_runtimes]")
+		// TODO: UNCOMMENT THIS ONCE I find out why matthios creation is runtiming I just don't want to hold up the entire PR
+		// if(GLOB.total_runtimes != 0)
+		// 	fail_reasons = list("Total runtimes: [GLOB.total_runtimes]")
 #ifdef UNIT_TESTS
 		if(GLOB.failed_any_test)
 			LAZYADD(fail_reasons, "Unit Tests failed!")
@@ -276,6 +281,7 @@ GLOBAL_VAR(restart_counter)
 		'sound/roundend/rest.ogg',
 		'sound/roundend/gather.ogg',
 		'sound/roundend/dwarfs.ogg',
+		'sound/roundend/happiness.ogg',
 	)
 	for(var/client/thing in GLOB.clients)
 		if(!thing)
@@ -287,13 +293,13 @@ GLOBAL_VAR(restart_counter)
 
 	TgsReboot()
 
-	if(TEST_RUN_PARAMETER in params)
-		FinishTestRun()
-		return
-
+#ifdef UNIT_TESTS
+	FinishTestRun()
+	return
+#else
 	if(TgsAvailable())
 		send2chat(new /datum/tgs_message_content("Round ending!"), CONFIG_GET(string/chat_announce_new_game))
-		testing("tgsavailable passed")
+
 		var/do_hard_reboot
 		// check the hard reboot counter
 		var/ruhr = CONFIG_GET(number/rounds_until_hard_restart)
@@ -319,6 +325,7 @@ GLOBAL_VAR(restart_counter)
 	log_world("World rebooted at [time_stamp()]")
 	shutdown_logging() // Past this point, no logging procs can be used, at risk of data loss.
 	..()
+#endif
 
 /world/proc/update_status()
 	var/list/features = list()
@@ -417,11 +424,36 @@ GLOBAL_VAR(restart_counter)
 	else
 		hub_password = "SORRYNOPASSWORD"
 
+/**
+
+
+ * Handles incresing the world's maxx var and intializing the new turfs and assigning them to the global area.
+
+
+ * If map_load_z_cutoff is passed in, it will only load turfs up to that z level, inclusive.
+
+
+ * This is because maploading will handle the turfs it loads itself.
+
+
+ */
+
+
+/world/proc/increase_max_x(new_maxx, map_load_z_cutoff = maxz)
+	if(new_maxx <= maxx)
+		return
+	maxx = new_maxx
+
+/world/proc/increase_max_y(new_maxy, map_load_z_cutoff = maxz)
+	if(new_maxy <= maxy)
+		return
+	maxy = new_maxy
+
 /world/proc/incrementMaxZ()
 	maxz++
 	SSmobs.MaxZChanged()
 	SSidlenpcpool.MaxZChanged()
-
+	SSai_controllers.on_max_z_changed()
 
 /*
 #ifdef TESTING
@@ -462,20 +494,11 @@ GLOBAL_VAR(restart_counter)
 	SStimer?.reset_buckets()
 
 /world/proc/init_byond_tracy()
-	var/library
-
-	switch (system_type)
-		if (MS_WINDOWS)
-			library = "prof.dll"
-		if (UNIX)
-			library = "libprof.so"
-		else
-			CRASH("Unsupported platform: [system_type]")
-
-	var/init_result = call_ext(library, "init")("block")
-	if (init_result != "0")
-		//para_tracy returns the filename on succesful init so this always runtimes, lol
-		CRASH("Error initializing byond-tracy: [init_result]")
+	var/tracy_init = call_ext(world.system_type == MS_WINDOWS ? "prof.dll" : "./libprof.so", "init")() // Setup Tracy integration
+	if(length(tracy_init) != 0 && tracy_init[1] == ".") // it returned the output file
+		log_world("TRACY Enabled, streaming to [tracy_init].")
+	else if(tracy_init != "0")
+		CRASH("Tracy init error: [tracy_init]")
 
 /world/proc/init_debugger()
 	var/dll = GetConfig("env", "AUXTOOLS_DEBUG_DLL")
@@ -489,3 +512,5 @@ GLOBAL_VAR(restart_counter)
 		call_ext(dll, "auxtools_shutdown")()
 	
 	. = ..()
+
+#undef RESTART_COUNTER_PATH

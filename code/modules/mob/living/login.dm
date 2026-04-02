@@ -1,6 +1,10 @@
 /mob/living/Login()
 	login_fade()
 	..()
+	if(client)
+		client.update_ooc_verb_visibility()
+		if(stat == DEAD)
+			client.verbs.Add(GLOB.ghost_verbs)
 	//Mind updates
 	sync_mind()
 	mind.show_memory(src, 0)
@@ -11,6 +15,7 @@
 //	update_tod_hud()
 	update_spd()
 
+	update_sight()
 //	if (client && (stat == DEAD))
 //		client.ghostize()
 

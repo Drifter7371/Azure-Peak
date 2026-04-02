@@ -8,7 +8,7 @@
 
 
 /datum/mapGenerator/bog
-	modules = list(/datum/mapGeneratorModule/ambushing,/datum/mapGeneratorModule/boggrassturf,/datum/mapGeneratorModule/bog,/datum/mapGeneratorModule/bogroad,/datum/mapGeneratorModule/boggrass)
+	modules = list(/datum/mapGeneratorModule/boggrassturf,/datum/mapGeneratorModule/bog,/datum/mapGeneratorModule/bogroad,/datum/mapGeneratorModule/boggrass)
 
 
 /datum/mapGeneratorModule/bog
@@ -21,6 +21,10 @@
 							/obj/structure/flora/roguegrass/maneater = 13,
 							/obj/item/natural/stone = 23,
 							/obj/item/natural/rock = 6,
+							/obj/item/magic/artifact = 4,
+							/obj/structure/leyline/powerful = 1,
+							/obj/structure/voidstoneobelisk = 1,
+							/obj/structure/flora/roguegrass/herb/manabloom = 4,
 							/obj/item/grown/log/tree/stick = 16,
 							/obj/structure/flora/roguetree/stump/log = 3,
 							/obj/structure/flora/roguetree/stump = 4,
@@ -56,6 +60,7 @@
 							/obj/structure/flora/roguegrass = 44,
 							/obj/structure/flora/roguegrass/maneater = 15,
 							/obj/structure/flora/roguegrass/maneater/real = 10,
+							/obj/structure/flora/roguegrass/pumpkin = 2,
 							/obj/item/natural/stone = 6,
 							/obj/item/natural/rock = 1,
 							/obj/item/grown/log/tree/stick = 3,

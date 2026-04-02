@@ -31,6 +31,9 @@
 #define IMMUTABLE_SLOW			(1<<10) // When players should not be able to change the slowdown of the item (Speed potions, etc)
 #define IN_STORAGE				(1<<11) //is this item in the storage item, such as backpack? used for tooltips
 #define SURGICAL_TOOL			(1<<12)	//Tool commonly used for surgery: won't attack targets in an active surgical operation on help intent (in case of mistakes)
+#define DREAM_ITEM				(1<<13) //Otherworldly items from Abyssor's dream. Tend to have special effects!
+#define FRESH_FOOD_ITEM			(1<<14) // Currently only used for fresh meat from butchering to differentiate it from stockpile magic meat.
+#define HAG_ITEM				(1<<15) // Wyrd hag items, they self repair when on grass tiles!
 
 // Flags for the clothing_flags var on /obj/item/clothing
 
@@ -47,3 +50,4 @@
 #define SNUG_FIT               (1<<11) //Prevents knock-off from things like hat-throwing.
 #define ANTI_TINFOIL_MANEUVER   (1<<12) //Hats with negative effects when worn (i.e the tinfoil hat).
 #define CANT_SLEEP_IN			(1<<13) //Makes you unable to sleep with this on
+#define TAUR_COMPATIBLE			(1<<14) // Clothing that can be worn by taurs

@@ -13,6 +13,10 @@
 	layer = 2.91
 	damage_deflection = 30
 
+/obj/structure/well/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Left-clicking a well with a bucket, pot, or similarly-sized container will eventually fill it to the brim with freshwater.")
+	. += span_info("Some wells might provide alternatives to freshwater. Having a level in the Alchemy skill allows you to specifically check for non-freshwatered reagents inside the filled container.")
 
 /obj/structure/well/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/reagent_containers/glass/bucket))
@@ -21,7 +25,7 @@
 			to_chat(user, span_warning("[W] is full."))
 			return
 		if(do_after(user, 1 SECONDS, target = src))
-			var/list/waterl = list(/datum/reagent/water = 200)
+			var/list/waterl = list(/datum/reagent/water = 250)
 			W.reagents.add_reagent_list(waterl)
 			to_chat(user, "<span class='notice'>I fill [W] from [src].</span>")
 			playsound(user, pick('sound/foley/waterwash (1).ogg','sound/foley/waterwash (2).ogg'), 80, FALSE)
@@ -30,7 +34,7 @@
 
 /obj/structure/well/poisoned
 	name = "dubious well"
-	desc = ""
+	desc = "A fetid stench eminates from this orifice of brick-and-wood, yearning to be ladled into unsuspecting buckets."
 	icon = 'icons/roguetown/misc/structure.dmi'
 	icon_state = "well"
 	color = "#59aa65"
@@ -61,8 +65,8 @@
 	desc = "A slightly more civilized alternative to drinking straight from a river."
 	icon = 'icons/roguetown/misc/64x64.dmi'
 	icon_state = "fountain"
-	layer = BELOW_MOB_LAYER
-	layer = -0.1
+	layer = ABOVE_ALL_MOB_LAYER
+	plane = GAME_PLANE_UPPER
 
 /obj/structure/well/fountain/onbite(mob/user)
 	if(isliving(user))

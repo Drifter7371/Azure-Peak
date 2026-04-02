@@ -23,11 +23,23 @@
 	cost = 80 // 2 Steel Ingots + Small Log
 	contains = list(/obj/item/quiver/javelin/steel)
 
+/datum/supply_pack/rogue/ranged_weapons/hurlbat
+	name = "Hurlbat"
+	cost = 50 // 1 Steel Ingot, but a pretty strong weapon. 
+	contains = list(/obj/item/rogueweapon/stoneaxe/hurlbat)
+
 /datum/supply_pack/rogue/ranged_weapons/crossbow
 	name = "Crossbow"
 	cost = 30
 	contains = list(
 					/obj/item/gun/ballistic/revolver/grenadelauncher/crossbow,
+				)
+
+/datum/supply_pack/rogue/ranged_weapons/crossbow/slurbow
+	name = "Slurbow"
+	cost = 30
+	contains = list(
+					/obj/item/gun/ballistic/revolver/grenadelauncher/crossbow/slurbow,
 				)
 
 /datum/supply_pack/rogue/ranged_weapons/recurvebow
@@ -65,13 +77,6 @@
 					/obj/item/quiver/bodkin,
 				)
 
-/datum/supply_pack/rogue/ranged_weapons/quivers/pyroarrows
-	name = "Quiver of Pyro Arrows"
-	cost = 100
-	contains = list(
-					/obj/item/quiver/pyroarrows,
-				)
-
 /datum/supply_pack/rogue/ranged_weapons/quivers/poisonarrows
 	name = "Quiver of Poison Arrows"
 	cost = 100 
@@ -83,25 +88,21 @@
 	name = "Quiver of Bolts"
 	cost = 35 // 2 Iron Ingots
 	contains = list(
-					/obj/item/quiver/bolts,
+					/obj/item/quiver/bolt/standard
+				)
+
+/datum/supply_pack/rogue/ranged_weapons/quivers/lightbolts
+	name = "Quiver of Light Bolts"
+	cost = 30
+	contains = list(
+					/obj/item/quiver/bolt/light
 				)
 
 /datum/supply_pack/rogue/ranged_weapons/quivers/pyrobolts
 	name = "Quiver of Pyroclastic Bolts"
-	cost = 100 // Matching price of steel
+	cost = 100
 	contains = list(
-					/obj/item/quiver/pyrobolts,
-				)
-
-/datum/supply_pack/rogue/ranged_weapons/bottlebombs
-	name = "Bottle Bomb"
-	cost = 40
-	contains = list(
-					/obj/item/bomb,
-					/obj/item/bomb,
-					/obj/item/bomb,
-					/obj/item/bomb,
-					/obj/item/bomb
+					/obj/item/quiver/bolt/pyro,
 				)
 
 /datum/supply_pack/rogue/ranged_weapons/slingandpouch
@@ -125,5 +126,4 @@
 	cost = 20
 	contains = list(
 					/obj/item/net,
-					/obj/item/net
 				)

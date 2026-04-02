@@ -20,8 +20,6 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	//Used to make sure someone doesn't get spammed with messages if they're ineligible for roles
 	var/ineligible_for_roles = FALSE
 
-	var/brohand
-
 /mob/dead/new_player/Initialize()
 //	if(client && SSticker.state == GAME_STATE_STARTUP)
 //		var/atom/movable/screen/splash/S = new(client, TRUE, TRUE)
@@ -64,54 +62,6 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	return
 
 /mob/dead/new_player/proc/new_player_panel()
-/*
-	var/output = "<center>"
-	if(SSticker.current_state <= GAME_STATE_PREGAME)
-		switch(ready)
-			if(PLAYER_NOT_READY)
-				output += "<p>[LINKIFY_READY("READY", PLAYER_READY_TO_PLAY)] | <b>UNREADY</b></p>"
-			if(PLAYER_READY_TO_PLAY)
-				output += "<p><b>READY</b> | [LINKIFY_READY("UNREADY", PLAYER_NOT_READY)]</p>"
-			if(PLAYER_READY_TO_OBSERVE)
-				output += "<p>[LINKIFY_READY("READY", PLAYER_READY_TO_PLAY)]</p>"
-				output += "<p>[LINKIFY_READY("UNREADY", PLAYER_NOT_READY)]</p>"
-	else
-//		output += "<p><a href='byond://?src=[REF(src)];manifest=1'>View the Crew Manifest</a></p>"
-//		output += "<p><a href='byond://?src=[REF(src)];manifest=1'>FOLK</a></p>"
-		output += "<p><a href='byond://?src=[REF(src)];late_join=1'>LATEJOIN</a></p>"
-	output += "<p><a href='byond://?src=[REF(src)];show_preferences=1'>CHARACTER</a></p>"
-
-//	output += "<p><a href='byond://?src=[REF(src)];show_options=1'>OPTIONS</a></p>"
-
-	output += "<p><a href='byond://?src=[REF(src)];show_keybinds=1'>KEYBINDS</a></p>"
-
-	if(!IsGuestKey(src.key))
-		if (SSdbcore.Connect())
-			var/isadmin = 0
-			if(src.client && src.client.holder)
-				isadmin = 1
-			var/datum/DBQuery/query_get_new_polls = SSdbcore.NewQuery("SELECT id FROM [format_table_name("poll_question")] WHERE [(isadmin ? "" : "adminonly = false AND")] Now() BETWEEN starttime AND endtime AND id NOT IN (SELECT pollid FROM [format_table_name("poll_vote")] WHERE ckey = \"[sanitizeSQL(ckey)]\") AND id NOT IN (SELECT pollid FROM [format_table_name("poll_textreply")] WHERE ckey = \"[sanitizeSQL(ckey)]\")")
-			var/rs = REF(src)
-			if(query_get_new_polls.Execute())
-				var/newpoll = 0
-				if(query_get_new_polls.NextRow())
-					newpoll = 1
-
-				if(newpoll)
-					output += "<p><b><a href='byond://?src=[rs];showpoll=1'>Show Player Polls</A> (NEW!)</b></p>"
-				else
-					output += "<p><a href='byond://?src=[rs];showpoll=1'>Show Player Polls</A></p>"
-			qdel(query_get_new_polls)
-			if(QDELETED(src))
-				return
-
-	output += "</center>"
-
-	//src << browse(output,"window=playersetup;size=210x240;can_close=0")
-	var/datum/browser/popup = new(src, "playersetup", "<div align='center'>LOBBY MENU</div>", 250, 200)
-	popup.set_window_options("can_close=0")
-	popup.set_content(output)
-	popup.open(FALSE)*/
 	if(client)
 		if(client.prefs)
 			client.prefs.ShowChoices(src, 4)
@@ -123,7 +73,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	if(!client)
 		return 0
 
-	//Determines Relevent Population Cap
+	// Determine relevant population cap.
 	var/relevant_cap
 	var/hpc = CONFIG_GET(number/hard_popcap)
 	var/epc = CONFIG_GET(number/extreme_popcap)
@@ -144,24 +94,12 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 		client.prefs.ShowChoices(src, 3)
 		return 1
 
-	if(href_list["sethand"])
-		if(brohand == href_list["sethand"])
-			brohand = null
-			to_chat(src, span_boldwarning("Your Hand is REJECTED, sire."))
-			return 1
-		brohand = href_list["sethand"]
-		to_chat(src, span_boldnotice("Your Hand is selected, sire."))
-		return 1
-
 	if(href_list["ready"])
 		var/tready = text2num(href_list["ready"])
-		//Avoid updating ready if we're after PREGAME (they should use latejoin instead)
-		//This is likely not an actual issue but I don't have time to prove that this
-		//no longer is required
-		if(tready == PLAYER_NOT_READY)
-			if(SSticker.job_change_locked)
-				return
-		if(SSticker.current_state <= GAME_STATE_PREGAME)
+		var/is_pregame = SSticker.current_state <= GAME_STATE_PREGAME
+		if(tready == PLAYER_NOT_READY && SSticker.job_change_locked)
+			return
+		if(is_pregame)
 			if(tready == PLAYER_READY_TO_PLAY)
 				if(length(client.prefs.flavortext) < MINIMUM_FLAVOR_TEXT)
 					to_chat(src, span_boldwarning("You need a minimum of [MINIMUM_FLAVOR_TEXT] characters in your flavor text in order to play."))
@@ -181,12 +119,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	if(href_list["refresh"])
 		winshow(src, "preferencess_window", FALSE)
 		src << browse(null, "window=preferences_browser")
-//		src << browse(null, "window=playersetup") //closes the player setup window
 		new_player_panel()
-
-//	if(href_list["rpprompt"])
-//		do_rp_prompt()
-//		return
 
 	if(href_list["late_join"])
 		if(!SSticker?.IsRoundInProgress())
@@ -200,11 +133,6 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 		if(href_list["late_join"] == "override")
 			LateChoices()
 			return
-/*#ifdef MATURESERVER
-		if(key && (world.time < GLOB.respawntimes[key] + RESPAWNTIME))
-			to_chat(usr, span_warning("I can return in [GLOB.respawntimes[key] + RESPAWNTIME - world.time]."))
-			return
-#else*/
 
 
 		var/timetojoin = 5 MINUTES
@@ -291,6 +219,8 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 		var/datum/poll_question/poll = locate(href_list["votepollref"]) in GLOB.polls
 		vote_on_poll_handler(poll, href_list)
 
+	if(href_list["explainreadyupbonus"])
+		to_chat(src, span_smallnotice("Ready up for 20 mammons in a stashed pouch, full hydration, a great meal buff and +1 triumph!"))
 
 
 /mob/dead/new_player/verb/do_rp_prompt()
@@ -302,48 +232,6 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 		var/datum/browser/popup = new(src, "Primer", "AZURE PEAK", 460, 550)
 		popup.set_content(dat.Join())
 		popup.open()
-
-//When you cop out of the round (NB: this HAS A SLEEP FOR PLAYER INPUT IN IT)
-/mob/dead/new_player/proc/make_me_an_observer()
-	if(QDELETED(src) || !src.client)
-		ready = PLAYER_NOT_READY
-		return FALSE
-
-	var/this_is_like_playing_right = alert(src,"Are you sure you wish to observe? Playing is a lot more fun.","VOYEUR","Yes","No")
-
-	if(QDELETED(src) || !src.client || this_is_like_playing_right != "Yes")
-		ready = PLAYER_NOT_READY
-		src << browse(null, "window=playersetup") //closes the player setup window
-		new_player_panel()
-		return FALSE
-
-	var/mob/dead/observer/observer	// Transfer safety to observer spawning proc.
-	if(check_rights(R_WATCH, FALSE))
-		observer = new /mob/dead/observer/admin(src)
-	else
-		observer = new /mob/dead/observer/rogue/nodraw(src)
-	spawning = TRUE
-
-	observer.started_as_observer = TRUE
-	close_spawn_windows()
-	var/obj/effect/landmark/observer_start/O = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
-	to_chat(src, span_notice("Now teleporting."))
-	if (O)
-		observer.forceMove(O.loc)
-	else
-		to_chat(src, span_notice("Teleporting failed. Ahelp an admin please"))
-		stack_trace("There's no freaking observer landmark available on this map or you're making observers before the map is initialised")
-	observer.key = key
-	observer.client = client
-	observer.set_ghost_appearance()
-	if(observer.client && observer.client.prefs)
-		observer.real_name = observer.client.prefs.real_name
-		observer.name = observer.real_name
-	observer.update_icon()
-	observer.stop_sound_channel(CHANNEL_LOBBYMUSIC)
-	QDEL_NULL(mind)
-	qdel(src)
-	return TRUE
 
 /proc/get_job_unavailable_error_message(retval, jobtitle)
 	switch(retval)
@@ -375,6 +263,15 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 				return "You must wait [remaining_time] seconds before playing as an [jobtitle] again."
 		if(JOB_UNAVAILABLE_VIRTUESVICE)
 			return "[jobtitle] is restricted by your Virtues or Vices."
+		if(JOB_UNAVAILABLE_PQ)
+			var/datum/job/job = SSjob.GetJob(jobtitle)
+			if(job && !isnull(job.min_pq))
+				var/player_pq = get_playerquality(usr?.ckey)
+				return "You do not meet the Player Quality requirement for [jobtitle]. (Required: [job.min_pq], Your PQ: [player_pq])"
+			else if(job && !isnull(job.max_pq))
+				var/player_pq = get_playerquality(usr?.ckey)
+				return "You exceed the Player Quality requirement for [jobtitle]. (Maximum: [job.max_pq], Your PQ: [player_pq])"
+			return "You do not meet the Player Quality requirement for [jobtitle]."
 	return "Error: Unknown job availability."
 
 //used for latejoining
@@ -382,12 +279,12 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	if(QDELETED(src))
 		return JOB_UNAVAILABLE_GENERIC
 	if(has_world_trait(/datum/world_trait/skeleton_siege))
-		if(rank != "Skeleton")
+		if(rank != "Greater Skeleton")
 			return JOB_UNAVAILABLE_GENERIC
 		else
 			return JOB_AVAILABLE
 	else
-		if(rank == "Skeleton")
+		if(rank == "Greater Skeleton")
 			return JOB_UNAVAILABLE_GENERIC
 
 	if(has_world_trait(/datum/world_trait/goblin_siege))
@@ -397,15 +294,6 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 			return JOB_AVAILABLE
 	else
 		if(rank == "Goblin")
-			return JOB_UNAVAILABLE_GENERIC
-
-	if(has_world_trait(/datum/world_trait/death_knight))
-		if(rank != "Death Knight")
-			return JOB_UNAVAILABLE_GENERIC
-		else
-			return JOB_AVAILABLE
-	else
-		if(rank == "Death Knight")
 			return JOB_UNAVAILABLE_GENERIC
 
 	var/datum/job/job = SSjob.GetJob(rank)
@@ -424,13 +312,14 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	if(job.required_playtime_remaining(client))
 		return JOB_UNAVAILABLE_PLAYTIME
 	if(job.plevel_req > client.patreonlevel())
-		testing("PATREONLEVEL [client.patreonlevel()] req [job.plevel_req]")
 		return JOB_UNAVAILABLE_GENERIC
+	#ifdef USES_PQ
 	if(!job.required || latejoin)
 		if(!isnull(job.min_pq) && (get_playerquality(ckey) < job.min_pq))
-			return JOB_UNAVAILABLE_GENERIC
+			return JOB_UNAVAILABLE_PQ
 		if(!isnull(job.max_pq) && (get_playerquality(ckey) > job.max_pq))
-			return JOB_UNAVAILABLE_GENERIC
+			return JOB_UNAVAILABLE_PQ
+	#endif
 	var/datum/species/pref_species = client.prefs.pref_species
 	if(length(job.allowed_races) && !(pref_species.type in job.allowed_races))
 		return JOB_UNAVAILABLE_RACE
@@ -466,7 +355,13 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 		else
 			return JOB_UNAVAILABLE_SLOTFULL
 	if(length(job.vice_restrictions) || length(job.virtue_restrictions))
-		if((client.prefs.virtue?.type in job.virtue_restrictions) || (client.prefs.virtuetwo?.type in job.virtue_restrictions) || (client.prefs.charflaw?.type in job.vice_restrictions))
+		var/has_restricted_virtue = (client.prefs.virtue?.type in job.virtue_restrictions) || (client.prefs.virtuetwo?.type in job.virtue_restrictions)
+		var/has_restricted_vice = FALSE
+		for(var/datum/charflaw/cf in client.prefs.charflaws)
+			if(cf.type in job.vice_restrictions)
+				has_restricted_vice = TRUE
+				break
+		if(has_restricted_virtue || has_restricted_vice)
 			return JOB_UNAVAILABLE_VIRTUESVICE
 //	if(job.title == "Adventurer" && latejoin)
 //		for(var/datum/job/J in SSjob.occupations)
@@ -477,7 +372,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	return JOB_AVAILABLE
 
 /mob/dead/new_player/proc/AttemptLateSpawn(rank)
-	var/error = IsJobUnavailable(rank)
+	var/error = IsJobUnavailable(rank, TRUE)
 	if(error != JOB_AVAILABLE)
 		to_chat(src, span_warning("[get_job_unavailable_error_message(error, rank)]"))
 		return FALSE
@@ -502,26 +397,26 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	SSticker.queued_players -= src
 	SSticker.queue_delay = 4
 
-	testing("basedtest 1")
+
 
 	SSjob.AssignRole(src, rank, 1)
-	testing("basedtest 2")
+
 	var/mob/living/character = create_character(TRUE)	//creates the human and transfers vars and mind
-	testing("basedtest 3")
+
 	character.islatejoin = TRUE
 	var/equip = SSjob.EquipRank(character, rank, TRUE)
-	testing("basedtest 4")
+
 
 	if(isliving(equip))	//Borgs get borged in the equip, so we need to make sure we handle the new mob.
 		character = equip
 
 	var/datum/job/job = SSjob.GetJob(rank)
-	testing("basedtest 5")
+
 
 	if(job && !job.override_latejoin_spawn(character))
-		testing("basedtest 6")
+
 		SSjob.SendToLateJoin(character)
-		testing("basedtest 7")
+
 //		if(!arrivals_docked)
 		var/atom/movable/screen/splash/Spl = new(character.client, TRUE)
 		Spl.Fade(TRUE)
@@ -553,6 +448,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 			give_madness(humanc, GLOB.curse_of_madness_triggered)
 */
 	GLOB.joined_player_list += character.ckey
+	update_scaling_slots()
 /*
 	if(CONFIG_GET(flag/allow_latejoin_antagonists) && humanc)	//Borgs aren't allowed to be antags. Will need to be tweaked if we get true latejoin ais.
 		if(SSshuttle.emergency)
@@ -580,10 +476,17 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 		GLOB.respawncounts[character.ckey] = 1
 //	add_roundplayed(character.ckey)
 	if(humanc)
+		SSrole_class_handler.setup_class_handler(humanc)
 		try_apply_character_post_equipment(humanc)
 	log_manifest(character.mind.key,character.mind,character,latejoin = TRUE)
+	if(character.client)
+		character.client.update_ooc_verb_visibility()
 
 /mob/dead/new_player/proc/LateChoices()
+	if(SSticker?.HasRoundStarted() && SSgamemode?.current_storyteller)
+		gnollslot_update()
+		update_scaling_slots()
+		enforce_storyteller_soft_antag_slots()
 	var/list/dat = list("<div class='notice' style='font-style: normal; font-size: 14px; margin-bottom: 2px; padding-bottom: 0px'>Round Duration: [DisplayTimeText(world.time - SSticker.round_start_time, 1)]</div>")
 	for(var/datum/job/prioritized_job in SSjob.prioritized_jobs)
 		if(prioritized_job.current_positions >= prioritized_job.total_positions)
@@ -594,17 +497,19 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	var/list/omegalist = list()
 	omegalist += list(GLOB.noble_positions)
 	omegalist += list(GLOB.courtier_positions)
+	omegalist += list(GLOB.retinue_positions)
 	omegalist += list(GLOB.garrison_positions)
 	omegalist += list(GLOB.church_positions)
-	omegalist += list(GLOB.inquisition_positions)
-	omegalist += list(GLOB.yeoman_positions)
+	omegalist += list(GLOB.burgher_positions)
 	omegalist += list(GLOB.peasant_positions)
-	omegalist += list(GLOB.mercenary_positions)
-	omegalist += list(GLOB.youngfolk_positions)
+	omegalist += list(GLOB.sidefolk_positions)
+	omegalist += list(GLOB.wanderer_positions)
+	omegalist += list(GLOB.inquisition_positions)
+	omegalist += list(GLOB.antagonist_positions)
 
 	for(var/list/category in omegalist)
 		if(!SSjob.name_occupations[category[1]])
-			testing("HELP NO THING FOUND FOR [category[1]]")
+
 			continue
 
 		var/list/available_jobs = list()
@@ -613,7 +518,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 			if(!job_datum)
 				continue
 			// Make sure hiv+ jobs always appear on list, even if unavailable
-			var/is_job_available = (IsJobUnavailable(job_datum.title, TRUE) == JOB_AVAILABLE)
+			var/is_job_available = (IsJobUnavailable(job_datum.title) == JOB_AVAILABLE)
 			if(job_datum.always_show_on_latechoices)
 				is_job_available = TRUE
 			if(is_job_available)
@@ -624,31 +529,33 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 			var/cat_name = ""
 			switch (SSjob.name_occupations[category[1]].department_flag)
 				if (NOBLEMEN)
-					cat_name = "Nobles"
+					cat_name = "Ducal Family"
 				if (COURTIERS)
 					cat_name = "Courtiers"
+				if (RETINUE)
+					cat_name = "Retinue"
 				if (GARRISON)
 					cat_name = "Garrison"
 				if (CHURCHMEN)
 					cat_name = "Churchmen"
-				if (YEOMEN)
-					cat_name = "Yeomen"
+				if (BURGHERS)
+					cat_name = "Burghers"
 				if (PEASANTS)
 					cat_name = "Peasants"
-				if (YOUNGFOLK)
+				if (SIDEFOLK)
 					cat_name = "Sidefolk"
-				if (MERCENARIES)
-					cat_name = "Mercenaries"
+				if (WANDERERS)
+					cat_name = "Wanderers"
 				if (INQUISITION)
 					cat_name = "Inquisition"
-			//	if (GOBLIN)
-			//		cat_name = "Goblins"
+				if (ANTAGONIST)
+					cat_name = "Antagonists"
 
 			dat += "<fieldset style='width: 185px; border: 2px solid [cat_color]; display: inline'>"
 			dat += "<legend align='center' style='font-weight: bold; color: [cat_color]'>[cat_name]</legend>"
 
 			if(has_world_trait(/datum/world_trait/skeleton_siege))
-				dat += "<a class='job command' href='byond://?src=[REF(src)];SelectedJob=Skeleton'>BECOME AN EVIL SKELETON</a>"
+				dat += "<a class='job command' href='byond://?src=[REF(src)];SelectedJob=Greater Skeleton'>BECOME AN EVIL SKELETON</a>"
 				dat += "</fieldset><br>"
 				column_counter++
 				if(column_counter > 0 && (column_counter % 3 == 0))
@@ -659,29 +566,25 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 				column_counter++
 				if(column_counter > 0 && (column_counter % 3 == 0))
 					dat += "</td><td valign='top'>"
-			if(has_world_trait(/datum/world_trait/death_knight))
-				dat += "<a class='job command' href='byond://?src=[REF(src)];SelectedJob=Death Knight'>JOIN THE VAMPIRE LORD AS A DEATH KNIGHT</a>"
-				dat += "</fieldset><br>"
-				column_counter++
-				if(column_counter > 0 && (column_counter % 3 == 0))
-					dat += "</td><td valign='top'>"
 
-			if(has_world_trait(/datum/world_trait/skeleton_siege) || has_world_trait(/datum/world_trait/death_knight) || has_world_trait(/datum/world_trait/goblin_siege))
+			if(has_world_trait(/datum/world_trait/skeleton_siege)|| has_world_trait(/datum/world_trait/goblin_siege))
 				break
 
 			for(var/job in available_jobs)
 				var/datum/job/job_datum = SSjob.name_occupations[job]
+				var/do_elaborate = job_datum.has_limited_subclasses()
 				if(job_datum)
-					var/command_bold = ""
-					if(job in GLOB.noble_positions)
-						command_bold = " command"
-					var/used_name = job_datum.title
+					var/command_bold = FALSE
+					if(job in GLOB.leadership_positions)
+						command_bold = TRUE
+					var/used_name = job_datum.display_title || job_datum.title
 					if(client.prefs.pronouns == SHE_HER && job_datum.f_title)
 						used_name = job_datum.f_title
 					if(job_datum in SSjob.prioritized_jobs)
 						dat += "<a class='job[command_bold]' href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'><span class='priority'>[used_name] ([job_datum.current_positions])</span></a>"
 					else
-						dat += "<a class='job[command_bold]' href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'>[used_name] ([job_datum.current_positions])[job_datum.round_contrib_points ? " RCP: +[job_datum.round_contrib_points]" : ""]</a>"
+						dat += "<font size = 3>[do_elaborate ? "<a href='?src=[REF(job_datum)];jobsubclassinfo=1'><b><font color = '#6b6743'>(!)</font></b></a>" : ""]<a href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'>[command_bold ? "<b>" : ""][used_name] ([job_datum.current_positions]/[job_datum.total_positions])[command_bold ? "</b>" : ""]</a></font>"
+						dat += "<br>"
 
 			dat += "</fieldset><br>"
 			column_counter++
@@ -725,20 +628,22 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	. = H
 	new_character = .
 
-	H.after_creation()
-
 	if(transfer_after)
 		transfer_character()
+
+	H.after_creation(src)
+
 	GLOB.chosen_names += H.real_name
 
 
-/mob/proc/after_creation()
+/mob/proc/after_creation(var/mob/dead/new_player/new_player)
 	return
 
-/mob/living/carbon/human/after_creation()
+/mob/living/carbon/human/after_creation(var/mob/dead/new_player/new_player)
 	if(dna?.species)
 		dna.species.after_creation(src)
-	roll_stats()
+
+	roll_stats(new_player)
 
 /mob/dead/new_player/proc/transfer_character()
 	. = new_character
@@ -771,6 +676,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	src << browse(null, "window=mob_occupation")
 	src << browse(null, "window=latechoices") //closes late job selection
 	src << browse(null, "window=migration") // Closes migrant menu
+	src << browse(null, "window=familiar_prefs") // Closes familiar prefs menu
 
 	SStriumphs.remove_triumph_buy_menu(client)
 
@@ -802,3 +708,5 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 
 		return FALSE //This is the only case someone should actually be completely blocked from antag rolling as well
 	return TRUE
+
+#undef LINKIFY_READY

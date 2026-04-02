@@ -1,12 +1,7 @@
-////click cooldowns, in tenths of a second, used for various combat actions
-//#define CLICK_CD_EXHAUSTED 35
-//#define CLICK_CD_MELEE 12
-//#define CLICK_CD_RANGE 4
-//#define CLICK_CD_RAPID 2
-
 /datum/intent
 	var/name = "intent"
 	var/desc = ""
+	var/icon = 'icons/mob/rogueintents.dmi'
 	var/icon_state = "instrike"
 	var/list/attack_verb = list("hits", "strikes")
 	var/obj/item/masteritem
@@ -15,48 +10,95 @@
 	var/intent_type
 	var/animname = "strike"
 	var/blade_class = BCLASS_BLUNT
+	/// Additive modifier to accuracy.
+	var/accuracy_modifier = 0
 	var/list/hitsound = list('sound/combat/hits/blunt/bluntsmall (1).ogg', 'sound/combat/hits/blunt/bluntsmall (2).ogg')
 	var/canparry = TRUE
 	var/candodge = TRUE
-	var/chargetime = 0 //if above 0, this attack must be charged to reach full damage
-	var/chargedrain = 0 //how mcuh fatigue is removed every second when at max charge
-	var/releasedrain = 1 //drain when we go off, regardless
-	var/misscost = 1	//extra drain from missing only, ALSO APPLIED IF ENEMY DODGES
+	/// If above 0, this attack must be charged to reach full damage.
+	var/chargetime = 0
+	/// Amount of fatigue removed per tick of full charge.
+	var/chargedrain = 0
+	/// Fatigue removed on release.
+	var/releasedrain = 1
+	/// Extra fatigue removed on missing the target, or if the enemy dodges.
+	var/misscost = 1
 	var/tranged = 0
-	var/noaa = FALSE //turns off auto aiming, also turns off the 'swooshes'
+	/// Turns of auto-aim as well as the 'swoosh'.
+	var/noaa = FALSE
 	var/warnie = ""
 	var/pointer = 'icons/effects/mousemice/human_attack.dmi'
-	var/clickcd = CLICK_CD_MELEE //the cd invoked clicking on stuff with this intent
-	var/recovery = 0		//RTD unable to move for this duration after an attack without becoming off balance
-	var/list/charge_invocation //list of stuff to say while charging
-	var/no_early_release = FALSE //we can't shoot off early
-	var/movement_interrupt = FALSE //we cancel charging when changing mob direction, for concentration spells
-	var/rmb_ranged = FALSE //we execute a proc with the same name when rmbing at range with no offhand intent selected
-	var/tshield = FALSE //probably needed or something
+	/// Invoked clickCD.
+	var/clickcd = CLICK_CD_MELEE
+	/// Amount of time required to stay stationary after attack. Moving during this period incurs off-balance.
+	var/recovery = 0
+	/// String list of chants during invoke.
+	var/list/charge_invocation
+	/// Allowing shooting during charge.
+	var/no_early_release = FALSE
+	/// Changing mob direction to cancel charge.
+	var/movement_interrupt = FALSE
+	/// Executes a ranged RMB proc of the same name, with no off-hand intent selected.
+	var/rmb_ranged = FALSE
+	var/tshield = FALSE
 	var/datum/looping_sound/chargedloop = null
 	var/keep_looping = TRUE
-	var/damfactor = 1 //multiplied by weapon's force for damage
-	var/penfactor = 0 //see armor_penetration
-	var/intent_intdamage_factor = 1 // Whether the intent itself has integrity damage modifier. Used for rend.
-	var/item_d_type = "blunt" // changes the item's attack type ("blunt" - area-pressure attack, "slash" - line-pressure attack, "stab" - point-pressure attack)
+	/// Multiplied damage modifier.
+	var/damfactor = 1
+	/// Multiplied armour penetration modifier.
+	var/penfactor = PEN_NONE
+	/// Whether the intent itself has integrity damage modifier. Used for rend.
+	var/intent_intdamage_factor = 1
+	/// Intent's demolition mod. Applied to structures / objects and shields.
+	var/demolition_mod = 1
+	/// Minimum damage from the intent.
+	var/min_intent_damage = 0
+	/// Maximum damage from the intent.
+	var/max_intent_damage = 200
+	/// Changes the item's attack type ("blunt" - area-pressure attack, "slash" - line-pressure attack, "stab" - point-pressure attack)
+	var/item_d_type = "blunt"
 	var/charging_slowdown = 0
 	var/warnoffset = 0
 	var/swingdelay = 0
-	var/no_attack = FALSE //causes a return in /attack() but still allows to be used in attackby(
-	var/reach = 1 //In tiles, how far this weapon can reach; 1 for adjacent, which is default
-	var/miss_text //THESE ARE FOR UNARMED MISSING ATTACKS
-	var/miss_sound //THESE ARE FOR UNARMED MISSING ATTACKS
-	var/allow_offhand = TRUE	//Do I need my offhand free while using this intent?
-	var/peel_divisor = 0		//How many consecutive peel hits this intent requires to peel a piece of coverage? May be overriden by armor thresholds if they're higher.
-	var/glow_intensity = null	//How much glow this intent has. Used for spells
-	var/glow_color = null // The color of the glow. Used for spells
-	var/mob_light = null // tracking mob_light
-	var/obj/effect/mob_charge_effect = null // The effect to be added (on top) of the mob while it is charging
+	/// Causes a return in /attack() but still allows to be used in attackby()
+	var/no_attack = FALSE
+	/// Range in tiles for melee attacks.
+	var/reach = 1
+	/// Unarmed miss string.
+	var/miss_text
+	/// Unarmed sound string.
+	var/miss_sound
+	/// Bool to toggle hether off-hand is required to be free or not.
+	var/allow_offhand = TRUE
+	/// How much glow this intent has. Used for spells
+	var/glow_intensity = null
+	/// The color of the glow. Used for spells
+	var/glow_color = null
+	/// Used to store and track mob lights.
+	var/mob_light = null
+	/// The effect to be added (on top) of the mob while it is charging.
+	var/obj/effect/mob_charge_effect = null
+	/// Custom icon for its swingdelay.
+	var/custom_swingdelay = null
+	/// Effective range for penfactor to apply fully.
+	var/effective_range = null
+	///	Effective range type. Can be Exact, Below or Above. Be sure to set this if you use effective_range!
+	/// Only use this with reach is >1 because otherwise like... why.
+	var/effective_range_type = EFF_RANGE_NONE
+	/// Extra sharpness drain per successful & parried hit.
+	var/sharpness_penalty = 0
 
+	///Effect stuff.
+	var/datum/status_effect/intent_effect	//Status effect this intent will apply on a successful hit (damage not needed)
+	var/list/target_parts					//Targeted bodyparts which will apply the effect. Leave blank for anywhere on the body.
+
+	/// Cleave pattern for hitting secondary targets on normal attacks. Null = no cleave.
+	var/datum/cleave_pattern/cleave
 
 	var/list/static/bonk_animation_types = list(
 		BCLASS_BLUNT,
 		BCLASS_SMASH,
+		BCLASS_DRILL,
 	)
 	var/list/static/swipe_animation_types = list(
 		BCLASS_CUT,
@@ -69,16 +111,21 @@
 
 
 /datum/intent/Destroy()
-	if(chargedloop)
+	if(istype(chargedloop))
 		chargedloop.stop()
+		QDEL_NULL(chargedloop)
+	chargedloop = null
 	if(mob_light)
 		QDEL_NULL(mob_light)
 	if(mob_charge_effect)
-		mastermob.vis_contents -= mob_charge_effect
-	if(mastermob.curplaying == src)
+		if(!QDELETED(mastermob))
+			mastermob.vis_contents -= mob_charge_effect
+		mob_charge_effect = null
+	if(mastermob?.curplaying == src)
 		mastermob.curplaying = null
 	mastermob = null
 	masteritem = null
+	QDEL_NULL(cleave)
 	return ..()
 
 /datum/intent/proc/examine(mob/user)
@@ -87,11 +134,26 @@
 	if(desc)
 		inspec += "\n[desc]"
 	if(reach != 1)
-		inspec += "\n<b>Reach:</b> [reach]"
+		inspec += "\n<b>Reach:</b> [reach] paces"
+	if(effective_range)
+		var/suffix
+		switch(effective_range_type)
+			if(EFF_RANGE_EXACT)
+				suffix = "exactly"
+			if(EFF_RANGE_ABOVE)
+				suffix = "at and beyond"
+			if(EFF_RANGE_BELOW)
+				suffix = "at and within"
+			if(EFF_RANGE_NONE)
+				suffix = "not usable"
+			else
+				CRASH("effective_range found without a valid effective_range_type on [src] intent by [user]")
+		inspec += "\n<b>Effective Range:</b> [suffix] [effective_range] paces"
 	if(damfactor != 1)
 		inspec += "\n<b>Damage:</b> [damfactor]"
-	if(penfactor)
-		inspec += "\n<b>Armor Penetration:</b> [penfactor < 0 ? "NONE" : penfactor]"
+	inspec += "\n<b>Armor Penetration:</b> [penfactor > PEN_NONE ? colorgrade_rating(uppertext(item_d_type), penfactor) : "<font color='#808080'>NONE</font>"]"
+	if(masteritem)
+		inspec += " <span class='info'><a href='?src=[REF(masteritem)];explainpenfactor=1'>{?}</a></span>"
 	if(get_chargetime())
 		inspec += "\n<b>Charge Time</b>"
 	if(movement_interrupt)
@@ -104,14 +166,21 @@
 		inspec += "\n<b>Drain On Release:</b> [releasedrain]"
 	if(misscost)
 		inspec += "\n<b>Drain On Miss:</b> [misscost]"
-	if(clickcd != CLICK_CD_MELEE)
-		inspec += "\n<b>Recovery Time:</b> "
-		if(clickcd < CLICK_CD_MELEE)
-			inspec += "Quick"
-		if(clickcd > CLICK_CD_MELEE)
-			inspec += "Slow"
-	if(blade_class == BCLASS_PEEL)
-		inspec += "\nThis intent will peel the coverage off of your target's armor in non-key areas after [peel_divisor] consecutive hits.\nSome armor may have higher thresholds."
+	inspec += "\n<b>Attack Speed:</b> "
+	if(clickcd <= CLICK_CD_FAST)
+		inspec += "<font color='#4af'>Very Quick</font>"
+	else if(clickcd <= CLICK_CD_QUICK)
+		inspec += "<font color='#8f8'>Quick</font>"
+	else if(clickcd <= CLICK_CD_MELEE)
+		inspec += "Normal"
+	else if(clickcd <= CLICK_CD_CHARGED)
+		inspec += "<font color='#fa4'>Sluggish</font>"
+	else if(clickcd <= CLICK_CD_HEAVY)
+		inspec += "<font color='#f44'>Very Sluggish</font>"
+	else if(clickcd <= CLICK_CD_MASSIVE)
+		inspec += "<font color='#f22'>Extremely Sluggish</font>"
+	else
+		inspec += "<font color='#d11'>Glacial</font>"
 	if(!allow_offhand)
 		inspec += "\nThis intent requires a free off-hand."
 	if(blade_class == BCLASS_EFFECT)
@@ -124,8 +193,33 @@
 				str +="|[bodyzone2readablezone(part)]|"
 			inspec += str
 	if(intent_intdamage_factor != 1)
-		var/percstr = abs(intent_intdamage_factor - 1) * 100
-		inspec += "\nThis intent deals [percstr]% [intent_intdamage_factor > 1 ? "more" : "less"] damage to integrity."
+		inspec += "\n<b>Integrity Damage:</b> [intent_intdamage_factor * 100]%"
+		if(masteritem)
+			inspec += " <span class='info'><a href='?src=[REF(masteritem)];explaindemolitionmod=1'>{?}</a></span>"
+	if(demolition_mod != 1)
+		inspec += "\n<b>Demolition Modifier:</b> [demolition_mod * 100]%"
+		if(masteritem)
+			inspec += " <span class='info'><a href='?src=[REF(masteritem)];explaindemolitionmod=1'>{?}</a></span>"
+	if(sharpness_penalty)
+		inspec += "\nThis intent will cost some sharpness for every attack made."
+	if(unarmed)
+		inspec += "\n<b>Swift:</b> Harder to parry or dodge when faster than your opponent."
+		inspec += "\n<b>Short Reach:</b> More accurate at striking specific body parts."
+	if(swingdelay > 0)
+		inspec += "\n<b>Attack Delay:</b> "
+		if(swingdelay <= 2)
+			inspec += "<font color='#fa4'>Moderate</font>"
+		else if(swingdelay <= 4)
+			inspec += "<font color='#f44'>Significant</font>"
+		else
+			inspec += "<font color='#f22'>Heavy</font>"
+	if(cleave)
+		inspec += "\n<b>Cleave:</b> [cleave.desc]"
+		inspec += "\n  Max additional targets: [cleave.max_targets ? cleave.max_targets : "Unlimited"]"
+		inspec += "\n  Prioritizes living targets over dead."
+		if(cleave.diagonal_desc)
+			inspec += "\n  [cleave.diagonal_desc]"
+		inspec += "\n<tt>[cleave.get_pattern_display()]</tt>"
 	inspec += "<br>----------------------"
 
 	to_chat(user, "[inspec.Join()]")
@@ -157,7 +251,7 @@
 /datum/intent/proc/rmb_ranged(atom/target, mob/user)
 	return
 
-/datum/intent/proc/can_charge()
+/datum/intent/proc/can_charge(atom/clicked_object)
 	return TRUE
 
 /datum/intent/proc/afterchange()
@@ -199,6 +293,8 @@
 				update_chargeloop()
 	if(Masteritem)
 		masteritem = Masteritem
+	if(ispath(cleave))
+		cleave = new cleave()
 
 /datum/intent/proc/update_chargeloop() //what the fuck is going on here lol
 	if(mastermob)
@@ -218,7 +314,7 @@
 		chargedloop.start(chargedloop.parent)
 		mastermob.curplaying = src
 	if(glow_color && glow_intensity)
-		mob_light = mastermob.mob_light(glow_color, glow_intensity)
+		mob_light = mastermob.mob_light(glow_color, glow_intensity, FLASH_LIGHT_SPELLGLOW)
 	if(mob_charge_effect)
 		mastermob.vis_contents += mob_charge_effect
 
@@ -232,6 +328,12 @@
 	if(mob_charge_effect)
 		mastermob?.vis_contents -= mob_charge_effect
 
+/datum/intent/proc/on_mmb(atom/target, mob/living/user, params)
+	return
+
+// Do something special when this intent is applied to a living target, H being the receiver and user being the attacker
+/datum/intent/proc/spec_on_apply_effect(mob/living/H, mob/living/user, params)
+	return
 
 /datum/intent/use
 	name = "use"
@@ -245,48 +347,6 @@
 	releasedrain = 0
 	blade_class = BCLASS_PUNCH
 
-/datum/intent/kick
-	name = "kick"
-	candodge = TRUE
-	canparry = TRUE
-	chargetime = 0
-	chargedrain = 0
-	noaa = FALSE
-	swingdelay = 5
-	misscost = 20
-	unarmed = TRUE
-	animname = "kick"
-	pointer = 'icons/effects/mousemice/human_kick.dmi'
-
-/datum/intent/bite
-	name = "bite"
-	candodge = TRUE
-	canparry = TRUE
-	chargedrain = 0
-	chargetime = 0
-	swingdelay = 0
-	unarmed = TRUE
-	noaa = FALSE
-	animname = "bite"
-	attack_verb = list("bites")
-
-/datum/intent/jump
-	name = "jump"
-	candodge = FALSE
-	canparry = FALSE
-	chargedrain = 0
-	chargetime = 0
-	noaa = TRUE
-	pointer = 'icons/effects/mousemice/human_jump.dmi'
-
-/datum/intent/steal
-	name = "steal"
-	candodge = FALSE
-	canparry = FALSE
-	chargedrain = 0
-	chargetime = 0
-	noaa = TRUE
-
 /datum/intent/give
 	name = "give"
 	candodge = FALSE
@@ -295,14 +355,6 @@
 	chargetime = 0
 	noaa = TRUE
 	pointer = 'icons/effects/mousemice/human_give.dmi'
-
-/datum/intent/spell
-	name = "spell"
-	tranged = 1
-	chargedrain = 0
-	chargetime = 0
-	warnie = "aimwarn"
-	warnoffset = 0
 
 /datum/looping_sound/invokegen
 	mid_sounds = list('sound/magic/charging.ogg')
@@ -330,6 +382,12 @@
 
 /datum/looping_sound/invokeascendant
 	mid_sounds = list('sound/magic/chargingold.ogg')
+	mid_length = 320
+	volume = 100
+	extra_range = 5
+
+/datum/looping_sound/invokeevil // extra ancient sound loop we have
+	mid_sounds = list('sound/magic/chargingold2.ogg')
 	mid_length = 320
 	volume = 100
 	extra_range = 5
@@ -362,32 +420,78 @@
 /datum/intent/stab/militia
 	name = "militia stab"
 	damfactor = 1.1
-	penfactor = 50
+	penfactor = PEN_HEAVY
 
 /datum/intent/pick //now like icepick intent, we really went in a circle huh
 	name = "pick"
 	icon_state = "inpick"
 	attack_verb = list("picks","impales")
 	hitsound = list('sound/combat/hits/pick/genpick (1).ogg', 'sound/combat/hits/pick/genpick (2).ogg')
-	penfactor = 80
+	penfactor = PEN_BSTEEL
 	animname = "strike"
 	item_d_type = "stab"
 	blade_class = BCLASS_PICK
 	chargetime = 0
+	clickcd = 14 // Just like knife pick!
 	swingdelay = 12
+	max_intent_damage = 9999
+
+/datum/intent/drill
+	name = "drill"
+	icon_state = "inpick"
+	attack_verb = list("drills","augers")
+	hitsound = list('sound/combat/hits/pick/genpick (1).ogg', 'sound/combat/hits/pick/genpick (2).ogg')
+	penfactor = PEN_BSTEEL
+	animname = "strike"
+	item_d_type = "stab"
+	blade_class = BCLASS_DRILL
+	chargetime = 0.3
+	clickcd = 4 // Just like knife pick!
+	swingdelay = 1
+	releasedrain = 0 //no stamina loss, as charges are lost as it drills
+	
+/datum/intent/pick/bad	//One-handed intents
+	name = "sluggish pick"
+	icon_state = "inpick"
+	attack_verb = list("picks","impales")
+	hitsound = list('sound/combat/hits/pick/genpick (1).ogg', 'sound/combat/hits/pick/genpick (2).ogg')
+	penfactor = PEN_BSTEEL
+	animname = "strike"
+	item_d_type = "stab"
+	blade_class = BCLASS_PICK
+	chargetime = 0
+	clickcd = 16 // Just like knife pick!
+	swingdelay = 16
+	max_intent_damage = 9999
+
+/datum/intent/pick/good //Blacksteel-exclusive. Mine a little better, a little faster, and a little harder.
+	name = "mastered pick"
+	desc = "This intent strikes faster than its standard variant, without any loss to performance."
+	icon_state = "inpick"
+	attack_verb = list("masterfully picks","deftly impales")
+	hitsound = list('sound/combat/hits/pick/genpick (1).ogg', 'sound/combat/hits/pick/genpick (2).ogg')
+	penfactor = PEN_BSTEEL
+	animname = "strike"
+	item_d_type = "stab"
+	blade_class = BCLASS_PICK
+	chargetime = 0
+	clickcd = 12 // Just like knife pick.. but not!
+	swingdelay = 10
+	max_intent_damage = 9999
 
 /datum/intent/pick/ranged
 	name = "ranged pick"
 	icon_state = "inpick"
 	attack_verb = list("stabs", "impales")
 	hitsound = list('sound/combat/hits/bladed/genstab (1).ogg', 'sound/combat/hits/bladed/genstab (2).ogg', 'sound/combat/hits/bladed/genstab (3).ogg')
-	penfactor = 60
+	penfactor = PEN_BSTEEL
 	damfactor = 1.1
-	chargetime = 0.7
-	chargedrain = 2
+	clickcd = CLICK_CD_CHARGED
+	releasedrain = 4
 	reach = 2
 	no_early_release = TRUE
 	blade_class = BCLASS_PICK
+	max_intent_damage = 9999
 
 /datum/intent/shoot //shooting crossbows or other guns, no parrydrain
 	name = "shoot"
@@ -455,11 +559,11 @@
 	chargetime = 0
 	noaa = FALSE
 	animname = "bite"
-	hitsound = list('sound/combat/hits/punch/punch (1).ogg', 'sound/combat/hits/punch/punch (2).ogg', 'sound/combat/hits/punch/punch (3).ogg')
-	misscost = 5
-	releasedrain = 2	//Lowered for intent stam usage.
+	hitsound = list('sound/combat/hits/punch/punch_hard (1).ogg', 'sound/combat/hits/punch/punch_hard (2).ogg', 'sound/combat/hits/punch/punch_hard (3).ogg')
+	misscost = 3
+	releasedrain = 1
 	swingdelay = 0
-	clickcd = 10
+	clickcd = CLICK_CD_FAST // Same speed as katar — fists are the free unarmed weapon
 	rmb_ranged = TRUE
 	candodge = TRUE
 	canparry = TRUE
@@ -467,9 +571,10 @@
 	miss_text = "swing a fist at the air"
 	miss_sound = "punchwoosh"
 	item_d_type = "blunt"
-	intent_intdamage_factor = 0.5
 
 /datum/intent/unarmed/punch/rmb_ranged(atom/target, mob/user)
+	if(user.stat >= UNCONSCIOUS)
+		return
 	if(ismob(target))
 		var/mob/M = target
 		var/list/targetl = list(target)
@@ -492,7 +597,7 @@
 	misscost = 5
 	releasedrain = 4	//More than punch cus pen factor.
 	swingdelay = 0
-	penfactor = 10
+	penfactor = PEN_NONE
 	candodge = TRUE
 	canparry = TRUE
 	blade_class = BCLASS_CUT
@@ -512,6 +617,8 @@
 	item_d_type = "blunt"
 
 /datum/intent/unarmed/shove/rmb_ranged(atom/target, mob/user)
+	if(user.stat >= UNCONSCIOUS)
+		return
 	if(ismob(target))
 		var/mob/M = target
 		var/list/targetl = list(target)
@@ -537,6 +644,8 @@
 	item_d_type = "blunt"
 
 /datum/intent/unarmed/grab/rmb_ranged(atom/target, mob/user)
+	if(user.stat >= UNCONSCIOUS)
+		return
 	if(ismob(target))
 		var/mob/M = target
 		var/list/targetl = list(target)
@@ -559,6 +668,8 @@
 	rmb_ranged = TRUE
 
 /datum/intent/unarmed/help/rmb_ranged(atom/target, mob/user)
+	if(user.stat >= UNCONSCIOUS)
+		return
 	if(ismob(target))
 		var/mob/M = target
 		var/list/targetl = list(target)
@@ -576,7 +687,7 @@
 	blade_class = BCLASS_BLUNT
 	hitsound = "punch_hard"
 	chargetime = 0
-	penfactor = 10
+	penfactor = PEN_NONE
 	swingdelay = 0
 	candodge = TRUE
 	canparry = TRUE
@@ -590,12 +701,16 @@
 	blade_class = BCLASS_CUT
 	hitsound = "smallslash"
 	chargetime = 0
-	penfactor = 0
+	penfactor = PEN_NONE
 	swingdelay = 3
 	candodge = TRUE
 	canparry = TRUE
 	miss_text = "slash the air"
 	item_d_type = "slash"
+
+/datum/intent/simple/claw/simplewwnpc
+	penfactor = PEN_MEDIUM
+	clickcd = WOLF_ATTACK_SPEED
 
 /datum/intent/simple/bite
 	name = "bite"
@@ -605,7 +720,7 @@
 	blade_class = BCLASS_CUT
 	hitsound = "smallslash"
 	chargetime = 0
-	penfactor = 0
+	penfactor = PEN_NONE
 	swingdelay = 3
 	candodge = TRUE
 	canparry = TRUE
@@ -620,7 +735,7 @@
 	blade_class = BCLASS_CUT
 	hitsound = list("genchop", "genslash")
 	chargetime = 0
-	penfactor = 0
+	penfactor = PEN_NONE
 	swingdelay = 3
 	candodge = TRUE
 	canparry = TRUE
@@ -634,7 +749,7 @@
 	blade_class = BCLASS_CUT
 	hitsound = list("genthrust", "genstab")
 	chargetime = 0
-	penfactor = 0
+	penfactor = PEN_NONE
 	swingdelay = 3
 	candodge = TRUE
 	canparry = TRUE
@@ -656,23 +771,19 @@
 
 /datum/intent/effect
 	blade_class = BCLASS_EFFECT
-	var/datum/status_effect/intent_effect	//Status effect this intent will apply on a successful hit (damage not needed)
-	var/list/target_parts					//Targeted bodyparts which will apply the effect. Leave blank for anywhere on the body.
 
 /datum/intent/effect/daze
 	name = "dazing strike"
+	desc = "A heavy strike aimed at the head to daze them."
 	icon_state = "indaze"
 	attack_verb = list("dazes")
 	animname = "strike"
 	hitsound = list('sound/combat/hits/blunt/daze_hit.ogg')
 	chargetime = 0
-	penfactor = BLUNT_DEFAULT_PENFACTOR
+	penfactor = PEN_NONE
 	swingdelay = 6
 	damfactor = 1
 	item_d_type = "blunt"
 	intent_effect = /datum/status_effect/debuff/dazed
 	target_parts = list(BODY_ZONE_HEAD)
-
-/*/datum/intent/effect/daze/shield
-	intent_effect = /datum/status_effect/debuff/dazed/shield
-	swingdelay = 3 */
+	intent_intdamage_factor = BLUNT_DEFAULT_INT_DAMAGEFACTOR

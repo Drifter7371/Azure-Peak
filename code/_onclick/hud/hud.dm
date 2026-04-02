@@ -65,6 +65,8 @@ GLOBAL_LIST_INIT(available_ui_styles, sortList(list(
 	var/atom/movable/screen/internals
 	var/atom/movable/screen/stamina/stamina
 	var/atom/movable/screen/energy/energy
+	var/atom/movable/screen/bloodpool/bloodpool
+	var/atom/movable/screen/bloodpool/breath_bar
 
 	var/image/object_overlay
 	var/atom/movable/screen/overlay_curloc
@@ -75,6 +77,11 @@ GLOBAL_LIST_INIT(available_ui_styles, sortList(list(
 	var/atom/movable/screen/read/reads
 	var/atom/movable/screen/textl
 	var/atom/movable/screen/textr
+	var/atom/movable/screen/vis_holder/vis_holder
+	var/atom/movable/screen/breath
+	var/atom/movable/screen/breath_bg
+	var/atom/movable/screen/breath_frame
+	var/atom/movable/screen/breath_mask
 
 /datum/hud/New(mob/owner)
 	mymob = owner
@@ -92,6 +99,8 @@ GLOBAL_LIST_INIT(available_ui_styles, sortList(list(
 		hand_slots = list()
 	else
 		hand_slots.Cut()
+
+	vis_holder = new(null, src)
 
 	for(var/mytype in subtypesof(/atom/movable/screen/plane_master))
 		var/atom/movable/screen/plane_master/instance = new mytype()
@@ -118,7 +127,8 @@ GLOBAL_LIST_INIT(available_ui_styles, sortList(list(
 	if(mymob.hud_used == src)
 		mymob.hud_used = null
 
-//	QDEL_NULL(hide_actions_toggle)
+	QDEL_NULL(bloodpool)
+	QDEL_NULL(vis_holder)
 	QDEL_NULL(module_store_icon)
 	QDEL_LIST(static_inventory)
 
@@ -168,6 +178,9 @@ GLOBAL_LIST_INIT(available_ui_styles, sortList(list(
 		display_hud_version = hud_version + 1
 	if(display_hud_version > HUD_VERSIONS)	//If the requested version number is greater than the available versions, reset back to the first version
 		display_hud_version = 1
+
+	if(vis_holder)
+		screenmob.client.screen += vis_holder
 
 	switch(display_hud_version)
 		if(HUD_STYLE_STANDARD)	//Default HUD
@@ -222,7 +235,6 @@ GLOBAL_LIST_INIT(available_ui_styles, sortList(list(
 	screenmob.update_action_buttons(1)
 	reorganize_alerts()
 	screenmob.reload_fullscreen()
-	update_parallax_pref(screenmob)
 
 	// ensure observers get an accurate and up-to-date view
 	if (!viewmob)
@@ -298,6 +310,10 @@ GLOBAL_LIST_INIT(available_ui_styles, sortList(list(
 		hand_box.name = mymob.get_held_index_name(i)
 		hand_box.icon = ui_style
 		hand_box.icon_state = "hand_[mymob.held_index_to_dir(i)]"
+		if(isliving(mymob))
+			var/mob/living/liv_mymob = mymob
+			if(i == liv_mymob.domhand)
+				hand_box.icon_state += "_dom"
 		hand_box.screen_loc = ui_hand_position(i)
 		hand_box.held_index = i
 		hand_slots["[i]"] = hand_box
@@ -317,3 +333,16 @@ GLOBAL_LIST_INIT(available_ui_styles, sortList(list(
 
 /datum/hud/proc/update_locked_slots()
 	return
+
+/atom/movable/screen/vis_holder
+	icon = ""
+	invisibility = INVISIBILITY_MAXIMUM
+
+/datum/hud/proc/initialize_bloodpool()
+	bloodpool = new /atom/movable/screen/bloodpool(null, src)
+	infodisplay += bloodpool
+	show_hud(HUD_STYLE_STANDARD)
+
+/datum/hud/proc/shutdown_bloodpool()
+	infodisplay -= bloodpool
+	QDEL_NULL(bloodpool)

@@ -1,10 +1,26 @@
 /mob/living/proc/update_stamina() //update hud and regen after last_fatigued delay on taking
-	max_stamina = max_energy / 10
-
-	var/delay = (HAS_TRAIT(src, TRAIT_APRICITY) && GLOB.tod == "day") ? 13 : 20		//Astrata 
-	if(world.time > last_fatigued + delay) //regen fatigue
+	calculate_stamina()
+	var/delay = 20
+	if(HAS_TRAIT(src, TRAIT_APRICITY))
+		switch(GLOB.tod)
+			if("day", "dawn")
+				delay = 13
+			if("night", "dusk")
+				delay = 16
+	if(world.time > last_fatigued + delay) //regen fatigue 
 		var/added = energy / max_energy
 		added = round(-10 + (added * - 40))
+	
+		if(ishuman(src))
+			var/mob/living/carbon/human/H = src
+			if(H.breath_remaining <= 0) added = 0 
+			
+			else if((H.is_swimming || H.is_underwater) && !H.resting && H.stat == CONSCIOUS)
+				added = 0 
+		
+		
+		if(src.climbing) // no stam regen while climbing guh
+			added = 0
 		if(HAS_TRAIT(src, TRAIT_MISSING_NOSE))
 			added = round(added * 0.5, 1)
 		if(HAS_TRAIT(src, TRAIT_MONK_ROBE))
@@ -16,13 +32,27 @@
 
 	update_health_hud()
 
+/mob/living/proc/calculate_stamina()
+	max_stamina = max_energy / 10
+
 /mob/living/proc/update_energy()
-	var/athletics_skill = 0
-	athletics_skill = get_skill_level(/datum/skill/misc/athletics)
-	max_energy = (STAEND + (athletics_skill/2 ) ) * 100
+	calculate_energy()
 	if(cmode)
 		if(!HAS_TRAIT(src, TRAIT_BREADY))
 			energy_add(-2)
+	if(HAS_TRAIT(src, TRAIT_INFINITE_ENERGY))
+		energy = max_energy
+	if(HAS_TRAIT(src, TRAIT_BREADY))
+		if(src.mind)
+			energy_add(4) // Battle Ready now gives you a small amount of regeneration.
+			// This generally cover most reasonable in combat usage.
+		else
+			energy_add(2) // Halve effectiveness for NPCs.
+
+/mob/living/proc/calculate_energy()
+	var/athletics_skill = 0
+	athletics_skill = get_skill_level(/datum/skill/misc/athletics)
+	max_energy = (STAWIL + (athletics_skill/2 ) ) * 100
 
 /mob/proc/energy_add(added as num)
 	return
@@ -30,12 +60,11 @@
 /mob/living/energy_add(added as num)
 	if(HAS_TRAIT(src, TRAIT_INFINITE_STAMINA))
 		return TRUE
-	//if(HAS_TRAIT(src, TRAIT_NOSLEEP))
-	//	return TRUE
 	if(HAS_TRAIT(src, TRAIT_INFINITE_ENERGY))
 		return TRUE
-	if(m_intent == MOVE_INTENT_RUN && isnull(buckled))
-		mind && mind.add_sleep_experience(/datum/skill/misc/athletics, (STAINT*0.02))
+	if(m_intent == MOVE_INTENT_RUN && (mobility_flags & MOBILITY_STAND))
+		if(isnull(buckled))
+			mind && mind.add_sleep_experience(/datum/skill/misc/athletics, (STAINT*0.02))
 	energy += added
 	if(energy > max_energy)
 		energy = max_energy
@@ -82,7 +111,7 @@
 	if (athletics_skill)
 		var/athletics_bonus = athletics_skill * 0.05 //each rank of athletics gives us 5% less nutrition loss
 		nutrition_amount *= (1 - athletics_bonus)
-	
+
 	if (nutrition >= NUTRITION_LEVEL_WELL_FED) // we've only just eaten recently so just flat out reduce the total loss by half
 		nutrition_amount *= 0.5
 
@@ -94,8 +123,19 @@
 /mob/living/stamina_add(added as num, emote_override, force_emote = TRUE) //call update_stamina here and set last_fatigued, return false when not enough fatigue left
 	if(HAS_TRAIT(src, TRAIT_INFINITE_STAMINA))
 		return TRUE
+
+	var/true_added = added
 	if(HAS_TRAIT(src, TRAIT_FORTITUDE))
 		added = added * 0.5
+
+	if(added < 0 && HAS_TRAIT(src, TRAIT_FROZEN_STAMINA))
+		added = 0
+
+	if(mind && true_added > 0)
+		// the amount of athletics skill gained is proportional to how much stamina is used
+		// using a tenth of the bar gives 1 XP point of athletics skill, multiplied by your constitution divided by 10
+		mind.add_sleep_experience(/datum/skill/misc/athletics, (STACON / 10) * ((true_added / max_stamina) * 10), show_xp = m_intent == MOVE_INTENT_RUN)
+
 	stamina = CLAMP(stamina+added, 0, max_stamina)
 	if(added > 0)
 		energy_add(added * -1)
@@ -109,6 +149,30 @@
 						if(C.hydration <= 0)
 							C.heart_attack()
 							return FALSE
+
+	if(ishuman(src) && mind && added > 0)
+		var/mob/living/carbon/human/H = src
+		var/text
+		var/x_offset = 20
+		var/y_offset
+		var/stamratio = stamina / max_stamina
+		if(stamratio >= 0.25 && ((stamina - added) / max_stamina) < 0.25)
+			text = "<font color = '#a8af9b'>Winded</font>"
+			y_offset = BALLOON_Y_OFFSET_TIER1
+		if(stamratio >= 0.5 && ((stamina - added) / max_stamina) < 0.5)
+			text = "<font color = '#d4d36c'>Drained</font>"
+			y_offset = BALLOON_Y_OFFSET_TIER2
+		if(stamratio >= 0.75 && ((stamina - added) / max_stamina) < 0.75)
+			text = "<font color = '#a8665a'>Fatigued</font>"
+			y_offset = BALLOON_Y_OFFSET_TIER3
+		if(text)
+			if(!HAS_TRAIT(H, TRAIT_DECEIVING_MEEKNESS))
+				H.filtered_balloon_alert(TRAIT_COMBAT_AWARE, text, x_offset, y_offset)
+			else
+				if(prob(10))
+					text = "<i>Tired...?</i>"
+					H.filtered_balloon_alert(TRAIT_COMBAT_AWARE, text, x_offset, y_offset)
+
 	if(stamina >= max_stamina)
 		stamina = max_stamina
 		update_health_hud()
@@ -118,13 +182,34 @@
 			emote("fatigue", forced = force_emote)
 		else
 			emote(emote_override, forced = force_emote)
+
+		var/turf/T = get_turf(src)
+		if(istype(T, /turf/open/water/transparent))
+			var/turf/below = GET_TURF_BELOW(T)
+			if(below && istype(below, /turf/open/water/transparent))
+				visible_message(span_danger("[src] loses all stamina and sinks into the depths!"))
+				forceMove(below)
+				set_resting(TRUE)
+			else
+				
+				set_resting(TRUE)
+
 		blur_eyes(2)
 		last_fatigued = world.time + 3 SECONDS //extra time before fatigue regen sets in
 		stop_attack()
 		changeNext_move(CLICK_CD_EXHAUSTED)
 		flash_fullscreen("blackflash")
+
+		if(ishuman(src))
+			var/mob/living/carbon/human/H = src
+			var/balloon_text = "<font color = '#bb2b2b'>Exhausted... </font>"
+			H.balloon_alert_to_viewers(balloon_text, balloon_text, DEFAULT_MESSAGE_RANGE)
+
 		if(energy <= 0)
 			addtimer(CALLBACK(src, PROC_REF(Knockdown), 30), 1 SECONDS)
+			var/area/rogue/our_area = get_area(src)
+			if(our_area.necra_area)
+				src.extract_from_deaths_edge()
 		addtimer(CALLBACK(src, PROC_REF(Immobilize), 30), 1 SECONDS)
 		if(iscarbon(src))
 			var/mob/living/carbon/C = src
@@ -150,7 +235,7 @@
 		heart_attacking = TRUE
 		shake_camera(src, 1, 3)
 		blur_eyes(10)
-		var/stuffy = list("ZIZO GRABS MY WEARY HEART!","ARGH! MY HEART BEATS NO MORE!","NO... MY HEART HAS BEAT IT'S LAST!","MY HEART HAS GIVEN UP!","MY HEART BETRAYS ME!","THE METRONOME OF MY LIFE STILLS!")
+		var/stuffy = list("ZIZO GRABS MY WEARY HEART!","ARGH! MY HEART BEATS NO MORE!","NO... MY HEART HAS BEAT ITS LAST!","MY HEART HAS GIVEN UP!","MY HEART BETRAYS ME!","THE METRONOME OF MY LIFE STILLS!")
 		to_chat(src, span_userdanger("[pick(stuffy)]"))
 		emote("breathgasp", forced = TRUE)
 		addtimer(CALLBACK(src, PROC_REF(adjustOxyLoss), 110), 30)

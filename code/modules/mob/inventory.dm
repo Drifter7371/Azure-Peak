@@ -1,4 +1,4 @@
-//These procs handle putting s tuff in my hands
+//These procs handle putting stuff in my hands
 //as they handle all relevant stuff like adding it to the player's screen and updating their overlays.
 
 //Returns the thing we're currently holding
@@ -10,6 +10,15 @@
 //So we're treating each "pair" of limbs as a team, so "both" refers to them
 /mob/proc/get_inactive_held_item()
 	return get_item_for_held_index(get_inactive_hand_index())
+
+
+//Returns a list of items in both hands
+/mob/proc/get_held_items()
+	var/list/obj/item/held_item = list()
+	held_item += get_active_held_item()
+	held_item += get_inactive_held_item()
+
+	return held_item
 
 
 //Finds the opposite index for the active one (eg: upper left arm will find the item in upper right arm)
@@ -175,16 +184,15 @@
 	if(hud_used)
 		hud_used.throw_icon?.update_icon()
 		hud_used.give_intent?.update_icon()
-	givingto = null
 	return hand_index
 
 //Puts the item into the first available left hand if possible and calls all necessary triggers/updates. returns 1 on success.
-/mob/proc/put_in_l_hand(obj/item/I)
-	return put_in_hand(I, get_empty_held_index_for_side(LEFT_HANDS))
+/mob/proc/put_in_l_hand(obj/item/I, forced = FALSE)
+	return put_in_hand(I, get_empty_held_index_for_side(LEFT_HANDS), forced)
 
 //Puts the item into the first available right hand if possible and calls all necessary triggers/updates. returns 1 on success.
-/mob/proc/put_in_r_hand(obj/item/I)
-	return put_in_hand(I, get_empty_held_index_for_side(RIGHT_HANDS))
+/mob/proc/put_in_r_hand(obj/item/I, forced = FALSE)
+	return put_in_hand(I, get_empty_held_index_for_side(RIGHT_HANDS), forced)
 
 /mob/proc/put_in_hand_check(obj/item/I)
 	return FALSE					//nonliving mobs don't have hands
@@ -192,6 +200,16 @@
 /mob/living/put_in_hand_check(obj/item/I)
 	if(I.twohands_required && get_inactive_held_item())
 		return FALSE
+	if((I.is_silver || I.smeltresult == /obj/item/ingot/silver) && (HAS_TRAIT(src, TRAIT_SILVER_WEAK) &&  !has_status_effect(STATUS_EFFECT_ANTIMAGIC)))
+		var/datum/antagonist/vampire/V_lord = mind?.has_antag_datum(/datum/antagonist/vampire)
+		if(!istype(V_lord) || V_lord?.generation < GENERATION_METHUSELAH)
+			to_chat(src, span_userdanger("I can't pick up the silver, it is my BANE!"))
+			Knockdown(10)
+			Paralyze(10)
+			adjustFireLoss(25)
+			adjust_fire_stacks(3, /datum/status_effect/fire_handler/fire_stacks/sunder)
+			ignite_mob()
+			return FALSE
 	if(istype(I) && ((mobility_flags & MOBILITY_PICKUP) || (I.item_flags & ABSTRACT)))
 		return TRUE
 	return FALSE
@@ -314,7 +332,6 @@
 	if(hud_used)
 		hud_used.throw_icon?.update_icon()
 		hud_used.give_intent?.update_icon()
-	givingto = null
 	update_a_intents()
 	return TRUE
 
@@ -391,29 +408,30 @@
 	var/list/obscured = list()
 	var/hidden_slots = NONE
 
-	for(var/obj/item/I in get_equipped_items())
+	var/list/equipped = get_equipped_items()
+	for(var/obj/item/I as anything in equipped)
 		hidden_slots |= I.flags_inv
 		if(transparent_protection)
 			hidden_slots |= I.transparent_protection
 
 	if(hidden_slots & HIDENECK)
-		obscured |= SLOT_NECK
+		obscured += SLOT_NECK
 	if(hidden_slots & HIDEMASK)
-		obscured |= SLOT_WEAR_MASK
+		obscured += SLOT_WEAR_MASK
 	if(hidden_slots & HIDEEYES)
-		obscured |= SLOT_GLASSES
+		obscured += SLOT_GLASSES
 	if(hidden_slots & HIDEGLOVES)
-		obscured |= SLOT_GLOVES
+		obscured += SLOT_GLOVES
 	if(hidden_slots & HIDEJUMPSUIT)
-		obscured |= SLOT_PANTS
+		obscured += SLOT_PANTS
 	if(hidden_slots & HIDESHOES)
-		obscured |= SLOT_SHOES
+		obscured += SLOT_SHOES
 	if(hidden_slots & HIDEBELT)
-		obscured |= SLOT_BELT_R
-		obscured |= SLOT_BELT_L
-		obscured |= SLOT_BELT
+		obscured += SLOT_BELT_R
+		obscured += SLOT_BELT_L
+		obscured += SLOT_BELT
 	if(hidden_slots & HIDESUITSTORAGE)
-		obscured |= SLOT_S_STORE
+		obscured += SLOT_S_STORE
 
 	return obscured
 

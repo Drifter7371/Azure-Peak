@@ -160,21 +160,13 @@ GLOBAL_LIST_EMPTY(species_list)
 		else
 			return "unknown"
 
-/proc/do_mob(mob/user , mob/target, time = 30, uninterruptible = 0, progress = 1, datum/callback/extra_checks = null, double_progress = 0)
+/proc/do_mob(mob/user , mob/target, time = 30, uninterruptible = 0, progress = 1, datum/callback/extra_checks = null, double_progress = 0, can_move = TRUE)
 	if(!user || !target)
 		return 0
 
 	if(user.doing)
 		return 0
 	user.doing = 1
-
-	var/user_loc = user.loc
-
-	var/drifting = 0
-	if(!user.Process_Spacemove(0) && user.inertia_dir)
-		drifting = 1
-
-	var/target_loc = target.loc
 
 	var/holding = user.get_active_held_item()
 	var/datum/progressbar/progbar
@@ -204,11 +196,11 @@ GLOBAL_LIST_EMPTY(species_list)
 		if(uninterruptible)
 			continue
 
-		if(drifting && !user.inertia_dir)
-			drifting = 0
-			user_loc = user.loc
-
-		if((!drifting && user.loc != user_loc) || (double_progress && target.loc != target_loc) || user.get_active_held_item() != holding || user.incapacitated() || (extra_checks && !extra_checks.Invoke()))
+		if(!can_move && (!user.Adjacent(target)))
+			. = 0
+			break
+			
+		if(user.get_active_held_item() != holding || user.incapacitated() || (extra_checks && !extra_checks.Invoke()))
 			. = 0
 			break
 	user.doing = 0
@@ -233,33 +225,57 @@ GLOBAL_LIST_EMPTY(species_list)
 	return ..()
 
 /mob
-	var/doing = 0
+	var/doing = FALSE
 	var/pronouns = null // LETHALSTONE ADDITION: this is cheap so i'm doing it. preferences in human will set this appropriately
+	var/titles_pref = null
+	var/clothes_pref = CLOTHES_M
 	var/obscured_flags = NONE
 
-/proc/do_after(mob/user, delay, needhand = 1, atom/target = null, progress = 1, datum/callback/extra_checks = null)
+/**
+ * Timed action involving one mob user. Target is optional.
+ *
+ * mob/user - The mob performing the action.
+ *
+ * delay = the time in deciseconds. Use time defines (SECONDS, MINUTES) for readability.
+ * 
+ * needhand - check for an empty hand
+ * 
+ * target - the target of the action
+ *
+ * progress - whether to display a progress bar
+ * 
+ * datum/callback/extra_checks - additional check callbacks to perform during do_after
+ * 
+ * same_direction - whether the mob performing the action may switch directions or not
+ * 
+ * interrupt - whether to interrupt a prior do_after or not
+*/
+
+/proc/do_after(mob/user, delay, needhand = TRUE, atom/target = null, progress = TRUE, datum/callback/extra_checks = null, same_direction = FALSE, no_interrupt = FALSE)
 	if(!user)
-		return 0
+		return FALSE
 
 	if(user.doing)
-		return 0
-	user.doing = 1
+		if(no_interrupt)
+			return
+		return FALSE
+
+	user.doing = TRUE
 
 	var/atom/Tloc = null
 	if(target && !isturf(target))
 		Tloc = target.loc
 
 	var/atom/Uloc = user.loc
+	var/original_dir = user.dir
 
-	var/drifting = 0
-	if(!user.Process_Spacemove(0) && user.inertia_dir)
-		drifting = 1
+	var/drifting = FALSE
 
 	var/holding = user.get_active_held_item()
 
-	var/holdingnull = 1 //User's hand started out empty, check for an empty hand
+	var/holdingnull = TRUE //User's hand started out empty, check for an empty hand
 	if(holding)
-		holdingnull = 0 //Users hand started holding something, check to see if it's still holding that
+		holdingnull = FALSE //Users hand started holding something, check to see if it's still holding that
 
 	delay *= user.do_after_coefficent()
 
@@ -269,33 +285,29 @@ GLOBAL_LIST_EMPTY(species_list)
 
 	var/endtime = world.time + delay
 	var/starttime = world.time
-	. = 1
+	. = TRUE
 	while (world.time < endtime)
 		stoplag(1)
 		if (progress)
 			progbar.update(world.time - starttime)
 
-		if(drifting && !user.inertia_dir)
-			drifting = 0
-			Uloc = user.loc
-
-		if(QDELETED(user) || user.stat || (!drifting && user.loc != Uloc) || (extra_checks && !extra_checks.Invoke()))
-			. = 0
+		if(QDELETED(user) || user.stat || (!drifting && user.loc != Uloc) || (extra_checks && !extra_checks.Invoke()) || (same_direction && user.dir != original_dir))
+			. = FALSE
 			break
 
 		if(!user.doing)
-			. = 0
+			. = FALSE
 			break
 
 		if(isliving(user))
 			var/mob/living/L = user
 			if(L.IsStun() || L.IsParalyzed())
-				. = 0
+				. = FALSE
 				break
 
 		if(!QDELETED(Tloc) && (QDELETED(target) || Tloc != target.loc))
 			if((Uloc != Tloc || Tloc != user) && !drifting)
-				. = 0
+				. = FALSE
 				break
 
 		if(needhand)
@@ -303,16 +315,17 @@ GLOBAL_LIST_EMPTY(species_list)
 			//i.e the hand is used to pull some item/tool out of the construction
 			if(!holdingnull)
 				if(!holding)
-					. = 0
+					. = FALSE
 					break
 			if(user.get_active_held_item() != holding)
-				. = 0
+				. = FALSE
 				break
-	user.doing = 0
+	user.doing = FALSE
 	if (progress)
 		qdel(progbar)
 
-/proc/move_after(mob/user, delay, needhand = 1, atom/target = null, progress = 1, datum/callback/extra_checks = null) //do_after copypasta but you can move
+/// do_after copypasta but you can move
+/proc/move_after(mob/user, delay, needhand = 1, atom/target = null, progress = 1, datum/callback/extra_checks = null, same_direction = FALSE)
 	if(!user)
 		return 0
 
@@ -325,10 +338,9 @@ GLOBAL_LIST_EMPTY(species_list)
 		Tloc = target.loc
 
 	var/atom/Uloc = user.loc
+	var/original_dir = user.dir
 
 	var/drifting = 0
-	if(!user.Process_Spacemove(0) && user.inertia_dir)
-		drifting = 1
 
 	var/holding = user.get_active_held_item()
 
@@ -350,14 +362,10 @@ GLOBAL_LIST_EMPTY(species_list)
 		if (progress)
 			progbar.update(world.time - starttime)
 
-		if(drifting && !user.inertia_dir)
-			drifting = 0
-			Uloc = user.loc
+		Uloc = user?.loc
+		Tloc = target?.loc
 
-		Uloc = user.loc
-		Tloc = target.loc
-
-		if(QDELETED(user) || user.stat || !Tloc?.Adjacent(Uloc) || (extra_checks && !extra_checks.Invoke()))
+		if(QDELETED(user) || user.stat || !Tloc?.Adjacent(Uloc) || (extra_checks && !extra_checks.Invoke()) || (same_direction && user.dir != original_dir))
 			. = 0
 			break
 
@@ -407,8 +415,6 @@ GLOBAL_LIST_EMPTY(species_list)
 	var/user_loc = user.loc
 
 	var/drifting = 0
-	if(!user.Process_Spacemove(0) && user.inertia_dir)
-		drifting = 1
 
 	var/list/originalloc = list()
 	for(var/atom/target in targets)
@@ -439,10 +445,6 @@ GLOBAL_LIST_EMPTY(species_list)
 
 			if(uninterruptible)
 				continue
-
-			if(drifting && !user.inertia_dir)
-				drifting = 0
-				user_loc = user.loc
 
 			if(L && !CHECK_MULTIPLE_BITFIELDS(L.mobility_flags, required_mobility_flags))
 				. = 0
@@ -523,7 +525,7 @@ GLOBAL_LIST_EMPTY(species_list)
 			prefs = new
 
 		var/override = FALSE
-		if(M.client.holder && (prefs.chat_toggles & CHAT_DEAD))
+		if(M.client.holder && (prefs.chat_toggles & CHAT_DSAY))
 			override = TRUE
 		if(HAS_TRAIT(M, TRAIT_SIXTHSENSE))
 			override = TRUE
@@ -608,3 +610,57 @@ GLOBAL_LIST_EMPTY(species_list)
 		sleep(1)
 	if(set_original_dir)
 		AM.setDir(originaldir)
+
+//When you cop out of the round
+/mob/proc/make_me_an_observer(var/existing = FALSE)
+	var/mob/dead/new_player/lobbyer
+
+	if(!existing)
+		lobbyer = src
+		var/choice = alert(src,"Are you sure you wish to observe? Playing is a lot more fun.","VOYEUR","Yes","No")
+
+		if(QDELETED(src) || !client || choice != "Yes")
+			lobbyer.ready = PLAYER_NOT_READY
+			src << browse(null, "window=playersetup") //closes the player setup window
+			lobbyer.new_player_panel()
+			return FALSE
+	else
+		var/choice = alert(src, "Are you sure you wish to let go and observe?", "LET GO", "Yes", "No")
+
+		if(stat != DEAD || choice != "Yes")
+			return FALSE
+
+	var/mob/dead/observer/observer	// Transfer safety to observer spawning proc.
+	if(check_rights(R_WATCH, FALSE))
+		observer = new /mob/dead/observer/admin(src)
+	else
+		observer = new /mob/dead/observer/rogue/nodraw(src)
+	if(!existing)
+		lobbyer.spawning = TRUE
+
+	observer.started_as_observer = TRUE
+	if(!existing)
+		lobbyer.close_spawn_windows()
+		var/obj/effect/landmark/observer_start/O = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
+		to_chat(src, span_notice("Now teleporting."))
+		if (O)
+			observer.forceMove(O.loc)
+		else
+			to_chat(src, span_notice("Teleporting failed. Ahelp an admin please"))
+			stack_trace("There's no freaking observer landmark available on this map or you're making observers before the map is initialised")
+
+	observer.key = key
+	observer.client = client
+	observer.set_ghost_appearance()
+	if(observer.client)
+		observer.client.update_ooc_verb_visibility()
+	if(observer.client && observer.client.prefs)
+		observer.real_name = observer.client.prefs.real_name
+		observer.name = observer.real_name
+	observer.update_icon()
+	observer.stop_sound_channel(CHANNEL_LOBBYMUSIC)
+	if(!existing)
+		qdel(mind)
+		mind = null
+		qdel(src)
+	return TRUE

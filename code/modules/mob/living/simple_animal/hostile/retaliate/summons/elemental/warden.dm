@@ -2,6 +2,9 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/elemental/warden
 	icon = 'icons/mob/summonable/32x32.dmi'
 	name = "earthen Warden"
+	desc = "An ever-watchful warden, a manner of earthen elemental dutiful in its protection \
+	of its native plane. As a consequence of their competence, they are often summoned to Psydonia \
+	by ambitious conjurers to serve their bidding instead."
 	icon_state = "warden"
 	icon_living = "warden"
 	icon_dead = "vvd"
@@ -16,12 +19,13 @@
 	move_to_delay = 12
 	base_intents = list(/datum/intent/simple/elemental_unarmed)
 	butcher_results = list()
+	death_loot = list(/obj/item/magic/elemental/shard = 2)
 	faction = list("elemental")
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
-	health = 240
-	maxHealth = 240
-	melee_damage_lower = 15
-	melee_damage_upper = 17
+	health = 340
+	maxHealth = 340
+	melee_damage_lower = 25
+	melee_damage_upper = 30
 	vision_range = 7
 	aggro_vision_range = 9
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
@@ -33,9 +37,10 @@
 	pooptype = null
 	simple_detect_bonus = 20
 	deaggroprob = 0
-	defprob = 40
+	canparry = TRUE
+	defprob = 30
 	// del_on_deaggro = 44 SECONDS
-	retreat_health = 0.3
+	retreat_health = 0
 	food = 0
 	rapid = TRUE
 	attack_sound = 'sound/combat/hits/onstone/wallhit.ogg'
@@ -43,41 +48,16 @@
 	aggressive = 1
 
 	STACON = 15
-	STAEND = 15
+	STAWIL = 15
 	STASTR = 10
 	STASPD = 6
 
 /mob/living/simple_animal/hostile/retaliate/rogue/elemental/warden/Initialize()
+	src.adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
 	. = ..()
 
 /mob/living/simple_animal/hostile/retaliate/rogue/elemental/warden/death(gibbed)
 	..()
-	var/turf/deathspot = get_turf(src)
-	new /obj/item/magic/elementalshard(deathspot)
-	new /obj/item/magic/elementalshard(deathspot)
-	new /obj/item/magic/elementalshard(deathspot)
-	new /obj/item/magic/elementalshard(deathspot)
-	new /obj/item/magic/elementalmote(deathspot)
-	new /obj/item/magic/elementalmote(deathspot)
-	new /obj/item/magic/elementalmote(deathspot)
-	new /obj/item/magic/elementalmote(deathspot)
 	update_icon()
 	spill_embedded_objects()
 	qdel(src)
-
-/mob/living/simple_animal/hostile/retaliate/rogue/elemental/warden/AttackingTarget()
-	if(SEND_SIGNAL(src, COMSIG_HOSTILE_PRE_ATTACKINGTARGET, target) & COMPONENT_HOSTILE_NO_PREATTACK)
-		return FALSE //but more importantly return before attack_animal called
-	SEND_SIGNAL(src, COMSIG_HOSTILE_ATTACKINGTARGET, target)
-	in_melee = TRUE
-	if(!target)
-		return
-	yeet(target)
-	if(!QDELETED(target))
-		return target.attack_animal(src)
-
-/mob/living/simple_animal/hostile/retaliate/rogue/elemental/warden/proc/yeet(target)
-	var/atom/throw_target = get_edge_target_turf(src, get_dir(src, target)) //ill be real I got no idea why this worked.
-	var/mob/living/L = target
-	L.throw_at(throw_target, 7, 4)
-	L.adjustBruteLoss(20)

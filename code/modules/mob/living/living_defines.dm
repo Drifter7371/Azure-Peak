@@ -11,6 +11,7 @@
 	var/resize = 1 //Badminnery resize
 	var/lastattacker = null
 	var/lastattackerckey = null
+	var/datum/weakref/lastattacker_weakref = null
 
 	//Health and life related vars
 	var/maxHealth = 100 //Maximum health that should be possible.
@@ -29,6 +30,7 @@
 
 	var/resting = FALSE
 	var/wallpressed = FALSE
+	var/climbing = FALSE
 
 	var/pixelshift_layer = 0
 
@@ -41,6 +43,8 @@
 
 	var/last_special = 0 //Used by the resist verb, likely used to prevent players from bypassing next_move by logging in/out.
 	var/timeofdeath = 0
+
+	var/infected = FALSE //Used to tell if the mob is in progress of turning into deadite
 
 	//Allows mobs to move through dense areas without restriction. For instance, in space or out of holder objects.
 	var/incorporeal_move = FALSE //FALSE is off, INCORPOREAL_MOVE_BASIC is normal, INCORPOREAL_MOVE_SHADOW is for ninjas
@@ -56,9 +60,12 @@
 
 	var/tod = null // Time of death
 
-	var/on_fire = 0 //The "Are we on fire?" var
-	var/fire_stacks = 0 //Tracks how many stacks of fire we have on, max is usually 20
-	var/divine_fire_stacks = 0	//Same as regular firestacks but has less properties to avoid firespreading and other mechanics. Meant to ONLY harm the target.
+	/// The boolean "Are we on fire?" var. 
+	var/on_fire = FALSE
+	/// Helper vars for quick access to firestacks, these should be updated every time firestacks are adjusted
+	var/fire_stacks = 0
+	/// Rate at which fire stacks should decay from this mob
+	var/fire_stack_decay_rate = -0.05
 
 	var/bloodcrawl = 0 //0 No blood crawling, BLOODCRAWL for bloodcrawling, BLOODCRAWL_EAT for crawling+mob devour
 	var/holder = null //The holder for blood crawling
@@ -134,15 +141,22 @@
 	var/last_ps = 0
 
 	var/ambushable = 0
+	var/threat_point = 0 // Threat Point cost for the ambush budget system. Set on NPC subtypes.
+	var/ambush_faction = "" // Faction tag for ambush same/wrong-faction purchasing. Separate from mob faction list.
 
+	// Tracks whether mob is in surrendering state (right-click combat button)
 	var/surrendering = 0
+
+	// Tracks whether mob is in compliance mode (middle-click combat button)
+	var/compliance = 0
 
 	var/defprob = 50 //base chance to defend against this mob's attacks, for simple mob combat
 	var/encumbrance = 0
 
 	var/eyesclosed = 0
 	var/fallingas = 0
-
+	var/is_asleep = FALSE
+	
 	var/bleed_rate = 0 //how much are we bleeding
 	var/bleedsuppress = 0 //for stopping bloodloss, eventually this will be limb-based like bleeding
 
@@ -160,6 +174,8 @@
 	var/datum/sex_controller/sexcon
 
 	var/slowdown
+
+	var/last_integ_sound
 
 	var/last_dir_change = 0
 
@@ -180,3 +196,25 @@
 	var/voice_pitch = 1
 
 	var/domhand = 0
+
+	var/cmode_music_override = list() // set by prefs or the verb, ignored if empty
+	var/cmode_music_override_name // solely for autoselecting as a spawned-in mob
+	var/last_heard_raw_message //to prevent repeated messages from spamming
+
+	/// If the character has prominent mob descriptors, they'll make extra noise
+	var/loud_sneaking = FALSE
+
+	/// Parry timer for projectiles post-attack. Hooks into the attack animation, so is fairly clunky.
+	var/projectile_parry_timer
+
+	/// Toggle delay for Specials, or really anything else that you don't want input spam to instantly cycle through.
+	var/toggle_delay = 1 SECONDS
+	/// Toggle timer for Specials, or really anything else that you don't want input spam to instantly cycle through.
+	var/toggle_timer
+	var/is_swimming = FALSE
+	var/is_underwater = FALSE
+	var/drowning_drowniness = 0
+	var/breath_remaining = 100
+	var/max_breath = 100
+	var/last_breath_spent = 0
+	var/client/swimming_filter_client = null

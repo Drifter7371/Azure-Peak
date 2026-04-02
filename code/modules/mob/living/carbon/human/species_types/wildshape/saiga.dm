@@ -4,7 +4,8 @@
 	footstep_type = FOOTSTEP_MOB_CLAW
 	ambushable = FALSE
 	skin_armor = new /obj/item/clothing/suit/roguetown/armor/skin_armor/saiga_skin
-	// Someone else balance this, I am here for code, not numbers
+	wildshape_icon = 'icons/roguetown/mob/monster/saiga.dmi'
+	wildshape_icon_state = "saiga"
 
 //BUCKLING
 /mob/living/carbon/human/species/wildshape/saiga/buckle_mob(mob/living/target, force = TRUE, check_loc = TRUE, lying_buckle = FALSE, hands_needed = 0, target_hands_needed = 0)
@@ -12,19 +13,19 @@
 
 /mob/living/carbon/human/species/wildshape/saiga/gain_inherent_skills()
 	. = ..()
-	if(src.mind)
-		src.adjust_skillrank(/datum/skill/combat/wrestling, 2, TRUE)
-		src.adjust_skillrank(/datum/skill/combat/unarmed, 1, TRUE)
-		src.adjust_skillrank(/datum/skill/misc/swimming, 4, TRUE)
-		src.adjust_skillrank(/datum/skill/misc/athletics, 5, TRUE)
+	if(mind)
+		adjust_skillrank(/datum/skill/combat/wrestling, 3, TRUE)
+		adjust_skillrank(/datum/skill/combat/unarmed, 3, TRUE)
+		adjust_skillrank(/datum/skill/misc/swimming, 4, TRUE)
+		adjust_skillrank(/datum/skill/misc/athletics, 5, TRUE)
 
-		src.STASTR = 10
-		src.STACON = 13
-		src.STAEND = 18 //Because I don't want to give it TRAIT_INFINITE_STAMINA
-		src.STASPD = 13
+		STASTR = 10
+		STACON = 13
+		STAWIL = 18 //Because I don't want to give it TRAIT_INFINITE_STAMINA
+		STASPD = 13
 
 		AddSpell(new /obj/effect/proc_holder/spell/self/saigahoofs)
-		real_name = "Saiga ([stored_mob.real_name])" //So we don't get a random name
+		real_name = "saiga doe" //So we don't get a random name
 
 // SAIGA SPECIES DATUM //
 /datum/species/shapesaiga
@@ -38,11 +39,11 @@
 		TRAIT_PIERCEIMMUNE, //Prevents weapon dusting and caltrop effects when killed/stepping on shards.
 		TRAIT_LONGSTRIDER,
 		TRAIT_INFINITE_ENERGY, //Saiga's gonna run a marathon
-		TRAIT_PUSHIMMUNE
+		TRAIT_PUSHIMMUNE,
+		TRAIT_MOUNTABLE
 	)
 	inherent_biotypes = MOB_HUMANOID
-	armor = 5
-	no_equip = list(SLOT_SHIRT, SLOT_HEAD, SLOT_WEAR_MASK, SLOT_ARMOR, SLOT_GLOVES, SLOT_SHOES, SLOT_PANTS, SLOT_CLOAK, SLOT_BELT, SLOT_BACK_R, SLOT_BACK_L, SLOT_S_STORE)
+	no_equip = list(SLOT_SHIRT, SLOT_HEAD, SLOT_WEAR_MASK, SLOT_ARMOR, SLOT_GLOVES, SLOT_SHOES, SLOT_PANTS, SLOT_CLOAK, SLOT_BELT, SLOT_S_STORE)
 	nojumpsuit = 1
 	sexes = 1
 	offset_features = list(OFFSET_HANDS = list(0,2), OFFSET_HANDS_F = list(0,2))
@@ -90,7 +91,6 @@
 	body_parts_covered = FULL_BODY
 	body_parts_inherent = FULL_BODY
 	armor = ARMOR_LEATHER //Saiga should be tankier
-	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST, BCLASS_STAB)
 	blocksound = SOFTHIT
 	blade_dulling = DULLING_BASHCHOP
 	sewrepair = FALSE
@@ -100,26 +100,28 @@
 /datum/intent/simple/saiga //Like a less defense dagger
 	name = "hoof"
 	icon_state = "instrike"
-	blade_class = BCLASS_CUT
+	blade_class = BCLASS_BLUNT
 	attack_verb = list("hits", "mauls", "bashes")
 	animname = "strike"
 	hitsound = "punch_hard"
-	penfactor = BLUNT_DEFAULT_PENFACTOR
+	penfactor = PEN_NONE
 	candodge = TRUE
 	canparry = TRUE
 	miss_text = "kicks the air!"
 	miss_sound = "bluntswoosh"
 	item_d_type = "blunt"
-	swingdelay = 10
-	clickcd = 14
+	swingdelay = 8
+	clickcd = CLICK_CD_QUICK
+	intent_intdamage_factor = BLUNT_DEFAULT_INT_DAMAGEFACTOR // I'm evil
+	demolition_mod = 1.5
 
-/obj/item/rogueweapon/saiga_hoof //Like a less defense dagger
+/obj/item/rogueweapon/saiga_hoof //Like a mace
 	name = "saiga hoof"
 	desc = ""
 	item_state = null
 	lefthand_file = null
 	righthand_file = null
-	icon = 'icons/roguetown/weapons/32.dmi'
+	icon = 'icons/roguetown/weapons/misc32.dmi'
 	max_blade_int = 600
 	max_integrity = 600
 	force = 20
@@ -131,8 +133,7 @@
 	wbalance = WBALANCE_NORMAL
 	w_class = WEIGHT_CLASS_NORMAL
 	can_parry = TRUE //I just think this is cool as fuck, sue me
-	sharpness = FALSE
-	demolition_mod = 1.25
+	sharpness = IS_BLUNT
 	swingsound = list('sound/vo/mobs/saiga/attack (1).ogg','sound/vo/mobs/saiga/attack (2).ogg')
 	possible_item_intents = list(/datum/intent/simple/saiga)
 	parrysound = list('sound/combat/parry/parrygen.ogg')

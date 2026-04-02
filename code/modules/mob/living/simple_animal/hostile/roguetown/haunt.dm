@@ -1,6 +1,6 @@
 /mob/living/simple_animal/hostile/rogue/haunt
 	name = "haunt"
-	desc = ""
+	desc = "Something dances in the corner of your eye; something is both there and not there."
 	icon = 'icons/roguetown/mob/monster/wraith.dmi'
 	icon_state = "haunt"
 	icon_living = "haunt"
@@ -17,7 +17,6 @@
 	response_help_simple = "pass through"
 	maxHealth = HAUNT_HEALTH
 	health = HAUNT_HEALTH
-	spacewalk = TRUE
 	stat_attack = UNCONSCIOUS
 	robust_searching = 1
 	speed = 1
@@ -239,7 +238,7 @@
 	blade_class = BCLASS_CHOP
 	hitsound = list('sound/combat/hits/bladed/genchop (1).ogg', 'sound/combat/hits/bladed/genchop (2).ogg', 'sound/combat/hits/bladed/genchop (3).ogg')
 	chargetime = 0
-	penfactor = 10
+	penfactor = PEN_NONE
 	swingdelay = 8
 	clickcd = HAUNT_ATTACK_SPEED
 

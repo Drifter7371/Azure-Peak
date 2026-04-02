@@ -25,20 +25,16 @@
 
 
 	// if you are seeing someone speak popcorn language, then something is wrong.
+	var/list/mutually_intelligible	// Mutually intellgible languages. If a language is in this list then speakers of this language can understand it without learning it. Not transitive. Currently used for Lingyuese / Kazengunese pairing for gameplay reason (Their IRL counterpart is not remotely close, but they're under the same political entity IC)
+
 	var/icon = 'icons/misc/language.dmi'
 	var/icon_state = "popcorn"
 
 /datum/language/proc/display_icon(atom/movable/hearer)
-	var/understands = hearer.has_language(src.type)
-	if(flags & LANGUAGE_HIDE_ICON_IF_UNDERSTOOD && understands)
-		return FALSE
-	if(flags & LANGUAGE_HIDE_ICON_IF_NOT_UNDERSTOOD && !understands)
-		return FALSE
 	return TRUE
 
 /datum/language/proc/get_icon()
-	var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/goonchat)
-	return sheet.icon_tag("language-[icon_state]")
+	return "[icon2html(icon, world, icon_state)]"
 
 /datum/language/proc/get_random_name(gender, name_count=2, syllable_count=4, syllable_divisor=2)
 	if(!syllables || !syllables.len)

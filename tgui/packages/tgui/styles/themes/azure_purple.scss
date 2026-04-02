@@ -1,0 +1,24 @@
+@use 'azure_base' as *;
+
+.theme-azure_purple:root {
+  @include azure-theme((
+    'base':            #1c0f1f,
+    'base-light':      #221425,
+    'base-dark':       #160a19,
+    'section':         rgba(85, 45, 112, 0.12),
+    'section-title':   #b895c4,
+    'text':            #d4ccd8,
+    'label':           #b895c4,
+    'accent':          #702963,
+    'accent-bright':   #9d4a8a,
+    'border':          #552d70,
+    'btn-text':        #9d82a8,
+    'btn-selected':    #8b5cb8,
+    'btn-disabled':    #655670,
+    'scrollbar-thumb': #702963,
+    'glow':            rgba(112, 41, 99, 0.15),
+    'link':            #9d4a8a,
+    'link-visited':    #d4a0d0,
+    'link-hover':      #c06eac,
+  ), '../assets/azure_default/topbar_purple.svg');
+}

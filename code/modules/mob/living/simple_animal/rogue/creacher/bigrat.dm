@@ -19,21 +19,22 @@
 	base_intents = list(/datum/intent/simple/bite/bigrat)
 	botched_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 1)
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 1,
-							/obj/item/natural/hide = 1, 
-							/obj/item/natural/bone = 2, 
-							/obj/item/alch/sinew = 1, 
-							/obj/item/alch/bone = 1, 
-							/obj/item/alch/viscera = 1,
-							/obj/item/natural/head/rous = 1)
+							/obj/item/natural/hide = 1,
+							/obj/item/natural/bone = 2,
+							/obj/item/alch/sinew = 1,
+							/obj/item/alch/bone = 1,
+							/obj/item/alch/viscera = 1)
 	perfect_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 1,
-							/obj/item/natural/hide = 1, 
-							/obj/item/natural/bone = 2, 
-							/obj/item/alch/sinew = 1, 
-							/obj/item/alch/bone = 1, 
+							/obj/item/natural/hide = 1,
+							/obj/item/natural/bone = 2,
+							/obj/item/alch/sinew = 1,
+							/obj/item/alch/bone = 1,
 							/obj/item/alch/viscera = 1,
-							/obj/item/natural/fur/rat = 1,
-							/obj/item/natural/head/rous = 1)
+							/obj/item/natural/fur/rat = 1)
+	head_butcher = /obj/item/natural/head/rous
 	faction = list("rats")
+	threat_point = THREAT_TRASH
+	ambush_faction = "wildlife"
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	attack_sound = 'sound/combat/wooshes/punch/punchwoosh (2).ogg'
 	health = 65
@@ -73,6 +74,7 @@
 
 /obj/effect/decal/remains/bigrat
 	name = "remains"
+	desc = "All that remains of a once-living rous. All that comes from filth returns to filth."
 	gender = PLURAL
 	icon_state = "ratbones"
 	icon = 'icons/roguetown/mob/monster/bigrat.dmi'

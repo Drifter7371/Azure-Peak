@@ -41,11 +41,30 @@
 	owner.adjustBruteLoss(3)
 
 
+/datum/status_effect/vampire_spawn_protection
+	id = "vampire_spawn_protection"
+	duration = 5 MINUTES
+	alert_type = /atom/movable/screen/alert/status_effect/vampire_spawn_protection
+
+/atom/movable/screen/alert/status_effect/vampire_spawn_protection
+	name = "Sun Protection"
+	desc = "The sun cannot harm me... for now."
+	icon_state = "buff"
+
+/datum/status_effect/vampire_spawn_protection/on_apply()
+	ADD_TRAIT(owner, TRAIT_WEATHER_PROTECTED, "vampire_spawn_protection")
+	return TRUE
+
+/datum/status_effect/vampire_spawn_protection/on_remove()
+	REMOVE_TRAIT(owner, TRAIT_WEATHER_PROTECTED, "vampire_spawn_protection")
+	if(isliving(owner))
+		to_chat(owner, span_warning("My spawn protection has faded. The sun will burn me now."))
+
 /datum/status_effect/cyborg_power_regen
 	id = "power_regen"
 	duration = 100
 	alert_type = /atom/movable/screen/alert/status_effect/power_regen
-	var/power_to_give = 0 //how much power is gained each tick
+	var/power_to_give = 0
 
 /datum/status_effect/cyborg_power_regen/on_creation(mob/living/new_owner, new_power_per_tick)
 	. = ..()
@@ -281,7 +300,6 @@
 		owner.dizziness = max(0, owner.dizziness - 2)
 		owner.jitteriness = max(0, owner.jitteriness - 2)
 		owner.confused = max(0, owner.confused - 1)
-		SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "goodmusic", /datum/mood_event/goodmusic)
 
 /atom/movable/screen/alert/status_effect/regenerative_core
 	name = "Regenerative Core Tendrils"
@@ -320,3 +338,69 @@
 /datum/status_effect/antimagic/on_remove()
 	REMOVE_TRAIT(owner, TRAIT_ANTIMAGIC, MAGIC_TRAIT)
 	owner.visible_message("<span class='warning'>[owner]'s dull aura fades away...</span>")
+
+/atom/movable/screen/alert/status_effect/tempo_one
+	name = "Tempo One"
+	desc = "Three cowardly foes are attacking me. The need to focus has given me some light boons."
+	icon_state = "tempo1"
+
+/atom/movable/screen/alert/status_effect/tempo_two
+	name = "Tempo Two"
+	desc = "Four on one! I am locked in. Greater boons come to me in the heat of battle."
+	icon_state = "tempo2"
+
+/atom/movable/screen/alert/status_effect/tempo_three
+	name = "Full Tempo"
+	desc = "FIVE AND MORE! COME AND GET ME! I WILL NOT GO DOWN LIKE A KNAVE!"
+	icon_state = "tempo3"
+
+
+/datum/status_effect/buff/tempo_one
+	id = "tempo_1"
+	duration = 30 SECONDS
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = /atom/movable/screen/alert/status_effect/tempo_one
+
+/datum/status_effect/buff/tempo_one/on_apply()
+	. = ..()
+	if(owner)
+		owner.stamina = max((owner.stamina - owner.max_stamina / 3), 0)
+		to_chat(owner, span_info("Tempo!"))
+
+/datum/status_effect/buff/tempo_two
+	id = "tempo_2"
+	duration = 30 SECONDS
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = /atom/movable/screen/alert/status_effect/tempo_two
+
+/datum/status_effect/buff/tempo_two/on_apply()
+	. = ..()
+	if(owner)
+		owner.stamina = max((owner.stamina - owner.max_stamina / 2), 0)
+		to_chat(owner, span_notice("Tempo!!"))
+
+#define TEMPO_MAX_FILTER "tempo_max_glow"
+
+/datum/status_effect/buff/tempo_three
+	id = "tempo_3"
+	duration = 30 SECONDS
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = /atom/movable/screen/alert/status_effect/tempo_three
+	var/outline_color = "#d3aa25"
+
+/datum/status_effect/buff/tempo_three/on_apply()
+	. = ..()
+	if(owner)
+		var/filter = owner.get_filter(TEMPO_MAX_FILTER)
+		if (!filter)
+			owner.add_filter(TEMPO_MAX_FILTER, 2, list("type" = "outline", "color" = outline_color, "alpha" = 80, "size" = 1))
+		owner.playsound_local(owner, 'sound/combat/tempo_max.ogg', 85, TRUE)
+		to_chat(owner, span_notice("<b>TEMPO!!!</b>"))
+		owner.stamina = 0
+		ADD_TRAIT(owner, TRAIT_GRABIMMUNE, TRAIT_STATUS_EFFECT)
+
+/datum/status_effect/buff/tempo_three/on_remove()
+	. = ..()
+	owner.remove_filter(TEMPO_MAX_FILTER)
+	REMOVE_TRAIT(owner, TRAIT_GRABIMMUNE,  TRAIT_STATUS_EFFECT)
+#undef TEMPO_MAX_FILTER

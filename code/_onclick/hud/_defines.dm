@@ -38,7 +38,7 @@
 	if (i == 1)
 		return"WEST-3:-16,SOUTH+7"
 	else
-		testing("Index of failed hand is [i]")
+
 		return
 /proc/ui_equip_position(mob/M)
 	var/y_off = round((M.held_items.len-1) / 2) //values based on old equip ui position (CENTER: +/-16,SOUTH+1:5)
@@ -184,6 +184,8 @@
 #define rogueui_fat "WEST-1,CENTER+2"
 #define rogueui_stam "WEST-1:0,CENTER+4"
 #define rogueui_blood "WEST-1:6,CENTER+4:17"
+#define rogueui_vitae "WEST-5,CENTER+2"
+#define rogueui_breath "WEST,CENTER+2"
 
 #define rogueui_cmode "WEST-1:-16,CENTER+1"
 #define rogueui_def "WEST-2,NORTH-5"

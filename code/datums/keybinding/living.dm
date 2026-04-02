@@ -142,19 +142,29 @@
 	L.submit(TRUE)
 	return TRUE
 
+/datum/keybinding/living/toggle_compliance
+	hotkey_keys = list()
+	name = "toggle_compliance"
+	full_name = "Toggle Compliance Mode"
+	description = "At-will, silent toggle to fail defense rolls, both when getting grabbed/tackled, and when others resist out your grabs. Additionally speeds up restraining you and stripping you. Dangerous in combat!"
+
+/datum/keybinding/living/toggle_compliance/down(client/user)
+	var/mob/living/L = user.mob
+	if(!isliving(L))
+		return
+	L.toggle_compliance()
+	return TRUE
 
 /datum/keybinding/living/resist
 	hotkey_keys = list("X")
 	name = "cancelresist"
-	full_name = "Cancel/Resist"
-	description = "Stop an action such as a charged attack or spam this to resist against a grab."
+	full_name = "Resist"
+	description = "Spam this to resist against a grab."
 
 /datum/keybinding/living/resist/down(client/user)
 	var/mob/living/L = user.mob
 	if(!istype(L))
 		return FALSE
-	if(L.doing)
-		L.doing = 0
 	L.resist()
 	return TRUE
 
@@ -255,6 +265,33 @@
 	else
 		return FALSE
 
+/datum/keybinding/living/search
+	hotkey_keys = list("ShiftG")
+	name = "search"
+	full_name = "Search"
+	description = "Search the area around you for hidden items or compartments."
+
+/datum/keybinding/living/search/down(client/user)
+	var/mob/living/L = user.mob
+	if (isliving(L))
+		L.look_around()
+
+/datum/keybinding/living/alt_grip
+	hotkey_keys = list("5")
+	name = "alt_grip"
+	full_name = "Alt Grip"
+	description = "Switch to an alternate grip on the held weapon, such as mordhau."
+
+/datum/keybinding/living/alt_grip/down(client/user)
+	var/mob/living/L = user.mob
+	if(!isliving(L))
+		return FALSE
+	var/obj/item/I = L.get_active_held_item()
+	if(I)
+		I.rmb_self(L)
+		return TRUE
+	return FALSE
+
 //layer shifting
 
 /datum/keybinding/living/pixel_shift_layerup
@@ -266,6 +303,8 @@
 
 /datum/keybinding/living/pixel_shift_layerup/down(client/user)
 	var/mob/living/M = user.mob
+	if(!isliving(M))
+		return FALSE
 	if(M.pixelshift_layer <= 0.04)
 		M.is_shifted = TRUE
 		M.pixelshift_layer = M.pixelshift_layer + 0.01
@@ -281,6 +320,8 @@
 
 /datum/keybinding/living/pixel_shift_layerdown/down(client/user)
 	var/mob/living/M = user.mob
+	if(!isliving(M))
+		return FALSE
 	if(M.pixelshift_layer >= -0.04)
 		M.is_shifted = TRUE
 		M.pixelshift_layer = M.pixelshift_layer - 0.01

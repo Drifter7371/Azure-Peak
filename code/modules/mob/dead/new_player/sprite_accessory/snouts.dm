@@ -18,17 +18,41 @@
 	name = "Sharp"
 	icon_state = "sharp"
 
+/datum/sprite_accessory/snout/sharpdualcolor
+	name = "Sharp - Dual Color"
+	icon_state = "m_snout_sharp"
+	color_keys = 2
+	color_key_names = list("Snout", "Jaw")
+
 /datum/sprite_accessory/snout/round
 	name = "Round"
 	icon_state = "round"
+
+/datum/sprite_accessory/snout/rounddualcolor
+	name = "Round - Dual Color"
+	icon_state = "m_snout_round"
+	color_keys = 2
+	color_key_names = list("Snout", "Jaw")
 
 /datum/sprite_accessory/snout/sharplight
 	name = "Sharp + Light"
 	icon_state = "sharplight"
 
+/datum/sprite_accessory/snout/sharplightdualcolor
+	name = "Sharp + Light - Dual Color"
+	icon_state = "m_snout_sharplight"
+	color_keys = 2
+	color_key_names = list("Snout", "Jaw")
+
 /datum/sprite_accessory/snout/roundlight
 	name = "Round + Light"
 	icon_state = "roundlight"
+
+/datum/sprite_accessory/snout/roundlightdualcolor
+	name = "Round + Light - Dual Color"
+	icon_state = "m_snout_roundlight"
+	color_keys = 2
+	color_key_names = list("Snout", "Jaw")
 
 /datum/sprite_accessory/snout/vulp
 	name = "Vulp Two-shade"
@@ -79,6 +103,12 @@
 /datum/sprite_accessory/snout/bug
 	name = "Bug"
 	icon_state = "bug"
+	color_keys = 2
+	color_key_names = list("Snout", "Eyes")
+
+/datum/sprite_accessory/snout/bugna
+	name = "Bug (No Antennae)"
+	icon_state = "bugna"
 	color_keys = 2
 	color_key_names = list("Snout", "Eyes")
 
@@ -313,6 +343,12 @@
 /datum/sprite_accessory/snout/front/bug
 	name = "Bug (Top)"
 	icon_state = "fbug"
+	color_keys = 2
+	color_key_names = list("Snout", "Eyes")
+
+/datum/sprite_accessory/snout/front/bugna
+	name = "Bug (No Antenna) (Top)"
+	icon_state = "fbugna"
 	color_keys = 2
 	color_key_names = list("Snout", "Eyes")
 

@@ -1,4 +1,4 @@
-GLOBAL_LIST_INIT(vanderlin_weather, list(PARTICLEWEATHER_RAIN))
+GLOBAL_LIST_INIT(vanderlin_weather, list(PARTICLEWEATHER_RAIN, PARTICLEWEATHER_BLOODRAIN, PARTICLEWEATHER_LEAVES))
 SUBSYSTEM_DEF(ParticleWeather)
 	name = "Particle Weather"
 	flags = SS_BACKGROUND
@@ -10,6 +10,9 @@ SUBSYSTEM_DEF(ParticleWeather)
 
 	var/particles/weather/particleEffect
 	var/obj/weatherEffect
+
+	var/list/turfs_to_process = list()
+	var/list/weathered_turfs = list()
 
 /datum/controller/subsystem/ParticleWeather/fire()
 	// process active weather
@@ -30,7 +33,7 @@ SUBSYSTEM_DEF(ParticleWeather)
 		var/target_trait = initial(W.target_trait)
 
 		// any weather with a probability set may occur at random
-		if (probability && (target_trait in GLOB.vanderlin_weather)) //TODO VANDERLIN: Map trait this.
+		if (prob(probability) && (target_trait in GLOB.vanderlin_weather)) //TODO VANDERLIN: Map trait this.
 			LAZYINITLIST(elligble_weather)
 			elligble_weather[W] = probability
 	return ..()
@@ -71,7 +74,7 @@ SUBSYSTEM_DEF(ParticleWeather)
 		weatherEffect.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	return weatherEffect
 
-/datum/controller/subsystem/ParticleWeather/proc/SetparticleEffect(particles/P, blend_type, filter_type, color)
+/datum/controller/subsystem/ParticleWeather/proc/SetparticleEffect(particles/P, blend_type, filter_type, color, secondary_filter_type)
 	particleEffect = P
 	weatherEffect.particles = particleEffect
 	if(color)
@@ -84,6 +87,8 @@ SUBSYSTEM_DEF(ParticleWeather)
 	weatherEffect.filters += filter(type="alpha", render_source=WEATHER_RENDER_TARGET)
 	if(filter_type)
 		weatherEffect.filters += filter_type
+	if(secondary_filter_type)
+		weatherEffect.filters += secondary_filter_type
 
 /datum/controller/subsystem/ParticleWeather/proc/stopWeather()
 	for(var/obj/act_on as anything in GLOB.weather_act_upon_list)

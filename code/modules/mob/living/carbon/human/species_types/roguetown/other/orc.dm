@@ -1,9 +1,9 @@
-/mob/living/carbon/human/species/orc
-	race = /datum/species/orc
-
 /datum/species/orc
 	name = "Orc"
 	id = "orc"
+	origin_default = /datum/virtue/origin/gronn
+	origin = "Gronn"
+	base_name = "Ogroid"
 	desc = "<b>Orcs</b><br>\
 	This is made for events. You shouldn't be able to use this as a normal person, \
 	For courtesies sake however, I've tried to half-assedly balance it for use by players\
@@ -14,7 +14,7 @@
 	species_traits = list(EYECOLOR,HAIR,FACEHAIR,LIPS,STUBBLE,OLDGREY)
 	inherent_traits = list(TRAIT_NOMOBSWAP)
 	default_features = MANDATORY_FEATURE_LIST
-	use_skintones = 1
+	use_skintones = TRUE
 	disliked_food = NONE
 	liked_food = NONE
 	possible_ages = ALL_AGES_LIST
@@ -60,6 +60,7 @@
 		/datum/body_marking_set/bellysocks,
 		/datum/body_marking_set/tiger,
 		/datum/body_marking_set/tiger_dark,
+		/datum/body_marking_set/gradient,
 	)
 	body_markings = list(
 		/datum/body_marking/flushed_cheeks,
@@ -73,32 +74,36 @@
 		/datum/customizer/bodypart_feature/accessory,
 		/datum/customizer/bodypart_feature/face_detail,
 		/datum/customizer/bodypart_feature/underwear,
+		/datum/customizer/bodypart_feature/legwear,
+		/datum/customizer/bodypart_feature/piercing,
 		/datum/customizer/organ/testicles/anthro,
 		/datum/customizer/organ/penis/anthro,
 		/datum/customizer/organ/breasts/human,
 		/datum/customizer/organ/vagina/human,
+		/datum/customizer/organ/horns/tusks,
+		/datum/customizer/organ/ears/halforc,
 		)
 	languages = list(
 		/datum/language/common,
 		/datum/language/orcish
 	)
 
-/datum/species/halforc/on_species_gain(mob/living/carbon/C, datum/species/old_species)
+/datum/species/orc/on_species_gain(mob/living/carbon/C, datum/species/old_species)
 	..()
 	RegisterSignal(C, COMSIG_MOB_SAY, PROC_REF(handle_speech), override = TRUE)
 
-/datum/species/halforc/after_creation(mob/living/carbon/C)
+/datum/species/orc/after_creation(mob/living/carbon/C)
 	..()
 	to_chat(C, "<span class='info'>I can speak Orcish with ,o before my speech.</span>")
 
-/datum/species/halforc/on_species_loss(mob/living/carbon/C)
+/datum/species/orc/on_species_loss(mob/living/carbon/C)
 	. = ..()
 	UnregisterSignal(C, COMSIG_MOB_SAY)
 
-/datum/species/halforc/qualifies_for_rank(rank, list/features)
+/datum/species/orc/qualifies_for_rank(rank, list/features)
 	return TRUE
 
-/datum/species/halforc/get_skin_list()
+/datum/species/orc/get_skin_list()
 	return list(
 		"Shellcrest" = SKIN_COLOR_SHELLCREST,
 		"Bloodaxe" = SKIN_COLOR_BLOOD_AXE,
@@ -111,7 +116,7 @@
 		"Spirit Crusher" = SKIN_COLOR_SPIRITCRUSHER
 	)
 
-/datum/species/halforc/get_hairc_list()
+/datum/species/orc/get_hairc_list()
 	return sortList(list(
 	"Minotaur" = "58433b",
 	"Volf" = "48322a",
@@ -119,7 +124,7 @@
 	"Mud" = "201616",
 	))
 
-/datum/species/halforc/random_name(gender,unique,lastname)
+/datum/species/orc/random_name(gender,unique,lastname)
 
 	var/randname
 	if(unique)
@@ -140,5 +145,5 @@
 			randname = pick( world.file2list("strings/rt/names/other/halforcf.txt") )
 	return randname
 
-/datum/species/halforc/random_surname()
+/datum/species/orc/random_surname()
 	return

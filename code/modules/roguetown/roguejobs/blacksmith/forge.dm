@@ -8,8 +8,15 @@
 	density = TRUE
 	anchored = TRUE
 	on = FALSE
+	roundstart_forbid = TRUE
 	climbable = TRUE
 	climb_time = 0
+	var/heat_time = 20 SECONDS
+
+/obj/machinery/light/rogue/forge/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("When held with a pair of tongs, left-clicking the forge with an ingot will temporarily heat it up. Heated-up ingots can then be placed on an anvil and pounded into a variety of recipes.")
+	. += span_info("Left-clicking the forge with a torch, lamptern, flint, or other type of ignitioneer will light it back up. Fuel - like wood and books - can be added by left-clicking the forge with it.")
 
 /obj/machinery/light/rogue/forge/attackby(obj/item/W, mob/living/user, params)
 	if(istype(W, /obj/item/rogueweapon/tongs) && on)
@@ -17,7 +24,7 @@
 		if(T.hingot)
 			var/tyme = world.time
 			T.hott = tyme
-			addtimer(CALLBACK(T, TYPE_PROC_REF(/obj/item/rogueweapon/tongs, make_unhot), tyme), 100)
+			addtimer(CALLBACK(T, TYPE_PROC_REF(/obj/item/rogueweapon/tongs, make_unhot), tyme), heat_time)
 			T.update_icon()
 			user.visible_message(span_info("[user] heats the bar."))
 			var/obj/item/rogueweapon/tongs/heldstuff = user.get_active_held_item()

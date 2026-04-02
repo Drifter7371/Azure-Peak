@@ -25,6 +25,8 @@
 		/obj/item/roguestatue/steel = 1,
 		/obj/item/roguestatue/aalloy = 1,
 		/obj/item/roguestatue/iron = 1,
+		/obj/item/repair_kit/bad = 1,
+		/obj/item/repair_kit/metal/bad = 1,
 	)
 
 /obj/effect/spawner/lootdrop/valuable_clutter_spawner
@@ -39,6 +41,7 @@
 		/obj/item/roguestatue/silver = 1,
 		/obj/item/roguestatue/steel = 1,
 		/obj/item/rogueweapon/hammer/steel = 1,
+		/obj/item/repair_kit = 1,
 	)
 
 /obj/effect/spawner/lootdrop/cheap_candle_spawner
@@ -99,8 +102,8 @@
 	lootcount = 1
 	loot = list(
 		/obj/item/clothing/ring/aalloy = 6,
-		/obj/item/clothing/neck/roguetown/psicross = 1,
-		/obj/item/clothing/neck/roguetown/psicross/aalloy = 1,
+		/obj/item/clothing/neck/roguetown/psicross = 2,
+		/obj/item/clothing/neck/roguetown/psicross/aalloy = 2,
 		/obj/item/clothing/neck/roguetown/psicross/astrata = 6,
 		/obj/item/clothing/neck/roguetown/psicross/noc = 6,
 		/obj/item/clothing/neck/roguetown/psicross/abyssor = 6,
@@ -110,9 +113,10 @@
 		/obj/item/clothing/neck/roguetown/psicross/ravox = 6,
 		/obj/item/clothing/neck/roguetown/psicross/malum = 6,
 		/obj/item/clothing/neck/roguetown/psicross/eora = 6,
-		/obj/item/clothing/neck/roguetown/psicross/wood = 1,
+		/obj/item/clothing/neck/roguetown/psicross/wood = 2,
 		/obj/item/clothing/neck/roguetown/psicross/shell = 6,
 		/obj/item/clothing/neck/roguetown/psicross/shell/bracelet = 6,
+		/obj/item/clothing/neck/roguetown/psicross/pearl = 3,
 		/obj/item/clothing/neck/roguetown/horus = 1,
 		/obj/item/clothing/neck/roguetown/luckcharm = 1,
 	)
@@ -129,18 +133,24 @@
 		/obj/item/clothing/ring/topaz = 6,
 		/obj/item/clothing/ring/quartz = 3,
 		/obj/item/clothing/ring/sapphire = 4,
-		/obj/item/clothing/ring/diamond = 1,
+		/obj/item/clothing/ring/diamond = 2,
 		/obj/item/clothing/ring/signet = 7,
 		/obj/item/clothing/ring/emeralds = 6,
 		/obj/item/clothing/ring/rubys = 3,
 		/obj/item/clothing/ring/topazs = 7,
 		/obj/item/clothing/ring/quartzs = 4,
 		/obj/item/clothing/ring/sapphires = 5,
-		/obj/item/clothing/ring/diamonds = 1,
+		/obj/item/clothing/ring/diamonds = 2,
 		/obj/item/clothing/neck/roguetown/psicross/silver = 2,
 		/obj/item/clothing/neck/roguetown/psicross/g = 2,
-		/obj/item/clothing/neck/roguetown/psicross/pearl = 3,
 		/obj/item/clothing/neck/roguetown/psicross/bpearl = 2,
 		/obj/item/clothing/neck/roguetown/ornateamulet = 3,
 		/obj/item/clothing/neck/roguetown/skullamulet = 3,
-	)
+		/obj/item/clothing/neck/roguetown/skullamulet/gemerald = 2,
+		/obj/item/clothing/ring/statgemerald = 2,
+		/obj/item/clothing/ring/statonyx = 2,
+		/obj/item/clothing/ring/statamythortz = 2,
+		/obj/item/clothing/ring/statrontz = 2,
+		/obj/item/clothing/neck/roguetown/psicross/malum/secret = 1,
+		/obj/item/clothing/neck/roguetown/psicross/weeping = 1,
+	) //'Stat_' and 'Psicross_' rings at '2' or below provide statbuffs, and should be kept rare. Move to a seperate drop table if they become too common. Likeliest find is from high-end dungeons and mimics.

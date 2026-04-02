@@ -1,5 +1,5 @@
 /datum/job/roguetown
-	display_order = JOB_DISPLAY_ORDER_CAPTAIN
+	display_order = JDO_LORD
 
 /datum/job/roguetown/New()
 	. = ..()
@@ -7,10 +7,13 @@
 		for(var/X in GLOB.peasant_positions)
 			peopleiknow += X
 			peopleknowme += X
-		for(var/X in GLOB.yeoman_positions)
+		for(var/X in GLOB.burgher_positions)
 			peopleiknow += X
 			peopleknowme += X
 		for(var/X in GLOB.church_positions)
+			peopleiknow += X
+			peopleknowme += X
+		for(var/X in GLOB.retinue_positions)
 			peopleiknow += X
 			peopleknowme += X
 		for(var/X in GLOB.garrison_positions)
@@ -22,10 +25,10 @@
 		for(var/X in GLOB.courtier_positions)
 			peopleiknow += X
 			peopleknowme += X
-		for(var/X in GLOB.youngfolk_positions)
+		for(var/X in GLOB.sidefolk_positions)
 			peopleiknow += X
 			peopleknowme += X
-		for(var/X in GLOB.mercenary_positions)
+		for(var/X in GLOB.inquisition_positions)
 			peopleiknow += X
 			peopleknowme += X
 
@@ -36,6 +39,7 @@
 	belt = null
 	back = null
 	shoes = null
+	saiga_shoes = /obj/item/clothing/shoes/roguetown/horseshoes
 	box = null
 	/// List of patrons we are allowed to use
 	var/list/allowed_patrons
@@ -86,6 +90,10 @@
 			if(check_crownlist(H.ckey))
 				H.mind.special_items["Champion Circlet"] = /obj/item/clothing/head/roguetown/crown/sparrowcrown
 			give_special_items(H)
+		// Ensure Wretches are granted their antagonist datum at post-equip
+		if(H.mind.assigned_role == "Wretch" && !H.mind.has_antag_datum(/datum/antagonist/wretch))
+			H.mind.add_antag_datum(/datum/antagonist/wretch)
+
 	for(var/list_key in SStriumphs.post_equip_calls)
 		var/datum/triumph_buy/thing = SStriumphs.post_equip_calls[list_key]
 		thing.on_activate(H)

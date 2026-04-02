@@ -14,6 +14,8 @@
 	var/occurrences = 0				//How many times this event has occured
 	var/max_occurrences = 20		//The maximum number of times this event can occur (naturally), it can still be forced.
 									//By setting this to 0 you can effectively disable an event.
+	/// Loaded occurrences from the last round events
+	var/last_round_occurrences = 0
 
 	var/holidayID = ""				//string which should be in the SSeventss.holidays list if you wish this event to be holiday-specific
 									//anything with a (non-null) holidayID which does not match holiday, cannot run.
@@ -145,7 +147,7 @@
 		if(!GLOB.badomens.len)
 			return EVENT_CANCELLED
 		badomen(pick_n_take(GLOB.badomens))
-		testing("[name] has started")
+
 
 	triggering = FALSE
 
@@ -381,13 +383,13 @@ GLOBAL_LIST_INIT(badomens, list())
 
 /proc/addomen(input)
 	if(!(input in GLOB.badomens))
-		testing("Omen added: [input]")
+
 		GLOB.badomens += input
 
 /proc/removeomen(input)
 	if(!hasomen(input))
 		return
-	testing("Omen removed: [input]")
+
 	GLOB.badomens -= input
 
 /datum/round_event_control/proc/badomen(eventreason)
@@ -396,12 +398,14 @@ GLOBAL_LIST_INIT(badomens, list())
 		if(OMEN_ROUNDSTART)
 			used = "Zizo."
 		if(OMEN_NOPRIEST)
-			used = "The Priest has perished! The Ten are weakened..."
+			used = "The Bishop has perished! The Ten are weakened..."
 		if(OMEN_SKELETONSIEGE)
 			used = "Unwelcome visitors!"
 		if(OMEN_NOLORD)
 			used = "The Monarch is dead! We need a new ruler."
 		if(OMEN_SUNSTEAL)
 			used = "The Sun, she is wounded!"
+		if(OMEN_INQUISITORDEATH)
+			used = "Something weeps..."
 	if(eventreason && used)
 		priority_announce(used, "Bad Omen", 'sound/misc/evilevent.ogg')

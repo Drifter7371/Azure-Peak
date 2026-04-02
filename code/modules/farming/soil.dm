@@ -4,6 +4,17 @@
 #define MAX_PLANT_WEEDS 100
 #define SOIL_DECAY_TIME 10 MINUTES
 
+#define WATER_THRESH_HIGH (MAX_PLANT_WATER * 0.6)
+#define WATER_THRESH_LOW (MAX_PLANT_WATER * 0.15)
+#define NUTRI_THRESH_HIGH (MAX_PLANT_NUTRITION * 0.6)
+#define NUTRI_THRESH_LOW (MAX_PLANT_NUTRITION * 0.15)
+#define WEEDS_THRESH_HIGH (MAX_PLANT_WEEDS * 0.6)
+#define WEEDS_THRESH_LOW (MAX_PLANT_WEEDS * 0.3)
+#define HEALTH_THRESH_LOW (MAX_PLANT_HEALTH * 0.3)
+#define HEALTH_THRESH_HIGH (MAX_PLANT_HEALTH * 0.6)
+
+GLOBAL_LIST_EMPTY(soil_list)
+
 /obj/structure/soil
 	name = "soil"
 	desc = "Dirt, ready to give life like a womb."
@@ -42,6 +53,23 @@
 	var/soil_decay_time = SOIL_DECAY_TIME
 	///The time remaining in which the soil was given special fertilizer, effect is similar to being blessed but with less beneficial effects
 	var/fertilized_time = 0
+	///Cached var to determine whether we need to call an icon update or not.
+	var/needs_icon_update = FALSE
+	//List of tools/weapons that can instantly harvest the produce
+	var/list/instant_harvest_tools = list(
+		/obj/item/rogueweapon/sickle,
+		/obj/item/rogueweapon/huntingknife/idagger/steel/pestrasickle,
+		/obj/item/rogueweapon/scythe,
+		/obj/item/rogueweapon/halberd/bardiche/scythe
+	)
+
+/obj/structure/soil/Initialize()
+	. = ..()
+	GLOB.soil_list += src
+
+/obj/structure/soil/Destroy()
+	GLOB.soil_list -= src
+	return ..()
 
 /obj/structure/soil/Crossed(atom/movable/AM)
 	. = ..()
@@ -79,12 +107,12 @@
 		modifier += 3
 
 	record_featured_stat(FEATURED_STATS_FARMERS, user)
-	GLOB.azure_round_stats[STATS_PLANTS_HARVESTED]++
+	record_round_statistic(STATS_PLANTS_HARVESTED)
 	to_chat(user, span_notice(feedback))
 	yield_produce(modifier, is_legendary)
 
 /obj/structure/soil/proc/try_handle_harvest(obj/item/attacking_item, mob/user, params)
-	if(istype(attacking_item, /obj/item/rogueweapon/sickle))
+	if(is_type_in_list(attacking_item, instant_harvest_tools))
 		if(!plant || !produce_ready)
 			to_chat(user, span_warning("There is nothing to harvest!"))
 			return TRUE
@@ -149,6 +177,8 @@
 		playsound(user, pick_n_take(wash), 100, FALSE)
 		to_chat(user, span_notice("I water the soil."))
 		adjust_water(water_amount)
+		update_icon()
+		needs_icon_update = FALSE
 		return TRUE
 	return FALSE
 
@@ -286,6 +316,7 @@
 	if(plant && plant_dead)
 		plant_dead = FALSE
 		plant_health = 10.0
+		update_icon()
 	// If low on nutrition, Dendor provides
 	if(nutrition < 30)
 		adjust_nutrition(max(30 - nutrition, 0))
@@ -300,49 +331,104 @@
 	fertilized_time = 60 MINUTES //Keeps the plant fertilized for a good while
 
 /obj/structure/soil/proc/adjust_water(adjust_amount)
+	var/pre_water = water
 	water = clamp(water + adjust_amount, 0, MAX_PLANT_WATER)
-	update_icon()
+	if (adjust_amount && pre_water != water)
+		needs_icon_update = TRUE
 
 /obj/structure/soil/proc/adjust_nutrition(adjust_amount)
+	var/pre_nutrition = nutrition
 	nutrition = clamp(nutrition + adjust_amount, 0, MAX_PLANT_NUTRITION)
-	update_icon()
+	if (adjust_amount && pre_nutrition != nutrition)
+		needs_icon_update = TRUE
 
 /obj/structure/soil/proc/adjust_weeds(adjust_amount)
+	var/pre_weeds = weeds
 	weeds = clamp(weeds + adjust_amount, 0, MAX_PLANT_WEEDS)
-	update_icon()
+	if (adjust_amount && pre_weeds != weeds)
+		needs_icon_update = TRUE
 
 /obj/structure/soil/proc/adjust_plant_health(adjust_amount)
 	if(!plant || plant_dead)
 		return
+	var/pre_plant_health = plant_health
 	plant_health = clamp(plant_health + adjust_amount, 0, MAX_PLANT_HEALTH)
 	if(plant_health <= 0)
 		plant_dead = TRUE
 		produce_ready = FALSE
-	update_icon()
+	if (adjust_amount && pre_plant_health != plant_health)
+		needs_icon_update = TRUE
 
 /obj/structure/soil/Initialize()
-	START_PROCESSING(SSprocessing, src)
+	START_PROCESSING(SSfarming, src)
 	GLOB.weather_act_upon_list += src
 	. = ..()
 
 /obj/structure/soil/Destroy()
-	STOP_PROCESSING(SSprocessing, src)
+	STOP_PROCESSING(SSfarming, src)
 	GLOB.weather_act_upon_list -= src
 	. = ..()
 
-/obj/structure/soil/process()
-	var/dt = 10
+/obj/structure/soil/proc/get_visual_key()
+	var/w
+	if(water >= WATER_THRESH_HIGH)
+		w = 2
+	else if(water >= WATER_THRESH_LOW)
+		w = 1
+	else
+		w = 0
+	var/n
+	if(nutrition >= NUTRI_THRESH_HIGH)
+		n = 2
+	else if(nutrition >= NUTRI_THRESH_LOW)
+		n = 1
+	else
+		n = 0
+	var/wd
+	if(weeds >= WEEDS_THRESH_HIGH)
+		wd = 2
+	else if(weeds >= WEEDS_THRESH_LOW)
+		wd = 1
+	else
+		wd = 0
+	var/ps
+	if(!plant)
+		ps = 0
+	else if(plant_dead)
+		ps = 3
+	else if(produce_ready)
+		ps = 2
+	else if(matured)
+		ps = 1
+	else
+		ps = 0
+	var/h
+	if(!plant || plant_dead)
+		h = 0
+	else if(plant_health <= HEALTH_THRESH_LOW)
+		h = 2
+	else if(plant_health <= HEALTH_THRESH_HIGH)
+		h = 1
+	else
+		h = 0
+	var/t = tilled_time > 0 ? 1 : 0
+	return "[w]-[n]-[wd]-[ps]-[h]-[t]"
+
+/obj/structure/soil/process(wait)
+	var/dt = wait
 	process_weeds(dt)
 	process_plant(dt)
 	process_soil(dt)
-	update_icon()
 	if(soil_decay_time <= 0)
 		decay_soil()
+	if(needs_icon_update) // only call icon updates if we really need to (aka if we've requested an icon update and if we have a plant)
+		update_icon()
+		needs_icon_update = FALSE
 
 /obj/structure/soil/weather_act_on(weather_trait, severity)
 	if(weather_trait != PARTICLEWEATHER_RAIN)
 		return
-	water = min(MAX_PLANT_WATER, water + min(5, severity / 4))
+	adjust_water(min(5, severity / 4))
 
 /obj/structure/soil/update_icon()
 	. = ..()
@@ -578,11 +664,13 @@
 	if(!matured)
 		if(growth_time >= plant.maturation_time)
 			matured = TRUE
+			needs_icon_update = TRUE
 	else
 		produce_time += added_growth
 		if(produce_time >= plant.produce_time)
 			produce_time -= plant.produce_time
 			produce_ready = TRUE
+			needs_icon_update = TRUE
 
 
 #define SOIL_WATER_DECAY_RATE 0.5 / (1 MINUTES)
@@ -657,3 +745,37 @@
 	produce_ready = FALSE
 	plant_dead = FALSE
 	update_icon()
+
+/obj/structure/soil/debug_soil
+	water = MAX_PLANT_WATER
+	nutrition = MAX_PLANT_NUTRITION
+
+/obj/structure/soil/debug_soil/Initialize()
+	. = ..()
+	insert_plant(GLOB.plant_defs[/datum/plant_def/wheat])
+
+#undef MAX_PLANT_HEALTH
+#undef MAX_PLANT_WATER
+#undef MAX_PLANT_NUTRITION
+#undef MAX_PLANT_WEEDS
+#undef SOIL_DECAY_TIME
+#undef BLESSING_WEED_DECAY_RATE
+#undef WEED_GROWTH_RATE
+#undef WEED_DECAY_RATE
+#undef WEED_RESISTANCE_DECAY_RATE
+#undef WEED_WATER_CONSUMPTION_RATE
+#undef WEED_NUTRITION_CONSUMPTION_RATE
+#undef PLANT_REGENERATION_RATE
+#undef PLANT_DECAY_RATE
+#undef PLANT_BLESS_HEAL_RATE
+#undef PLANT_WEEDS_HARM_RATE
+#undef SOIL_WATER_DECAY_RATE
+#undef SOIL_NUTRIMENT_DECAY_RATE
+#undef WATER_THRESH_HIGH
+#undef WATER_THRESH_LOW
+#undef NUTRI_THRESH_HIGH
+#undef NUTRI_THRESH_LOW
+#undef WEEDS_THRESH_HIGH
+#undef WEEDS_THRESH_LOW
+#undef HEALTH_THRESH_LOW
+#undef HEALTH_THRESH_HIGH

@@ -54,3 +54,14 @@
 	name = "Vocalist's Talisman"
 	cost = 30
 	contains = list(/obj/item/rogue/instrument/vocals)
+
+/datum/supply_pack/rogue/instruments/shamisen
+	name = "Shamisen"
+	cost = 30
+	contains = list(/obj/item/rogue/instrument/shamisen)
+
+
+/datum/supply_pack/rogue/instruments/psyalter
+	name = "Psyaltery"
+	cost = 30
+	contains = list(/obj/item/rogue/instrument/psyaltery)

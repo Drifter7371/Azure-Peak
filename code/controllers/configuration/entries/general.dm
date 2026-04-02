@@ -47,6 +47,8 @@
 
 /datum/config_entry/flag/log_say	// log client say
 
+/datum/config_entry/flag/log_npc_say	// log NPC say
+
 /datum/config_entry/flag/log_admin	// log admin actions
 	protection = CONFIG_ENTRY_LOCKED
 
@@ -317,6 +319,8 @@
 
 /datum/config_entry/flag/panic_bunker	// prevents people the server hasn't seen before from connecting
 
+/datum/config_entry/number/border_control // If border control is enabled
+
 /datum/config_entry/string/panic_bunker_message
 	config_entry_value = "Sorry but the server is currently not accepting connections from never before seen players."
 
@@ -355,6 +359,7 @@
 	config_entry_value = "check.getipintel.net"
 
 /datum/config_entry/flag/aggressive_changelog
+	config_entry_value = TRUE
 
 /datum/config_entry/flag/autoconvert_notes	//if all connecting player's notes should attempt to be converted to the database
 	protection = CONFIG_ENTRY_LOCKED
@@ -439,6 +444,18 @@
 
 /datum/config_entry/string/channel_announce_new_game_message
 	default = null
+
+/datum/config_entry/string/chat_announce_whitelist
+	config_entry_value = null
+
+/datum/config_entry/string/chat_announce_verify
+	config_entry_value = null
+
+/datum/config_entry/string/chat_announce_donator
+	config_entry_value = null
+
+/datum/config_entry/string/chat_command_whitelist
+	config_entry_value = null
 
 /datum/config_entry/flag/debug_admin_hrefs
 

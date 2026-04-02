@@ -137,8 +137,6 @@
 	if(IsAdminAdvancedProcCall())
 		to_chat(usr, span_adminprefix("Admin Edit blocked: Advanced ProcCall detected."))
 		return
-	var/datum/asset/permissions_assets = get_asset_datum(/datum/asset/simple/permissions)
-	permissions_assets.send(src)
 	var/admin_key = href_list["key"]
 	var/admin_ckey = ckey(admin_key)
 	var/datum/admins/D = GLOB.admin_datums[admin_ckey]
@@ -290,7 +288,7 @@
 	D.deactivate() //after logs so the deadmined admin can see the message.
 
 /datum/admins/proc/auto_deadmin()
-	to_chat(owner, span_interface("I are now a normal player."))
+	to_chat(owner, span_interface("I am now a normal player."))
 	var/old_owner = owner
 	deactivate()
 	message_admins("[old_owner] deadmined via auto-deadmin config.")

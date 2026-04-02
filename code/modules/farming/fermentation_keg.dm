@@ -7,7 +7,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 
 /obj/structure/fermentation_keg
 	name = "fermentation keg"
-	desc = "A simple keg that is meant for making booze."
+	desc = "A keg that bares the duty of birthing plenty of bubbling brews."
 
 	icon = 'icons/obj/brewing.dmi'
 	icon_state = "barrel_tapless"
@@ -246,7 +246,7 @@ GLOBAL_LIST_EMPTY(custom_fermentation_recipes)
 	if(options.len == 0)
 		return
 
-	if(user.get_skill_level(/datum/skill/craft/cooking) < 3)
+	if(user.get_skill_level(/datum/skill/craft/cooking) < SKILL_LEVEL_APPRENTICE)
 		to_chat(user, span_notice("I am not knowledgable enough to brew."))
 		return FALSE
 

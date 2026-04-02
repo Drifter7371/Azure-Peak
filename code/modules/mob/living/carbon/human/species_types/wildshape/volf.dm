@@ -4,7 +4,8 @@
 	footstep_type = FOOTSTEP_MOB_CLAW
 	ambushable = FALSE
 	skin_armor = new /obj/item/clothing/suit/roguetown/armor/skin_armor/wolf_skin
-	// Someone else balance this, I am here for code, not numbers
+	wildshape_icon = 'icons/roguetown/mob/monster/vol.dmi'
+	wildshape_icon_state = "vv"
 
 /mob/living/carbon/human/species/wildshape/volf/gain_inherent_skills()
 	. = ..()
@@ -22,7 +23,7 @@
 		src.STASPD = 13
 
 		AddSpell(new /obj/effect/proc_holder/spell/self/wolfclaws)
-		real_name = "Volf ([stored_mob.real_name])" //So we don't get a random name
+		real_name = "volf" //So we don't get a random name
 		faction += "wolfs" // It IS a wolf
 
 // WOLF SPECIES DATUM //
@@ -43,7 +44,6 @@
 		TRAIT_PERFECT_TRACKER //This should be the 'scout' form
 	)
 	inherent_biotypes = MOB_HUMANOID
-	armor = 5
 	no_equip = list(SLOT_SHIRT, SLOT_HEAD, SLOT_WEAR_MASK, SLOT_ARMOR, SLOT_GLOVES, SLOT_SHOES, SLOT_PANTS, SLOT_CLOAK, SLOT_BELT, SLOT_BACK_R, SLOT_BACK_L, SLOT_S_STORE)
 	nojumpsuit = 1
 	sexes = 1
@@ -92,7 +92,6 @@
 	body_parts_covered = FULL_BODY
 	body_parts_inherent = FULL_BODY
 	armor = ARMOR_LEATHER //It's literally a wolf, shouldn't be more than this
-	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_TWIST)
 	blocksound = SOFTHIT
 	blade_dulling = DULLING_BASHCHOP
 	sewrepair = FALSE
@@ -101,13 +100,13 @@
 
 /datum/intent/simple/volf //Like a less defense dagger
 	name = "claw"
-	clickcd = 10
+	clickcd = CLICK_CD_QUICK
 	icon_state = "incut"
 	blade_class = BCLASS_CUT
 	attack_verb = list("claws", "mauls", "eviscerates")
 	animname = "cut"
 	hitsound = "genslash"
-	penfactor = 10
+	penfactor = PEN_NONE
 	candodge = TRUE
 	canparry = TRUE
 	miss_text = "slashes the air!"
@@ -120,7 +119,7 @@
 	item_state = null
 	lefthand_file = null
 	righthand_file = null
-	icon = 'icons/roguetown/weapons/32.dmi'
+	icon = 'icons/roguetown/weapons/misc32.dmi'
 	max_blade_int = 600
 	max_integrity = 600
 	force = 20

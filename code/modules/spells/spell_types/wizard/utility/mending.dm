@@ -1,40 +1,91 @@
-/obj/effect/proc_holder/spell/invoked/mending
+/datum/action/cooldown/spell/mending
+	button_icon = 'icons/mob/actions/roguespells.dmi'
 	name = "Mending"
-	desc = "Uses arcyne energy to mend an item."
-	overlay_state = "null"
-	releasedrain = 50
-	chargetime = 5
-	recharge_time = 20 SECONDS
-	warnie = "spellwarning"
-	movement_interrupt = FALSE
-	no_early_release = FALSE
-	chargedloop = null
+	desc = "Uses arcyne energy to mend an item. Effect of repair scales off of your Intelligence."
+	button_icon_state = "mending"
 	sound = 'sound/magic/whiteflame.ogg'
-	cost = 2
-	spell_tier = 1 // Utility. For repair
-	glow_color = GLOW_COLOR_ARCANE
+	spell_color = GLOW_COLOR_BUFF
 	glow_intensity = GLOW_INTENSITY_LOW
 
-	miracle = FALSE
+	click_to_activate = TRUE
+	self_cast_possible = FALSE
+	cast_range = SPELL_RANGE_GROUND
+	charge_required = FALSE
 
-	invocation = "Reficio"
-	invocation_type = "shout" //can be none, whisper, emote and shout
+	primary_resource_type = SPELL_COST_STAMINA
+	primary_resource_cost = SPELLCOST_CANTRIP
 
-/obj/effect/proc_holder/spell/invoked/mending/cast(list/targets, mob/living/user)
-	if(istype(targets[1], /obj/item))
-		var/obj/item/I = targets[1]
-		if(I.obj_integrity < I.max_integrity)
-			var/repair_percent = 0.25
-			repair_percent *= I.max_integrity
-			I.obj_integrity = min(I.obj_integrity + repair_percent, I.max_integrity)
-			user.visible_message(span_info("[I] glows in a faint mending light."))
-			playsound(I, 'sound/foley/sewflesh.ogg', 50, TRUE, -2)
-			if(I.obj_broken && I.obj_integrity >= I.max_integrity)
-				I.obj_integrity = I.max_integrity
-				I.obj_fix()
-		else
-			to_chat(user, span_info("[I] appears to be in perfect condition."))
-			revert_cast()
-	else
-		to_chat(user, span_warning("There is no item here!"))
-		revert_cast()
+	invocations = list("Reficio")
+	invocation_type = INVOCATION_SHOUT
+
+	cooldown_time = 20 SECONDS
+
+	associated_skill = /datum/skill/magic/arcane
+	spell_tier = 1
+	spell_impact_intensity = SPELL_IMPACT_NONE
+
+	point_cost = 2
+
+	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC | SPELL_REQUIRES_HUMAN | SPELL_REQUIRES_SAME_Z
+
+	var/repair_percent = 0.20
+	var/int_bonus = 0.00
+
+/datum/action/cooldown/spell/mending/is_valid_target(atom/cast_on)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(!istype(cast_on, /obj/item))
+		if(owner)
+			to_chat(owner, span_warning("I need to target an item!"))
+		return FALSE
+	var/obj/item/I = cast_on
+	if(!I.anvilrepair && !I.sewrepair)
+		if(owner)
+			to_chat(owner, span_warning("Not even magic can mend this item!"))
+		return FALSE
+	if(I.obj_integrity >= I.max_integrity && I.body_parts_covered_dynamic == I.body_parts_covered)
+		if(owner)
+			to_chat(owner, span_info("[I] appears to be in perfect condition."))
+		return FALSE
+	return TRUE
+
+/datum/action/cooldown/spell/mending/cast(atom/cast_on)
+	. = ..()
+	var/mob/living/user = owner
+	if(!istype(user))
+		return FALSE
+
+	var/obj/item/I = cast_on
+
+	user.visible_message(
+		span_warning("[user] begins to concentrate on [I]!"),
+		span_notice("I begin to concentrate on [I]..")
+	)
+	if(!do_after(user, 4 SECONDS, TRUE, I, TRUE))
+		to_chat(user, span_warning("My concentration breaks! I could not repair [I]."))
+		return FALSE
+
+	repair_percent = initial(repair_percent)
+	int_bonus = CLAMP((user.STAINT * 0.01), 0.01, 0.9)
+	repair_percent += int_bonus
+	repair_percent *= I.max_integrity
+
+	I.obj_integrity = min(I.obj_integrity + repair_percent, I.max_integrity)
+	user.visible_message(span_info("[I] glows in a faint mending light."))
+	playsound(I, 'sound/magic/mending.ogg', 35, TRUE, -2)
+
+	if(I.obj_integrity >= I.max_integrity)
+		if(I.obj_broken)
+			I.obj_fix()
+		if(I.body_parts_covered_dynamic != I.body_parts_covered)
+			I.repair_coverage()
+			to_chat(user, span_info("[I]'s shorn layers mend together, completely."))
+
+	return TRUE
+
+/datum/action/cooldown/spell/mending/lesser
+	name = "Lesser Mending"
+	repair_percent = 0.10
+	cooldown_time = 30 SECONDS
+	point_cost = 1

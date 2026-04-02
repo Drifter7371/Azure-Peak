@@ -3,7 +3,6 @@
 /datum/supply_pack/rogue/steel_weapons
 	group = "Weapons (Steel)"
 	crate_name = "merchant guild's crate"
-	mandated_public_profit = 1 // 100% Mandatory Profit Margin on top
 	crate_type = /obj/structure/closet/crate/chest/merchant
 
 /datum/supply_pack/rogue/steel_weapons/dagger
@@ -13,6 +12,26 @@
 					/obj/item/rogueweapon/huntingknife/idagger/steel,
 				)
 
+/datum/supply_pack/rogue/steel_weapons/chefknife
+	name = "Chef's Knife"
+	cost = 40 // 1 Steel Ingot
+	contains = list(
+					/obj/item/rogueweapon/huntingknife/idagger/steel,
+				)
+
+/datum/supply_pack/rogue/steel_weapons/chefcleaver
+	name = "Chef's Cleaver"
+	cost = 40 // 1 Steel Ingot
+	contains = list(
+					/obj/item/rogueweapon/huntingknife/chefknife/cleaver,
+				)
+
+/datum/supply_pack/rogue/steel_weapons/rondeldagger
+	name = "Rondel Dagger"
+	cost = 70 // 2 Steel Ingots
+	contains = list(
+					/obj/item/rogueweapon/huntingknife/idagger/steel/rondel,
+				)
 
 /datum/supply_pack/rogue/steel_weapons/katar
 	name = "Katar"
@@ -25,7 +44,7 @@
 	name = "Steel Knuckle"
 	cost = 40 // 1 Steel Ingot
 	contains = list(
-					/obj/item/rogueweapon/knuckles
+					/obj/item/clothing/gloves/roguetown/knuckles
 				)
 
 /datum/supply_pack/rogue/steel_weapons/rapier
@@ -42,6 +61,13 @@
 					/obj/item/rogueweapon/sword/cutlass,
 				)
 
+/datum/supply_pack/rogue/steel_weapons/sword
+	name = "Arming Sword"
+	cost = 40 // 1 Steel Ingot
+	contains = list(
+					/obj/item/rogueweapon/sword,
+				)
+
 /datum/supply_pack/rogue/steel_weapons/shortsword
 	name = "Shortsword"
 	cost = 40 // 1 Steel Ingot
@@ -53,7 +79,7 @@
 	name = "Falchion"
 	cost = 40 // 1 Steel Ingot
 	contains = list(
-					/obj/item/rogueweapon/sword/falchion,
+					/obj/item/rogueweapon/sword/short/falchion,
 				)
 
 /datum/supply_pack/rogue/steel_weapons/messer
@@ -63,7 +89,12 @@
 					/obj/item/rogueweapon/sword/short/messer,
 				)
 
-// No one order generic sword I CBA
+/datum/supply_pack/rogue/steel_weapons/messeralt
+	name = "Hunting Sword"
+	cost = 40 // 1 Steel Ingot
+	contains = list(
+					/obj/item/rogueweapon/sword/short/messer/alt,
+				)
 
 /datum/supply_pack/rogue/steel_weapons/sabre
 	name = "Sabre"
@@ -79,6 +110,20 @@
 					/obj/item/rogueweapon/flail/sflail,
 				)
 
+/datum/supply_pack/rogue/steel_weapons/warhammer
+	name = "Warhammer"
+	cost = 70 // 2 Steel Ingots
+	contains = list(
+					/obj/item/rogueweapon/mace/warhammer/steel,
+				)
+
+/datum/supply_pack/rogue/steel_weapons/sflangedmace
+	name = "Flanged Mace"
+	cost = 70 // 2 Steel Ingots
+	contains = list(
+					/obj/item/rogueweapon/mace/cudgel/flanged,
+				)
+
 /datum/supply_pack/rogue/steel_weapons/longsword
 	name = "Longsword"
 	cost = 70 // 2 Steel Ingot
@@ -87,10 +132,17 @@
 				)
 
 /datum/supply_pack/rogue/steel_weapons/kriegmesser
-	name = "Kriegmesser"
+	name = "Kriegsmesser"
 	cost = 70 // 2 Steel Ingot
 	contains = list(
 					/obj/item/rogueweapon/sword/long/kriegmesser,
+				)
+
+/datum/supply_pack/rogue/steel_weapons/broadsword
+	name = "Broadsword"
+	cost = 75 // 2 Steel Ingot + 1 Small Log
+	contains = list(
+					/obj/item/rogueweapon/sword/long/broadsword/steel,
 				)
 
 /datum/supply_pack/rogue/steel_weapons/battleaxe
@@ -114,13 +166,6 @@
 					/obj/item/rogueweapon/greatsword,
 				)
 
-/datum/supply_pack/rogue/steel_weapons/zweihander
-	name = "Zweihander"
-	cost = 105 // 3 Steel Ingot
-	contains = list(
-					/obj/item/rogueweapon/greatsword/grenz,
-				)
-
 /datum/supply_pack/rogue/steel_weapons/estoc
 	name = "Estoc"
 	cost = 70 // 2 Steel Ingot
@@ -128,11 +173,25 @@
 					/obj/item/rogueweapon/estoc,
 				)
 
+/datum/supply_pack/rogue/steel_weapons/aplongsword
+	name = "Stecher"
+	cost = 75 // 2 Steel Ingot, 1 Small Log
+	contains = list(
+					/obj/item/rogueweapon/sword/long/ap,
+				)
+
 /datum/supply_pack/rogue/steel_weapons/greataxe
 	name = "Greataxe"
 	cost = 75 // 2 Steel Ingot, 1 Small Log
 	contains = list(
 					/obj/item/rogueweapon/greataxe/steel,
+				)
+
+/datum/supply_pack/rogue/steel_weapons/greataxeknight
+	name = "Steel Poleaxe"
+	cost = 85 // 2 Steel Ingot, 1 Small Log
+	contains = list(
+					/obj/item/rogueweapon/greataxe/steel/knight,
 				)
 
 /datum/supply_pack/rogue/steel_weapons/greataxedoublehead
@@ -211,9 +270,9 @@
 					/obj/item/rogueweapon/sword/falx,
 				)
 
-/datum/supply_pack/rogue/steel_weapons/glaive
-	name = "Glaive"
-	cost = 105 // 3 Steel Ingot, 1 Small Log
+/datum/supply_pack/rogue/steel_weapons/flail
+	name = "Flail"
+	cost = 40 // 1 Steel Ingot
 	contains = list(
-					/obj/item/rogueweapon/halberd/glaive,
+					/obj/item/rogueweapon/flail/sflail,
 				)

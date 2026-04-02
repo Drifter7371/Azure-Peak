@@ -1,3 +1,5 @@
+GLOBAL_LIST_EMPTY(last_words)
+
 /mob/living/gib(no_brain, no_organs, no_bodyparts)
 	var/prev_lying = lying
 	if(stat != DEAD)
@@ -35,6 +37,9 @@
 /mob/living/proc/spread_bodyparts()
 	return
 
+/// Length of the animation in dust_animation.dmi
+#define DUST_ANIMATION_TIME 1.3 SECONDS
+
 /mob/living/dust(just_ash, drop_items, force)
 	death(TRUE)
 
@@ -47,11 +52,36 @@
 		buckled.unbuckle_mob(src, force = TRUE)
 
 	dust_animation()
-	spawn_dust(just_ash)
-	QDEL_IN(src,5) // since this is sometimes called in the middle of movement, allow half a second for movement to finish, ghosting to happen and animation to play. Looks much nicer and doesn't cause multiple runtimes.
+	addtimer(CALLBACK(src, PROC_REF(spawn_dust), just_ash), DUST_ANIMATION_TIME - 0.3 SECONDS)
+	QDEL_IN(src, DUST_ANIMATION_TIME) // since this is sometimes called in the middle of movement, allow half a second for movement to finish, ghosting to happen and animation to play. Looks much nicer and doesn't cause multiple runtimes.
 
-/mob/living/proc/dust_animation()
-	return
+/// Animates turning into dust
+/// Does not delete src afterwards, BUT it will become invisible (and grey), so ensure you handle that yourself
+/atom/movable/proc/dust_animation(atom/anim_loc = src.loc)
+	if(isnull(anim_loc)) // the effect breaks if we have a null loc
+		return
+	var/obj/effect/temp_visual/dust_animation_filter/dustfx = new(anim_loc, REF(src))
+	add_filter("dust_animation", 1, displacement_map_filter(render_source = dustfx.render_target, size = 256))
+	add_filter("dust_color", 1, color_matrix_filter())
+	transition_filter("dust_color", color_matrix_filter(list(0.33,0.33,0.33,0, 0.59,0.59,0.59,0, 0.11,0.11,0.11,0, 0,0,0,1, 0,0,0,0)), DUST_ANIMATION_TIME - 0.3 SECONDS)
+	animate(src, alpha = 0, time = DUST_ANIMATION_TIME - 0.1 SECONDS, easing = SINE_EASING | EASE_IN)
+
+/// Holds the dust animation filter effect, so we can animate it
+/obj/effect/temp_visual/dust_animation_filter
+	icon = 'icons/mob/dust_animation.dmi'
+	icon_state = "dust.1"
+	duration = DUST_ANIMATION_TIME
+	randomdir = FALSE
+
+/obj/effect/temp_visual/dust_animation_filter/Initialize(mapload, anim_id = "random_default_anti_collision_text")
+	. = ..()
+	// we manually animate this, rather than just using an animated icon state or flick, to work around byond animated state memes
+	// (normally, all animated icon states are synced to the same time, which would bad here)
+	for(var/i in 2 to duration)
+		animate(src, time = 1, icon_state = "dust.[i]", flags = ANIMATION_CONTINUE)
+	render_target = "*dust-[anim_id]"
+
+#undef DUST_ANIMATION_TIME
 
 /mob/living/proc/spawn_dust(just_ash = FALSE)
 	for(var/i in 1 to 3)
@@ -87,7 +117,7 @@
 	SetSleeping(0, 0)
 	reset_perspective(null)
 	reload_fullscreen()
-	update_action_buttons_icon()
+	update_mob_action_buttons()
 	update_damage_hud()
 	update_health_hud()
 	update_mobility()
@@ -110,6 +140,8 @@
 //		addtimer(CALLBACK(client, PROC_REF(ghostize), 1, src), 150)
 		add_client_colour(/datum/client_colour/monochrome)
 		client.verbs.Add(GLOB.ghost_verbs)
+		if(last_words)
+			GLOB.last_words |= last_words
 
 	for(var/s in ownedSoullinks)
 		var/datum/soullink/S = s
@@ -128,10 +160,10 @@
 	// AZURE EDIT BEGIN: necra acolyte/priest deathsight trait
 	// this was a player that just died, so do the honors
 	if (client)
-		if (!gibbed)
+		if (!gibbed && !( (src.mind && src.mind.has_antag_datum(/datum/antagonist/zombie)) || (src.mind && src.mind.has_antag_datum(/datum/antagonist/skeleton)) || HAS_TRAIT(src, TRAIT_SECONDLIFE) )) // because I hate being jumpscared by "OOH SOMEONE DIED IN THE CHURCH" when they're just killing a deadite with burn rot to rez them
 			var/locale = prepare_deathsight_message()
 			for (var/mob/living/player in GLOB.player_list)
-				if (player.stat == DEAD || isbrain(player))
+				if (player.stat == DEAD || isbrain(player)) 
 					continue
 				if (HAS_TRAIT(player, TRAIT_DEATHSIGHT))
 					if (HAS_TRAIT(player, TRAIT_CABAL))
@@ -143,20 +175,7 @@
 	return TRUE
 
 /mob/living/proc/prepare_deathsight_message()
-	var/area_of_death = lowertext(get_area_name(src))
-	var/locale = "a locale wreathed in enigmatic fog"
-	switch (area_of_death) // we're deliberately obtuse with this.
-		if ("mountains", "mt decapitation")
-			locale = "a twisted tangle of soaring peaks"
-		if ("wilderness", "azure basin")
-			locale = "somewhere in the wilds"
-		if ("bog", "dense bog")
-			locale = "a wretched, fetid bog"
-		if ("coast", "coastforest")
-			locale = "somewhere betwixt Abyssor's realm and Dendor's bounty"
-		if ("indoors", "shop", "physician", "outdoors", "roofs", "manor", "wizard's tower", "garrison", "dungeon cell", "baths", "tavern")
-			locale = "the city of Azure Peak and all its bustling souls"
-		if ("church")
-			locale = "a hallowed place, sworn to the Ten" // special bit for the church since it's sacred ground
-	
-	return locale
+	var/area/A = get_area(src)
+	if(!A)
+		return "an unknown locale, wreathed in enigmatic fog" // fallback if we can't find the area somehow?? -- This was not clear enough for me ICly that it's somewhere I shouldn't care about, now it should
+	return A.deathsight_message

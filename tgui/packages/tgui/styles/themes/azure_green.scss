@@ -1,0 +1,25 @@
+@use 'azure_base' as *;
+
+// Oaken — blackoak chant palette (deep forest greens)
+.theme-azure_green:root {
+  @include azure-theme((
+    'base':            #0a140e,
+    'base-light':      #102a18,
+    'base-dark':       #061008,
+    'section':         rgba(21, 58, 32, 0.45),
+    'section-title':   #6ec98e,
+    'text':            #a0d4b0,
+    'label':           #80b090,
+    'accent':          #558b65,
+    'accent-bright':   #50a070,
+    'border':          #305a40,
+    'btn-text':        #a0d4b0,
+    'btn-selected':    #3a6b45,
+    'btn-disabled':    #405a48,
+    'scrollbar-thumb': #558b65,
+    'glow':            rgba(85, 139, 101, 0.2),
+    'link':            #6ec98e,
+    'link-visited':    #b0e0c0,
+    'link-hover':      #a0d4b0,
+  ), '../assets/azure_default/topbar_green.svg');
+}

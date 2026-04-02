@@ -15,7 +15,9 @@
 
 /obj/structure/guillotine
 	name = "guillotine"
-	desc = ""
+	desc = "A rising alternative to the Executioner's Sword, commanding neither effort nor skill to successfully \
+	ferry the condemned to Necra's door. Drag someone into its integrated stockcade, gift them their last rites, and \
+	pull the rightmost lever to see heads roll."
 	icon = 'icons/obj/guillotine.dmi'
 	icon_state = "guillotine_raised"
 	can_buckle = TRUE
@@ -240,7 +242,6 @@
 			if (istype(S))
 				H.cut_overlays()
 				H.regenerate_icons()
-				H.update_body_parts_head_only()
 				H.set_mob_offsets("bed_buckle", _x = 0, _y = -GUILLOTINE_HEAD_OFFSET)
 				H.layer += GUILLOTINE_LAYER_DIFF
 			else
@@ -287,6 +288,7 @@
 #undef GUILLOTINE_BLADE_MAX_SHARP
 #undef GUILLOTINE_DECAP_MIN_SHARP
 #undef GUILLOTINE_ANIMATION_LENGTH
+#undef GUILLOTINE_ANIMATION_RAISE_LENGTH
 #undef GUILLOTINE_BLADE_RAISED
 #undef GUILLOTINE_BLADE_MOVING
 #undef GUILLOTINE_BLADE_DROPPED

@@ -11,6 +11,16 @@
 	verbage = "crafted"
 	craftdiff = 0
 
+/datum/crafting_recipe/roguetown/survival/wickercloak
+	name = "wicker cloak"
+	category = "Clothes"
+	result = /obj/item/clothing/cloak/wickercloak
+	reqs = list(
+		/obj/item/natural/dirtclod = 1,
+		/obj/item/grown/log/tree/stick = 5,
+		/obj/item/natural/fibers = 3,
+		)
+	craftdiff = 0
 
 /datum/crafting_recipe/roguetown/survival/antlerhood
 	name = "antlerhood"
@@ -22,13 +32,13 @@
 		)
 	sellprice = 12
 	tools = list(/obj/item/needle)
-	skillcraft = /datum/skill/misc/sewing
+	skillcraft = /datum/skill/craft/sewing
 	verbage_simple = "sew"
 	verbage = "sews"
 	craftdiff = 0
 
 /datum/crafting_recipe/roguetown/survival/tribalrags
-	name = "tribal rags (1 fibers, 1 hide)"
+	name = "tribal rags"
 	category = "Clothes"
 	result = /obj/item/clothing/suit/roguetown/shirt/tribalrag
 	reqs = list(
@@ -37,7 +47,7 @@
 		)
 	sellprice = 6
 	tools = list(/obj/item/needle)
-	skillcraft = /datum/skill/misc/sewing
+	skillcraft = /datum/skill/craft/sewing
 	verbage_simple = "sew"
 	verbage = "sews"
 	craftdiff = 0
@@ -161,6 +171,66 @@
 	verbage_simple = "tied"
 	verbage = "ties"
 
+/datum/crafting_recipe/roguetown/survival/flowercrown_matricaria
+	name = "matricaria crown"
+	category = "Clothes"
+	result = /obj/item/flowercrown/matricaria
+	reqs = list(
+		/obj/item/alch/matricaria = 4,
+		/obj/item/natural/fibers = 2,
+		)
+	craftdiff = 0
+	verbage_simple = "tied"
+	verbage = "ties"
+
+/datum/crafting_recipe/roguetown/survival/flowercrown_calendula
+	name = "calendula crown"
+	category = "Clothes"
+	result = /obj/item/flowercrown/calendula
+	reqs = list(
+		/obj/item/alch/calendula = 4,
+		/obj/item/natural/fibers = 2,
+		)
+	craftdiff = 0
+	verbage_simple = "tied"
+	verbage = "ties"
+
+/datum/crafting_recipe/roguetown/survival/flowercrown_manabloom
+	name = "manabloom crown"
+	category = "Clothes"
+	result = /obj/item/flowercrown/manabloom
+	reqs = list(
+		/obj/item/reagent_containers/food/snacks/grown/manabloom = 4,
+		/obj/item/natural/fibers = 2,
+		)
+	craftdiff = 0
+	verbage_simple = "tied"
+	verbage = "ties"
+
+/datum/crafting_recipe/roguetown/survival/flowercrown_briar
+	name = "briar thorn crown"
+	category = "Clothes"
+	result = /obj/item/flowercrown/briar
+	reqs = list(
+		/obj/item/natural/fibers = 2,
+		/obj/item/natural/thorn = 4,
+		)
+	craftdiff = 0
+	verbage_simple = "tied"
+	verbage = "ties"
+
+/datum/crafting_recipe/roguetown/survival/briarthorns
+	name = "briar thorns"
+	category = "Clothes"
+	result = /obj/item/clothing/head/roguetown/briarthorns
+	reqs = list(
+		/obj/item/natural/fibers = 2,
+		/obj/item/natural/thorn = 4,
+		)
+	craftdiff = 0
+	verbage_simple = "tied"
+	verbage = "ties"
+
 // Amulet
 /datum/crafting_recipe/roguetown/survival/pearlcross
 	name = "amulet (pearls)"
@@ -210,21 +280,10 @@
 		)
 
 /datum/crafting_recipe/roguetown/survival/woodcross
-	name = "wooden amulet"
+	name = "wooden psycross"
 	category = "Clothes"
 	result = /obj/item/clothing/neck/roguetown/psicross/wood
 	reqs = list(
 		/obj/item/natural/fibers = 2,
 		/obj/item/grown/log/tree/stick = 2,
 		)
-
-/datum/crafting_recipe/roguetown/survival/wickercloak
-	name = "wickercloak"
-	category = "Clothes"
-	result = /obj/item/clothing/cloak/wickercloak
-	reqs = list(
-		/obj/item/natural/dirtclod = 1,
-		/obj/item/grown/log/tree/stick = 5,
-		/obj/item/natural/fibers = 3,
-		)
-	craftdiff = 0

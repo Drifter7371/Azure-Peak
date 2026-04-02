@@ -17,6 +17,7 @@
 	)
 	increase_votepwr = FALSE
 	rogue_enabled = TRUE
+	has_tempo = TRUE
 	var/datum/team/prebels/rev_team
 
 /datum/antagonist/prebel/examine_friendorfoe(datum/antagonist/examined_datum,mob/examiner,mob/examined)
@@ -30,7 +31,7 @@
 	. = ..()
 	owner.special_role = ROLE_PREBEL
 	var/mob/living/carbon/human/H = owner.current
-	H.cmode_music = 'sound/music/combat_bandit.ogg'
+	H.cmode_music = 'sound/music/cmode/antag/combat_cutpurse.ogg'
 	H.add_stress(/datum/stressevent/prebel)
 
 /datum/antagonist/prebel/greet()
@@ -43,9 +44,7 @@
 /datum/antagonist/prebel/can_be_owned(datum/mind/new_owner)
 	. = ..()
 	if(.)
-		if(new_owner.assigned_role in GLOB.noble_positions)
-			return FALSE
-		if(new_owner.assigned_role in GLOB.garrison_positions)
+		if(new_owner.assigned_role in GLOB.aspirant_eligible_positions)
 			return FALSE
 		if(new_owner.unconvertable)
 			return FALSE
@@ -103,9 +102,7 @@
 		return FALSE
 	if(!can_be_owned(candidate.mind))
 		return FALSE
-	if(candidate.mind.assigned_role in GLOB.noble_positions)
-		return FALSE
-	if(candidate.mind.assigned_role in GLOB.garrison_positions)
+	if(candidate.mind.assigned_role in GLOB.aspirant_eligible_positions)
 		return FALSE
 	var/mob/living/carbon/C = candidate //Check to see if the potential rev is implanted
 	if(!istype(C)) //Can't convert simple animals
@@ -208,3 +205,5 @@
 			to_chat(world, span_redtext("The Peasant Rebellion has FAILED!"))
 		for(var/X in offers2join)
 			to_chat(world,"[X]")
+
+#undef INGAME_ROLE_HEAD_UPDATE_PERIOD

@@ -2,7 +2,7 @@
 
 /mob/living/simple_animal/hostile/retaliate/goose
 	name = "goose"
-	desc = ""
+	desc = "This thing looks aggressive."
 	icon_state = "goose" // sprites by cogwerks from goonstation, used with permission
 	icon_living = "goose"
 	icon_dead = "goose_dead"
@@ -188,7 +188,7 @@
 	name = "Vomit"
 	check_flags = AB_CHECK_CONSCIOUS
 	button_icon_state = "vomit"
-	icon_icon = 'icons/mob/animal.dmi'
+	button_icon = 'icons/mob/animal.dmi'
 	cooldown_time = 250
 
 /datum/action/cooldown/vomit/Trigger()
@@ -202,3 +202,5 @@
 		vomit.vomitCoefficient = 1
 		vomit.vomitTimeBonus = 0
 	return TRUE
+
+#undef GOOSE_SATIATED

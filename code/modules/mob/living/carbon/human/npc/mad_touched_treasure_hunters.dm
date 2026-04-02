@@ -13,6 +13,8 @@
 	possible_rmb_intents = list()
 
 /mob/living/carbon/human/species/human/northern/mad_touched_treasure_hunter/ambush
+	threat_point = THREAT_ELITE
+	ambush_faction = "treasure_hunters"
 	aggressive = 1
 	wander = TRUE
 
@@ -29,8 +31,10 @@
 	ADD_TRAIT(src, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_INFINITE_STAMINA, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
-	ADD_TRAIT(src, TRAIT_CRITICAL_RESISTANCE, TRAIT_GENERIC)
+	ADD_TRAIT(src, TRAIT_CRIT_THRESHOLD, TRAIT_GENERIC)
+	ADD_TRAIT(src, TRAIT_LEECHIMMUNE, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_DISFIGURED, TRAIT_GENERIC)
+	ADD_TRAIT(src, TRAIT_CRITICAL_RESISTANCE, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_NOPAINSTUN, TRAIT_GENERIC)
 	equipOutfit(new /datum/outfit/job/roguetown/human/species/human/northern/mad_touched_treasure_hunter)
 	var/obj/item/organ/eyes/organ_eyes = getorgan(/obj/item/organ/eyes)
@@ -83,12 +87,12 @@
 
 	shoes = /obj/item/clothing/shoes/roguetown/boots/leather
 	//carbon ai is still pretty dumb so making them a threat to players requires pretty crazy looking stats. don't think too hard about it.
-	H.STASTR = 18
-	H.STASPD = 18
-	H.STACON = 18
-	H.STAEND = 15
+	H.STASTR = 15
+	H.STASPD = 15
+	H.STACON = 15
+	H.STAWIL = 15
 	H.STAPER = 15
-	H.STAINT = 15
+	H.STAINT = 12
 	H.eye_color = "27becc"
 	H.hair_color = "61310f"
 	H.facial_hair_color = H.hair_color
@@ -113,7 +117,7 @@
 	desc = "A ragged hood of thick jute fibres. The itchiness is unbearable."
 	sewrepair = TRUE
 	color = "#999999"
-	armor = ARMOR_HEAD_HELMET_BAD
+	armor = ARMOR_LEATHER
 
 /obj/item/clothing/mask/rogue/facemask/steel/paalloy/mad_touched
 	name = "eerie ancient mask"
@@ -133,13 +137,19 @@
 	mob_types = list(
 		/mob/living/carbon/human/species/human/northern/mad_touched_treasure_hunter/ambush = 1,
 	)
+	threat_point = THREAT_ELITE
+	faction_tag = "treasure_hunters"
 
 /datum/ambush_config/duo_treasure_hunter
 	mob_types = list(
 		/mob/living/carbon/human/species/human/northern/mad_touched_treasure_hunter/ambush = 2,
 	)
+	threat_point = 2 * THREAT_ELITE
+	faction_tag = "treasure_hunters"
 
 /datum/ambush_config/treasure_hunter_posse
 	mob_types = list(
 		/mob/living/carbon/human/species/human/northern/mad_touched_treasure_hunter/ambush = 3,
 	)
+	threat_point = 3 * THREAT_ELITE
+	faction_tag = "treasure_hunters"

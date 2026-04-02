@@ -4,7 +4,10 @@
 /datum/species/tabaxi
 	name = "Tabaxi"
 	id = "tabaxi"
-
+	is_subrace = TRUE
+	origin_default = /datum/virtue/origin/raneshen
+	origin = "Raneshen"
+	base_name = "Beastvolk"
 	changesource_flags = MIRROR_BADMIN | WABBAJACK | MIRROR_PRIDE | MIRROR_MAGIC | RACE_SWAP | SLIME_EXTRACT
 	desc = "<b>Tabaxi</b><br>\
 		Tabaxi are taller than most humans at six to seven feet. \
@@ -14,8 +17,9 @@
 		Tabaxi eyes are slit-pupilled and usually green or yellow. \
 		Tabaxi are competent swimmers and climbers as well as speedy runners. \
 		They have a good sense of balance and an acute sense of smell.<br>\
-		(+1 Speed)"
+		<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>+1 SPD </b></span><br>"
 	skin_tone_wording = "Fur Colors"
+	use_skin_tone_wording_for_examine = FALSE
 	species_traits = list(EYECOLOR,HAIR,FACEHAIR,LIPS,STUBBLE, MUTCOLORS)
 	possible_ages = ALL_AGES_LIST
 	limbs_icon_m = 'icons/roguetown/mob/bodies/m/mta.dmi'
@@ -67,6 +71,8 @@
 		/datum/customizer/bodypart_feature/accessory,
 		/datum/customizer/bodypart_feature/face_detail,
 		/datum/customizer/bodypart_feature/underwear,
+		/datum/customizer/bodypart_feature/legwear,
+		/datum/customizer/bodypart_feature/piercing,
 		/datum/customizer/organ/snout/tabaxi,
 		/datum/customizer/organ/tail/tabaxi,
 		/datum/customizer/organ/neck_feature/anthro,
@@ -81,6 +87,7 @@
 		/datum/body_marking_set/bellysocks,
 		/datum/body_marking_set/bellysockstertiary,
 		/datum/body_marking_set/belly,
+		/datum/body_marking_set/gradient,
 	)
 	body_markings = list(
 		/datum/body_marking/flushed_cheeks,
@@ -105,14 +112,16 @@
 		/datum/body_marking/harlequinreversed,
 		/datum/body_marking/bangs,
 		/datum/body_marking/bun,
+		/datum/body_marking/gradient,
 	)
 	languages = list(
 		/datum/language/common
 	)
 	descriptor_choices = list(
+		/datum/descriptor_choice/trait,
+		/datum/descriptor_choice/stature,
 		/datum/descriptor_choice/height,
 		/datum/descriptor_choice/body,
-		/datum/descriptor_choice/stature,
 		/datum/descriptor_choice/face,
 		/datum/descriptor_choice/face_exp,
 		/datum/descriptor_choice/fur,

@@ -1,4 +1,7 @@
-/mob/living/carbon/Life()
+#define FILTER_UNDERWATER_BLUR "uw_blur"
+#define FILTER_UNDERWATER_WAVE "uw_wave"
+
+/mob/living/carbon/Life(seconds, times_fired)
 	set invisibility = 0
 
 	if(notransform)
@@ -16,30 +19,28 @@
 	if (QDELETED(src))
 		return
 
+	if(hud_used?.stressies)
+		hud_used.stressies.update_icon()
+
 	handle_wounds()
 	handle_embedded_objects()
 	handle_blood()
 	handle_roguebreath()
+	handle_swimming()
+	
+	
 	var/bprv = handle_bodyparts()
 	if(bprv & BODYPART_LIFE_UPDATE_HEALTH)
 		update_stamina() //needs to go before updatehealth to remove stamcrit
 		updatehealth()
-	update_stress()
+	if (times_fired % 3 == 0) // every 3rd tick, fire stress handler. it isn't time-critical, so we don't particularly need it to go EVERY tick
+		update_stress()
 	handle_nausea()
-	if((blood_volume > BLOOD_VOLUME_SURVIVE) || HAS_TRAIT(src, TRAIT_BLOODLOSS_IMMUNE))
-		if(!heart_attacking)
-			if(oxyloss)
-				adjustOxyLoss(-1.6)
-		else
-			if(getOxyLoss() < 20)
-				heart_attacking = FALSE
 
 	handle_sleep()
 
-	handle_brain_damage()
-
-
-	check_cremation()
+	if(HAS_TRAIT(src, TRAIT_IN_FRENZY))
+		handle_automated_frenzy()
 
 	if(stat != DEAD)
 		return 1
@@ -63,31 +64,27 @@
 	if(HAS_TRAIT(src, TRAIT_NOPAIN))
 		return
 	if(!stat)
-		var/pain_threshold = STACON * 10
-		if(has_flaw(/datum/charflaw/masochist)) // Masochists handle pain better by about 1 endurance point
-			pain_threshold += 10
 		var/painpercent = get_complex_pain() / pain_threshold
 		painpercent = painpercent * 100
 
 		if(world.time > mob_timers["painstun"])
 			mob_timers["painstun"] = world.time + 100
-			var/probby = 40 - (STACON * 2)
+			var/probby = 40 - (STAWIL * 2)
 			probby = max(probby, 10)
 			if(lying || IsKnockdown())
 				if(prob(3) && (painpercent >= 80) )
 					emote("painmoan")
 			else
 				if(painpercent >= 100)
-					if(HAS_TRAIT(src, TRAIT_PSYDONITE) || STACON >= 15)
-						if(prob(25)) // PSYDONIC WEIGHTED COINFLIP. TWEAK THIS AS THOU WILT. DON'T LET THEM BE BROKEN, PSYDON WILLING. THROW CON-MAXXERS A BONE, TOO.
-							Immobilize(15) // EAT A MICROSTUN. YOU'RE AVOIDING A PAINCRIT.
-							if(HAS_TRAIT(src, TRAIT_PSYDONITE))
-								visible_message(span_info("[src] audibly grits their teeth. ENDURING through their pain."), span_info("Through my faith in HIM, I ENDURE."))
-							else
-								visible_message(span_info("[src] trembled for a moment, but they remain stood."), span_info("My strong constitution keeps me upright."))
-							stuttering += 5
-							emote("painmoan")
-							return
+					if(prob(25) && (HAS_TRAIT(src, TRAIT_PSYDONIAN_GRIT) || STAWIL >= 15) && !HAS_TRAIT(src, TRAIT_NOPAINSTUN)) // PSYDONIC WEIGHTED COINFLIP. TWEAK THIS AS THOU WILT. DON'T LET THEM BE BROKEN, PSYDON WILLING. THROW CON-MAXXERS A BONE, TOO.
+						Immobilize(15) // EAT A MICROSTUN. YOU'RE AVOIDING A PAINCRIT.
+						if(HAS_TRAIT(src, TRAIT_PSYDONIAN_GRIT))
+							visible_message(span_info("[src] audibly grits their teeth. ENDURING through their pain."), span_info("Through my faith in HIM, I ENDURE."))
+						else
+							visible_message(span_info("[src] trembled for a moment, but they remain stood."), span_info("My strong constitution keeps me upright."))
+						stuttering += 5
+						emote("painmoan")
+						return
 					if(prob(probby) && !HAS_TRAIT(src, TRAIT_NOPAINSTUN) && !has_status_effect(/datum/status_effect/buff/psyhealing))
 						Immobilize(10)
 						emote("painscream")
@@ -114,13 +111,13 @@
 	if(HAS_TRAIT(src, TRAIT_NOBREATH))
 		return TRUE
 	if(HAS_TRAIT(src, TRAIT_HOLDBREATH))
-		adjustOxyLoss(5)
+		adjustOxyLoss(10)
 	if(istype(loc, /obj/structure/closet/dirthole))
 		adjustOxyLoss(5)
 	if(istype(loc, /obj/structure/closet/burial_shroud))
 		var/obj/O = loc
 		if(istype(O.loc, /obj/structure/closet/dirthole))
-			adjustOxyLoss(5)
+			adjustOxyLoss(10)
 	if(isopenturf(loc))
 		var/turf/open/T = loc
 		if(reagents && T.pollution)
@@ -130,41 +127,43 @@
 				T.pollution.smell_act(src)
 
 /mob/living/proc/handle_inwater()
-	ExtinguishMob()
+	extinguish_mob()
 
-/mob/living/carbon/handle_inwater()
+/mob/living/carbon/human/handle_inwater(turf/onturf, extinguish = TRUE, force_drown = FALSE)
 	..()
-	if(!(mobility_flags & MOBILITY_STAND))
-		if(HAS_TRAIT(src, TRAIT_NOBREATH) || HAS_TRAIT(src, TRAIT_WATERBREATHING))
+	
+	if(!(mobility_flags & MOBILITY_STAND) || force_drown)
+		if (HAS_TRAIT(src, TRAIT_NOBREATH) || HAS_TRAIT(src, TRAIT_WATERBREATHING))
 			return TRUE
-		if(stat == DEAD && client)
-			GLOB.azure_round_stats[STATS_PEOPLE_DROWNED]++
-		var/drown_damage = has_world_trait(/datum/world_trait/abyssor_rage) ? 10 : 5
-		adjustOxyLoss(drown_damage)
-		emote("drown")
+		
+		var/breath_drain = HAS_TRAIT(src, TRAIT_HOLDBREATH) ? 1 : 2
+		breath_remaining = max(0, breath_remaining - breath_drain)
 
-/mob/living/carbon/human/handle_inwater()
-	. = ..()
-	if(istype(loc, /turf/open/water/bath))
-		if(!wear_armor && !wear_shirt && !wear_pants)
-			add_stress(/datum/stressevent/bathwater)
-
-/mob/living/carbon/human/handle_inwater()
-	. = ..()
-	if(istype(loc, /turf/open/water/sewer))
+	
+	if(istype(onturf, /turf/open/water/sewer) && !HAS_TRAIT(src, TRAIT_HOLDBREATH))
 		add_stress(/datum/stressevent/sewertouched)
+	
+	if(istype(onturf, /turf/open/water/bath) && !wear_armor && !wear_shirt && !wear_pants)
+		add_stress(/datum/stressevent/bathwater)
+
+	return TRUE
+
+
+
 
 /mob/living/carbon/proc/get_complex_pain()
 	. = 0
+	var/has_adrenaline = HAS_TRAIT(src, TRAIT_ADRENALINE_RUSH)
 	for(var/obj/item/bodypart/limb as anything in bodyparts)
 		if(limb.status == BODYPART_ROBOTIC || limb.skeletonized)
 			continue
 		var/bodypart_pain = ((limb.brute_dam + limb.burn_dam) / limb.max_damage) * limb.max_pain_damage
 		for(var/datum/wound/wound as anything in limb.wounds)
-			bodypart_pain += wound.woundpain
+			bodypart_pain += wound?.woundpain
 		bodypart_pain = min(bodypart_pain, limb.max_pain_damage)
+		if(has_adrenaline)
+			bodypart_pain *= 0.5
 		. += bodypart_pain
-	.
 
 /mob/living/carbon/human/get_complex_pain()
 	. = ..()
@@ -175,35 +174,27 @@
 // BREATHING //
 ///////////////
 
-//Start of a breath chain, calls breathe()
-/mob/living/carbon/handle_breathing(times_fired)
-	return
-
 /mob/living/carbon/proc/has_smoke_protection()
 	if(HAS_TRAIT(src, TRAIT_NOBREATH))
 		return TRUE
 	return FALSE
 
 /mob/living/carbon/proc/handle_bodyparts()
-	var/stam_regen = FALSE
-	if(stam_regen_start_time <= world.time)
-		stam_regen = TRUE
-		if(stam_paralyzed)
-			. |= BODYPART_LIFE_UPDATE_HEALTH //make sure we remove the stamcrit
-	for(var/I in bodyparts)
-		var/obj/item/bodypart/BP = I
-		if(BP.needs_processing)
-			. |= BP.on_life(stam_regen)
+	var/stam_regen = stam_regen_start_time <= world.time
+	if(stam_regen && stam_paralyzed)
+		. |= BODYPART_LIFE_UPDATE_HEALTH
+	for(var/obj/item/bodypart/BP as anything in bodyparts)
+		if(!BP.needs_processing)
+			continue
+		. |= BP.on_life(stam_regen)
 
 /mob/living/carbon/proc/handle_organs()
 	if(stat != DEAD)
-		for(var/V in internal_organs)
-			var/obj/item/organ/O = V
+		for(var/obj/item/organ/O as anything in internal_organs)
 			O.on_life()
 	else
-		for(var/V in internal_organs)
-			var/obj/item/organ/O = V
-			O.on_death() //Needed so organs decay while inside the body.
+		for(var/obj/item/organ/O as anything in internal_organs)
+			O.on_death()
 
 /mob/living/carbon/handle_embedded_objects()
 	for(var/obj/item/bodypart/bodypart as anything in bodyparts)
@@ -303,9 +294,6 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 	if(jitteriness)
 		do_jitter_animation(jitteriness)
 		jitteriness = max(jitteriness - restingpwr, 0)
-		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "jittery", /datum/mood_event/jittery)
-	else
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "jittery")
 
 	if(stuttering)
 		stuttering = max(stuttering-1, 0)
@@ -328,7 +316,6 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 	if(drunkenness)
 		drunkenness = max(drunkenness - (drunkenness * 0.04) - 0.01, 0)
 		if(drunkenness >= 3)
-//			SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "drunk", /datum/mood_event/drunk)
 			if(prob(3))
 				slurring += 2
 			jitteriness = max(jitteriness - 3, 0)
@@ -337,8 +324,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 		else
 			remove_stress(/datum/stressevent/drunk)
 		if(drunkenness >= 8.5) // Roughly 2 cups
-			if(has_flaw(/datum/charflaw/addiction/alcoholic))
-				sate_addiction()
+			sate_addiction(/datum/charflaw/addiction/alcoholic)
 		if(drunkenness >= 11 && slurring < 5)
 			slurring += 1.2
 
@@ -396,27 +382,19 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 //LIVER//
 /////////
 
-///Decides if the liver is failing or not.
-/mob/living/carbon/proc/handle_liver()
-	if(!dna)
-		return
-	var/obj/item/organ/liver/liver = getorganslot(ORGAN_SLOT_LIVER)
-	if(!liver)
-		liver_failure()
-
 /mob/living/carbon/proc/undergoing_liver_failure()
 	var/obj/item/organ/liver/liver = getorganslot(ORGAN_SLOT_LIVER)
 	if(liver && (liver.organ_flags & ORGAN_FAILING))
 		return TRUE
 
 /mob/living/carbon/proc/liver_failure()
-	reagents.end_metabolization(src, keep_liverless = TRUE) //Stops trait-based effects on reagents, to prevent permanent buffs
-	reagents.metabolize(src, can_overdose=FALSE, liverless = TRUE)
+	reagents.end_metabolization(src, keep_liverless = TRUE) // Stops trait-based effects on reagents, to prevent permanent buffs
+	reagents.metabolize(src, can_overdose = FALSE, liverless = TRUE)
+
 	if(HAS_TRAIT(src, TRAIT_STABLELIVER) || HAS_TRAIT(src, TRAIT_NOMETABOLISM))
 		return
+
 	adjustToxLoss(4, TRUE,  TRUE)
-//	if(prob(30))
-//		to_chat(src, span_warning("I feel a stabbing pain in your abdomen!"))
 
 /////////////
 //CREMATION//
@@ -497,15 +475,6 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 	if(should_update_body)
 		update_body()
 
-////////////////
-//BRAIN DAMAGE//
-////////////////
-
-/mob/living/carbon/proc/handle_brain_damage()
-	for(var/T in get_traumas())
-		var/datum/brain_trauma/BT = T
-		BT.on_life()
-
 /////////////////////////////////////
 //MONKEYS WITH TOO MUCH CHOLOESTROL//
 /////////////////////////////////////
@@ -561,15 +530,23 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 */
 
 /mob/living/carbon/proc/handle_sleep()
-	if(HAS_TRAIT(src, TRAIT_NOSLEEP) && !(mobility_flags & MOBILITY_STAND))
-		energy_add(5)
-		if(mind?.has_antag_datum(/datum/antagonist/vampirelord/lesser))
-			energy_add(10)
+	if (!client) // not really relevant to NPCs at the moment
 		return
+
+	var/datum/charflaw/sleepless/sleepless_flaw = get_flaw()
+	if(!istype(sleepless_flaw, /datum/charflaw/sleepless))
+		sleepless_flaw = null
+	if(HAS_TRAIT(src, TRAIT_NOSLEEP))
+		if(!(mobility_flags & MOBILITY_STAND))
+			energy_add(5)
+		if(mind?.has_antag_datum(/datum/antagonist/vampire))
+			if(!(mobility_flags & MOBILITY_STAND))
+				energy_add(10)
+			energy_add(4)
 	//Healing while sleeping in a bed
 	if(IsSleeping())
 		var/sleepy_mod = 0.5
-		var/yess = HAS_TRAIT(src, TRAIT_NOHUNGER)
+		var/doesnt_hunger = HAS_TRAIT(src, TRAIT_NOHUNGER)
 		if(HAS_TRAIT(src, TRAIT_BETTER_SLEEP))
 			energy_add(sleepy_mod * 4)
 		if(buckled?.sleepy)
@@ -578,9 +555,14 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 			var/obj/structure/bed/rogue/bed = locate() in loc
 			if(bed)
 				sleepy_mod = bed.sleepy
-		if(nutrition > 0 || yess)
+			else
+				if(HAS_TRAIT(src, TRAIT_OUTDOORSMAN))
+					var/obj/structure/flora/newbranch/branch = locate() in loc
+					if(branch)
+						sleepy_mod = 2 // just equivalent to a bedroll
+		if(nutrition > 0 || doesnt_hunger)
 			energy_add(sleepy_mod * 15)
-		if(hydration > 0 || yess)
+		if(hydration > 0 || doesnt_hunger)
 			if(!bleed_rate)
 				blood_volume = min(blood_volume + (4 * sleepy_mod), BLOOD_VOLUME_NORMAL)
 			for(var/obj/item/bodypart/affecting as anything in bodyparts)
@@ -594,28 +576,35 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 						continue
 					wound.heal_wound(wound.sleep_healing * sleepy_mod)
 			adjustToxLoss(-sleepy_mod)
-			if(eyesclosed && !HAS_TRAIT(src, TRAIT_NOSLEEP))
-				Sleeping(300)
-	else if(!IsSleeping() && !HAS_TRAIT(src, TRAIT_NOSLEEP))
-		// Resting on a bed or something
+	else
 		var/sleepy_mod = 0
+		var/sleep_threshold = 30
+		var/message = "I'll fall asleep soon..."
+		var/dream_prob = 2
 		if(buckled?.sleepy)
 			sleepy_mod = buckled.sleepy
-		else if(isturf(loc) && !(mobility_flags & MOBILITY_STAND))
+		if(isturf(loc) && !(mobility_flags & MOBILITY_STAND))
 			var/obj/structure/bed/rogue/bed = locate() in loc
 			if(bed)
 				sleepy_mod = bed.sleepy
 			else
+				sleepy_mod = 1
 				if(HAS_TRAIT(src, TRAIT_OUTDOORSMAN))
 					var/obj/structure/flora/newbranch/branch = locate() in loc
 					if(branch)
-						sleepy_mod = 1.5 //Worse than a bedroll, better than nothing.
+						sleepy_mod = 2 //Worse than a bedroll, better than nothing.
 		if(sleepy_mod > 0)
 			if(eyesclosed)
+				if(HAS_TRAIT(src, TRAIT_NOSLEEP) && !sleepless_flaw)
+					message = "I am completely unable to sleep. I should just get up."
+					if(!fallingas)
+						to_chat(src, span_warning(message))
+					fallingas = TRUE
+					return
 				var/armor_blocked = FALSE
 				if(ishuman(src) && stat == CONSCIOUS)
 					var/mob/living/carbon/human/H = src
-					if(H.head && H.head.armor?.blunt > 70)
+					if(H.head && H.head.armor?.stab > 70)
 						armor_blocked = TRUE
 					if(H.wear_armor && (H.wear_armor.armor_class in list(ARMOR_CLASS_HEAVY, ARMOR_CLASS_MEDIUM)))
 						armor_blocked = TRUE
@@ -623,41 +612,317 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 						to_chat(src, span_warning("I can't sleep like this. My armor is burdening me."))
 						fallingas = TRUE
 				if(!armor_blocked)
+					if (sleepy_mod > 1)
+						sleep_threshold = 30
+					else
+						sleep_threshold = 45
+						message = "I'll fall asleep soon, although a proper bed would be more comfortable..."
+					if(sleepless_flaw)
+						if(!sleepless_flaw.drugged_up)
+							message = "I am unable to sleep. I should just get up."
+							if(!fallingas)
+								to_chat(src, span_warning(message))
+							fallingas = TRUE
+						else
+							sleep_threshold = 45
+							message = "I'll fall asleep soon, although it's still very hard for me to..."
 					if(!fallingas)
-						to_chat(src, span_warning("I'll fall asleep soon..."))
-					fallingas++
+						to_chat(src, span_warning(message))
+					fallingas += sleepy_mod
 					if(HAS_TRAIT(src, TRAIT_FASTSLEEP))
-						fallingas++
-					if(fallingas > 15)
-						Sleeping(300)
+						fallingas += sleepy_mod
+					if(fallingas >= sleep_threshold)
+						if(!is_asleep) //to not spam chat
+							to_chat(src, span_blue("I've fallen asleep."))
+							is_asleep = TRUE
+						// those who have gazed upon zuranus may have... odd dreams.
+						if(has_status_effect(/datum/status_effect/zuranus))
+							var/zizo_dream = has_status_effect(/datum/status_effect/zuranus) // this is stupid im sorry
+							var/list/evil_dreams = list(
+								span_cultsmall("It's as if all my other memories have been taken. It feels like hours, daes, only blood, only war. No friends. No family. Just war."),
+								span_cultsmall("Every single one of my failures becomes clear to me. I am staring into a river flowing red, and within it is the reflection of everyone I've lost."),
+								span_cultsmall("There is a dark star in the sky. The grassy field turns black. I begin coughing-- I clutch at my chest...")
+							)
+							var/terrible_dreams = TRUE
+							if(istype(src.mouth, /obj/item/roguecoin/aalloy)) // psila will Show You Things. i talked 2 ambrose about this like 2 months ago.
+								evil_dreams = list(
+									span_gamedeadsay("My deft hands rattle along a table, odd machinery laid around me. I fetch my scalpel and begin shoving a rat into a box..."),
+									span_gamedeadsay("I stand over sketches of a chair, swiftly inspeckting vial after vial of a queer green fluid. It's still not ready. Not just yet."),
+									span_gamedeadsay("I speak, but I cannot comprehend my own words. Within a near pitch-black room, a corpse animates... I smile.")
+								)
+								terrible_dreams = FALSE // this sucks so much. free forgive me. please. its for sovl.
+							var/picked_dream = pick(evil_dreams)
+							to_chat(src, picked_dream)
+							src.remove_status_effect(zizo_dream)
+							if(terrible_dreams)
+								src.add_stress(/datum/stressevent/terrible_dreams)
+						if(sleepless_flaw) // If you're sleepless, you have a higher chance of going to a nightmare. Every time you sleep, the chance gets higher for the rest of the round.
+							teleport_to_dream(src, 10000, sleepless_flaw.dream_prob, FALSE)
+							sleepless_flaw.dream_prob += 500
+							sleepless_flaw.drugged_up = FALSE
+							Sleeping(250)
+						else
+							teleport_to_dream(src, 10000, dream_prob)
+							Sleeping(300)
+
 			else
+				is_asleep = FALSE
+				fallingas = FALSE
 				energy_add(sleepy_mod * 10)
-		// Resting on the ground (not sleeping or with eyes closed and about to fall asleep)
-		else if(!(mobility_flags & MOBILITY_STAND))
-			if(eyesclosed)
-				var/armor_blocked = FALSE
-				if(ishuman(src) && stat == CONSCIOUS)
-					var/mob/living/carbon/human/H = src
-					if(H.head && H.head.armor?.blunt > 70)
-						armor_blocked = TRUE
-					if(H.wear_armor && (H.wear_armor.armor_class in list(ARMOR_CLASS_HEAVY, ARMOR_CLASS_MEDIUM)))
-						armor_blocked = TRUE
-					if(armor_blocked && !fallingas)
-						to_chat(src, span_warning("I can't sleep like this. My armor is burdening me."))
-						fallingas = TRUE
-				if(!armor_blocked)
-					if(!fallingas)
-						to_chat(src, span_warning("I'll fall asleep soon, although a bed would be more comfortable..."))
-					fallingas++
-					if(HAS_TRAIT(src, TRAIT_FASTSLEEP))
-						fallingas++
-					if(fallingas > 25)
-						Sleeping(300)
-			else
-				energy_add(10)
 		else if(fallingas)
-			fallingas = 0
+			fallingas = FALSE
 
 	// Leaning against a wall: slowly regain stamina
-	if(mobility_flags & MOBILITY_STAND && wallpressed && !IsSleeping() && !buckled && !lying)
+	if(mobility_flags & MOBILITY_STAND && wallpressed && !IsSleeping() && !buckled && !lying && !climbing)
 		energy_add(5)
+
+/mob/living/proc/start_swimming()
+	if(is_swimming) return
+	is_swimming = TRUE
+	
+
+/mob/living/proc/stop_swimming()
+	if(!is_swimming) return
+	is_swimming = FALSE
+	
+
+/mob/living/proc/start_submersion()
+	if(is_underwater) return
+	is_underwater = TRUE
+	add_client_colour(/datum/client_colour/underwater)
+	apply_underwater_filters()
+	
+	remove_filter("swimming_cutter")
+	update_icon()
+	
+	animate(src, pixel_x = pixel_x + 2, time = 20, loop = -1, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+	animate(pixel_x = pixel_x - 2, time = 20, easing = SINE_EASING)
+
+/mob/living/proc/stop_submersion()
+	if(!is_underwater) return
+	is_underwater = FALSE
+	remove_client_colour(/datum/client_colour/underwater)
+	remove_underwater_filters()
+	animate(src) 
+	pixel_x = get_standard_pixel_x_offset()
+	update_icon()
+
+/mob/living/proc/apply_underwater_filters()
+	if(!client) return
+	if(swimming_filter_client == client) return
+
+	var/list/planes = list(
+		OPENSPACE_PLANE, 
+		OPENSPACE_BACKDROP_PLANE, 
+		FLOOR_PLANE, 
+		WALL_PLANE, 
+		GAME_PLANE, 
+		GAME_PLANE_FOV_HIDDEN
+	)
+	for(var/atom/movable/screen/plane_master/PM in client.screen)
+		if(PM.plane in planes)
+			PM.add_filter(FILTER_UNDERWATER_BLUR, 10, list("type" = "blur", "size" = 0.8))
+			PM.add_filter(FILTER_UNDERWATER_WAVE, 11, list("type" = "wave", "x" = 1, "y" = 1, "size" = 1))
+			var/F = PM.get_filter(FILTER_UNDERWATER_WAVE)
+			if(F) animate(F, offset = 10, time = 40, loop = -1)
+			
+	swimming_filter_client = client 
+
+/mob/living/proc/remove_underwater_filters()
+	if(!client) return
+	for(var/atom/movable/screen/plane_master/PM in client.screen)
+		PM.remove_filter(FILTER_UNDERWATER_BLUR)
+		PM.remove_filter(FILTER_UNDERWATER_WAVE)
+		
+	swimming_filter_client = null
+
+/mob/living/proc/handle_swimming()
+	var/turf/T = get_turf(src)
+	var/area/A = get_area(src)
+	
+
+	var/is_on_water = istype(T, /turf/open/water)
+
+	var/is_on_new_water = istype(T, /turf/open/water/transparent)
+	
+	var/is_true_swimming = is_swimming || is_underwater || istype(A, /area/underwater) || is_on_new_water
+	var/is_area_underwater = istype(A, /area/underwater)
+	var/sw_skill = get_skill_level(/datum/skill/misc/swimming)
+	var/new_max_breath = (STACON * 5) + (sw_skill * 5)
+
+	if(new_max_breath != max_breath)
+		if(max_breath > 10)
+			var/ratio = breath_remaining / max_breath
+			max_breath = new_max_breath
+			breath_remaining = max_breath * ratio
+		else
+			max_breath = new_max_breath
+			breath_remaining = max_breath
+	
+	if(!is_on_water && !is_area_underwater)
+		
+		if(breath_remaining < max_breath)
+			breath_remaining = min(breath_remaining + (max_breath / 5), max_breath)
+
+		if(is_swimming || is_underwater || get_filter("swimming_cutter") || swimming_filter_client)
+			is_swimming = FALSE
+			is_underwater = FALSE
+			
+			remove_filter("swimming_cutter")
+			update_icon() 
+			
+
+			if(swimming_filter_client)
+				remove_underwater_filters()
+		
+		if(ishuman(src))
+			var/mob/living/carbon/human/H = src
+			H.update_breath_hud()
+			
+		return
+
+	if(!is_on_water && !is_true_swimming && breath_remaining >= max_breath)
+		if(get_filter("swimming_cutter"))
+			remove_filter("swimming_cutter")
+			update_icon()
+		update_breath_hud()
+		return
+
+	if(is_true_swimming && !is_underwater)
+		if(stat == UNCONSCIOUS || IsImmobilized() || IsKnockdown())
+			var/turf/below = GET_TURF_BELOW(T)
+			if(below && istype(below, /turf/open/water/transparent))
+				forceMove(below)
+				set_resting(TRUE)
+				return
+
+	var/is_choking = FALSE
+	if(is_underwater && !can_breathe_underwater())
+		is_choking = TRUE
+	else if(resting && is_on_water)
+		is_choking = TRUE
+		handle_inwater(T) 
+	
+	if(HAS_TRAIT(src, TRAIT_NOBREATH) || HAS_TRAIT(src, TRAIT_WATERBREATHING))
+		breath_remaining = max_breath
+		is_choking = FALSE
+
+	if(is_choking)
+		last_breath_spent = world.time
+		var/breath_drain = (m_intent == MOVE_INTENT_RUN) ? 1.2 : 0.8
+		breath_remaining = max(0, breath_remaining - (breath_drain / (1 + sw_skill * 0.1)))
+		
+		if(breath_remaining <= 0)
+			var/oxy_damage = (stat == UNCONSCIOUS) ? 3.5 : 5 
+			adjustOxyLoss(oxy_damage)
+			if(prob(20) && stat != DEAD)
+				playsound(src, (stat < UNCONSCIOUS ? 'sound/vo/throat.ogg' : 'sound/effects/bubbles.ogg'), 60, FALSE)
+	else
+		if(breath_remaining < max_breath)
+			var/regen_speed = max_breath / 3.5 
+			breath_remaining = min(breath_remaining + regen_speed, max_breath)
+
+	if(!resting && stat == CONSCIOUS && (is_on_new_water || is_true_swimming))
+		var/drain = 0
+		if(is_true_swimming)
+			switch(sw_skill)
+				if(SKILL_LEVEL_NONE)       drain = 6.0 
+				if(SKILL_LEVEL_NOVICE)     drain = 4.5
+				if(SKILL_LEVEL_APPRENTICE) drain = 3.0
+				if(SKILL_LEVEL_JOURNEYMAN) drain = 1.5
+				if(SKILL_LEVEL_EXPERT)     drain = 1.0
+				if(SKILL_LEVEL_MASTER)     drain = 0.5
+				if(SKILL_LEVEL_LEGENDARY)  drain = 0.2
+			drain *= 1.5 
+		else
+			drain = 1.2 
+
+		if(m_intent == MOVE_INTENT_RUN) drain *= 1.4
+		if(!client) drain *= 1.2
+		stamina_add(drain, force_emote = FALSE)
+		
+	if(is_underwater && !resting)
+		if(stamina >= max_stamina || IsKnockdown())
+			set_resting(TRUE)
+
+	update_breath_hud()
+
+	
+	if(is_true_swimming && !is_underwater && is_on_new_water)
+		if(!get_filter("swimming_cutter"))
+			add_filter("swimming_cutter", 1, alpha_mask_filter(y=-6, icon=icon('icons/effects/icon_cutter.dmi', "icon_cutter"), flags=MASK_INVERSE))
+	else
+		if(get_filter("swimming_cutter"))
+			remove_filter("swimming_cutter")
+			update_icon()
+
+	if(stat != DEAD && is_underwater && client)
+		var/filter_ok = FALSE
+		if(!filter_ok) apply_underwater_filters()
+	
+	if(is_true_swimming && !is_underwater && is_on_new_water)
+		if(!get_filter("swimming_cutter"))
+			add_filter("swimming_cutter", 1, alpha_mask_filter(y=-6, icon=icon('icons/effects/icon_cutter.dmi', "icon_cutter"), flags=MASK_INVERSE))
+	else
+		if(get_filter("swimming_cutter"))
+			remove_filter("swimming_cutter")
+			update_icon()
+
+	
+	if(is_underwater && client)
+		
+		if(swimming_filter_client != client) 
+			apply_underwater_filters()
+	else if(!is_underwater && swimming_filter_client)
+		remove_underwater_filters()
+
+	
+	if(stat >= UNCONSCIOUS || IsKnockdown())
+		if(!HAS_TRAIT(src, TRAIT_WATERBREATHING) && !HAS_TRAIT(src, TRAIT_NOBREATH))
+			drowning_drowniness++
+			if(drowning_drowniness >= 3) 
+				adjustOxyLoss(10)
+	else
+		drowning_drowniness = max(0, drowning_drowniness - 1)
+
+/mob/living/proc/update_breath_hud()
+	if(!client || !hud_used || !hud_used.breath_bar) 
+		return
+
+	var/should_show = FALSE
+	if(!HAS_TRAIT(src, TRAIT_NOBREATH) && !HAS_TRAIT(src, TRAIT_WATERBREATHING))
+		if(is_underwater || is_swimming || breath_remaining < max_breath)
+			should_show = TRUE
+
+	var/target_alpha = should_show ? 255 : 0
+	
+	if(hud_used.breath_bar.alpha != target_alpha)
+		animate(hud_used.breath_bar, alpha = target_alpha, time = 10)
+
+	if(target_alpha == 0) return
+	
+	var/ratio = breath_remaining / max_breath
+	hud_used.breath_bar.set_value(ratio)
+
+/mob/living/proc/can_breathe_underwater()
+	if(HAS_TRAIT(src, TRAIT_WATERBREATHING) || HAS_TRAIT(src, TRAIT_NOBREATH))
+		return TRUE
+		
+	return FALSE
+
+/mob/living/proc/calculate_breath_values()
+	var/sw_skill = get_skill_level(/datum/skill/misc/swimming)
+	var/new_max = (STACON * 1.5) + (sw_skill * 10)
+	
+	if(new_max != max_breath)
+		if(max_breath > 10)
+			var/ratio = breath_remaining / max_breath
+			max_breath = new_max
+			breath_remaining = max_breath * ratio
+		else
+			max_breath = new_max
+			breath_remaining = max_breath
+
+#undef BALLMER_POINTS
+#undef FILTER_UNDERWATER_BLUR
+#undef FILTER_UNDERWATER_WAVE

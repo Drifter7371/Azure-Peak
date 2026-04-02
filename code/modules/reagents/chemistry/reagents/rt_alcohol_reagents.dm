@@ -1,11 +1,11 @@
 // Just store all of the alcohol reagents that isn't base tg here
 /datum/reagent/consumable/ethanol/beer
 	name = "Beer"
-	description = ""
+	description = "Civilization in a cup. Could you truly ask for anything more?"
 	color = "#a17c10" // rgb: 102, 67, 0
 	nutriment_factor = 0.1
 	boozepwr = 25
-	taste_description = "ale"
+	taste_description = "frothy ale"
 	glass_name = "glass of beer"
 	glass_desc = ""
 
@@ -14,7 +14,7 @@
 	description = "Where has the rum gone?"
 	color = "#5f3b23" // rgb: 102, 67, 0
 	boozepwr = 40
-	taste_description = "sweetness with hint of caramel and vanilla"
+	taste_description = "tingling sweetness with hints of caramel and vanilla"
 
 /datum/reagent/consumable/ethanol/cider
 	name = "Apple Cider"
@@ -86,7 +86,7 @@
 /datum/reagent/consumable/ethanol/wine
 	name = "Wine"
 	boozepwr = 30
-	taste_description = "wine"
+	taste_description = "aromatic bitterness with notes of sweetly-fermented jackberries"
 	glass_name = "glass of wine"
 	color = "#8a0b0b"
 	quality = DRINK_NICE
@@ -189,7 +189,7 @@
 	color = "#475e45"
 	quality = DRINK_NICE
 
-// Dwarven Production - Best in the Realms
+// Dwarven Production - Best in the Realms!
 
 /datum/reagent/consumable/ethanol/butterhairs
 	name = "Butterhairs"
@@ -369,6 +369,72 @@
 	color = "#330038"
 	quality = DRINK_VERYGOOD
 
+// Special Production - Spice, Spice, Baby!
+
+/datum/reagent/consumable/ethanol/spicedwine
+	name = "Spiced Wine"
+	boozepwr = 10
+	taste_description = "overpoweringly aromatic, sweetening the tongue and numbing the lips"
+	color = "#a11a00"
+	quality = DRINK_GOOD
+
+/datum/reagent/consumable/ethanol/spicedwine/on_mob_life(mob/living/carbon/M)
+	if(volume > 0.99)
+		M.adjustBruteLoss(-0.2  * REAGENTS_EFFECT_MULTIPLIER, 0)
+		M.adjustFireLoss(-0.2  * REAGENTS_EFFECT_MULTIPLIER, 0)
+	..()
+
+/datum/reagent/consumable/ethanol/spicedwine/aged
+	name = "Aged Spiced Wine"
+	boozepwr = 20
+	taste_description = "richly aromatic spiciness, evoking the memory of a holidae's snow-speckled nite"
+	color = "#961800"
+	quality = DRINK_VERYGOOD
+
+/datum/reagent/consumable/ethanol/spicedwine/aged/on_mob_life(mob/living/carbon/M)
+	if(volume > 0.99)
+		M.adjustBruteLoss(-0.4  * REAGENTS_EFFECT_MULTIPLIER, 0)
+		M.adjustFireLoss(-0.4  * REAGENTS_EFFECT_MULTIPLIER, 0)
+	..()
+
+/datum/reagent/consumable/ethanol/spicedwine/delectable
+	name = "Delectable Spiced Wine"
+	boozepwr = 40
+	taste_description = "heavenly aromatic sweetness, followed by an ever-familiar warmness in the heart"
+	color = "#821500"
+	quality = DRINK_FANTASTIC
+
+/datum/reagent/consumable/ethanol/spicedwine/delectable/on_mob_life(mob/living/carbon/M)
+	if(volume > 0.99)
+		M.adjustBruteLoss(-0.7  * REAGENTS_EFFECT_MULTIPLIER, 0)
+		M.adjustFireLoss(-0.7  * REAGENTS_EFFECT_MULTIPLIER, 0)
+	..()
+
+/datum/reagent/consumable/ethanol/cider/ambrosia
+	name = "Ambrosia"
+	boozepwr = 100 //Strong Lifeblood, in essence, that'll also leave you completely sloshed. In jubilation, of course!
+	taste_description = "divine bliss with hints of appled crispness, followed by what feels like a greatmaul to the forehead"
+	color = "#FFD700"
+	quality = DRINK_FANTASTIC
+
+/datum/reagent/consumable/ethanol/cider/ambrosia/on_mob_life(mob/living/carbon/M)
+	if(ishuman(M))
+		if(M.blood_volume < BLOOD_VOLUME_NORMAL)
+			M.blood_volume = min(M.blood_volume+20, BLOOD_VOLUME_NORMAL)
+	var/list/wCount = M.get_wounds()
+	if(wCount.len > 0)
+		M.heal_wounds(4)
+	if(volume > 0.99)
+		M.adjustBruteLoss(-5  * REAGENTS_EFFECT_MULTIPLIER, 0)
+		M.adjustFireLoss(-5  * REAGENTS_EFFECT_MULTIPLIER, 0)
+		M.adjustOxyLoss(-5, 0)
+		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, -5  * REAGENTS_EFFECT_MULTIPLIER)
+		M.adjustCloneLoss(-5  * REAGENTS_EFFECT_MULTIPLIER, 0)
+		M.adjustOrganLoss(ORGAN_SLOT_EYES, -5 * REAGENTS_EFFECT_MULTIPLIER)
+	..()
+
+/datum/reagent/consumable/ethanol/cider/ambrosia
+
 // Elf Production - Berries & Herbal
 
 /datum/reagent/consumable/ethanol/elfred
@@ -440,7 +506,7 @@
 /datum/reagent/consumable/ethanol/saigamilk //No way, kumys from avar!!!
 	name = "Bökhiin Arkhi"
 	boozepwr = 15
-	taste_description = "bubbly, sour salt"
+	taste_description = "bubbly saltiness with a sour aftertaste"
 	color = "#dddddd"
 
 //Kazengun boozes
@@ -518,7 +584,7 @@
 
 // Special Drugs
 /datum/reagent/consumable/ethanol/murkwine // not Toilet wine
-	name = "mürkwine"
+	name = "Mürkwine"
 	boozepwr = 50  // bubba's best
 	taste_description = "hints of questionable choices--a bouqet of murkwater and pure ethanol"
 	color = "#4b1e00"
@@ -533,7 +599,7 @@
 	M.remove_status_effect(/datum/status_effect/buff/murkwine)
 
 /datum/reagent/consumable/ethanol/nocshine // wait, no, NOCSHINE
-	name = "noc's shine"
+	name = "Noc's Shine"
 	boozepwr = 70  // YEEEEEHAAAWWWWWW
 	taste_description = "what might be my throat melting and nose hair burning"
 	color = "#d8fbfd63"
@@ -551,3 +617,31 @@
 
 /datum/reagent/consumable/ethanol/nocshine/on_mob_end_metabolize(mob/living/M)
 	M.remove_status_effect(/datum/status_effect/buff/nocshine)
+
+/datum/reagent/consumable/ethanol/luxwine // oh no.
+	name = "Luxintenebre" // lux left w/ sugar in a darkened place for quite some time... U could say... Light in Darkness.....
+	description = "A fermented form of vitae, highly alcoholic, and with a particularly grim taste. Often sought out by the daring, foolhardy, and heretical..."
+	boozepwr = 80 // THE END OF THE FUCKING WORLD.  
+	taste_description = "a green numbness, then a burning vigor in the heart" // heartburn (healing)
+	color = "#86cca3"
+	quality = DRINK_VERYGOOD // good stuff!
+
+/datum/reagent/consumable/ethanol/luxwine/on_mob_life(mob/living/carbon/M) // stolen healthpot code. i am shameless.
+	if(volume > 0.99) // i have no clue if this works.
+		M.adjustBruteLoss(-1  * REAGENTS_EFFECT_MULTIPLIER, 0)
+		M.adjustFireLoss(-1  * REAGENTS_EFFECT_MULTIPLIER, 0)
+	..()
+
+/datum/reagent/consumable/ethanol/whipwine // dont ask
+	name = "Magickal Whip Wine" 
+	description = "A recipe recently floated into the Peaks. Magickal Whip Wine is said to increase one's potence and stamina sevenfold."
+	boozepwr = 10 // it's a whip. it's an actual whip.
+	taste_description = "leather, bitter herbs, and regret" // what did you expect
+	color = "#3a1d18"
+
+/datum/reagent/consumable/ethanol/komuchisake // if you put this outside the lich dungeon i'll kill you
+	name = "Divine Snake Wine" 
+	description = "The True Form of the Whipwine. The Magickal Snake Wine was an exclusively produced medicinal wine from over three centures ago in the Kazengun Shogunate..."
+	boozepwr = 60 // ancient lichebrau...
+	taste_description = "bitterness, pain, iron, and ancient mistakes" // what did you expect [2]
+	color = "#553837"

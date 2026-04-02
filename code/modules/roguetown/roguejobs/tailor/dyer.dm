@@ -1,18 +1,8 @@
-var/global/list/colorlist = list(
-	"PURPLE"="#8747b1", 	//RED AND BLACK
-	"RED"="#8b2323", 		//	 I DRESS
-	"BLACK"="#2b292e", 	//	  EAGLE
-	"BROWN"="#61462c", 	// ON MY CHEST
-	"GREEN"="#264d26", 	//IT'S GOOD TO BE
-	"BLUE"="#173266", 		// AN ALBANIAN
-	"YELLOW"="#ffcd43", 	// KEEP MY HEAD
-	"TEAL"="#249589", 		//	 UP HIGH
-	"AZURE"="#007fff", 	// FOR THE FLAG
-	"WHITE"="#ffffff",		//	  I DIE
-	"ORANGE"="#df8405",	//I'M PROUD TO BE
-	"MAGENTA"="#962e5c"	// AN ALBANIAN
-	)
+var/global/list/pridelist = list(
+	"Rainbow" = "#fcfcfc"
+)
 
+var/list/used_colors
 
 // DYE BIN
 
@@ -31,44 +21,23 @@ var/global/list/colorlist = list(
 			/obj/item/clothing,
 			/obj/item/storage,
 			/obj/item/bedroll,
-			/obj/item/flowercrown
+			/obj/item/flowercrown,
+			/obj/item/legwears,
+			/obj/item/undies,
+			/obj/item/natural/cloth,
+			/obj/item/caparison,
+			/obj/item/reagent_containers/glass/bottle/clayvase,
+			/obj/item/reagent_containers/glass/bottle/clayfancyvase,
+			/obj/item/reagent_containers/glass/cup/claycup,
+			/obj/item/reagent_containers/glass/bottle/claybottle,
+			/obj/item/roguestatue/clay,
+			/obj/item/roguestatue/glass
 			)
-	var/list/used_colors
-	var/list/extra_colors = list(
-		"Baby Puke" = "#b5b004",
-        "Black" = "#414143",
-        "Chalk White" = "#f4ecde",
-        "Chestnut" = "#613613",
-        "Cream" = "#fffdd0",
-        "Dark Grey" = "#505050",
-        "Dirt" = "#7c6d5c",
-        "Dunked in Water" = "#bbbbbb",
-        "Gold" = "#f9a602",
-        "Green" = "#428138",
-        "Light Grey" = "#999999",
-        "Mage Blue" = "#4756d8",
-        "Mage Green" = "#759259",
-        "Mage Grey" = "#6c6c6c",
-        "Mage Red" = "#b8252c",
-        "Mage Yellow" = "#c1b144",
-        "Maroon" = "#550000",
-        "Olive" = "#98bf64",
-        "Orange" = "#bd6606",
-        "Orchil" = "#66023C",
-        "Peasant Brown" = "#685542",
-        "Periwinkle Blue" = "#8f99fb",
-		"Red" = "#a32121",
-		"Red Ochre" = "#913831",
-        "Russet" = "#7f461b",
-        "Woad Blue" = "#597fb9",
-        "Yellow Ochre" = "#cb9d06",
-        "Yellow Weld" = "#f4c430",
-        "Yarrow" = "#f0cb76"
-		)
 
 /obj/machinery/gear_painter/Initialize()
 	..()
-	used_colors = colorlist + extra_colors
+	used_colors += COLOR_MAP
+	used_colors += pridelist
 
 /obj/machinery/gear_painter/Destroy()
 	if(inserted)
@@ -89,52 +58,157 @@ var/global/list/colorlist = list(
 	user.visible_message(span_notice("[user] inserts [I] into [src]'s receptable."))
 
 	inserted = I
-	ui_interact(user)
+	interact(user)
 
 /obj/machinery/gear_painter/AllowDrop()
 	return FALSE
 
 /obj/machinery/gear_painter/attack_hand(mob/living/user)
-	ui_interact(user)
+	interact(user)
 
-/obj/machinery/gear_painter/ui_interact(mob/user)
+/obj/machinery/gear_painter/proc/pick_dye(mob/user, current_color, prompt_title)
+	if(alert(user, "Input Choice", prompt_title, "Color Wheel", "Color Preset") == "Color Wheel")
+		var/c = sanitize_hexcolor(color_pick_sanitized(user, "Choose your dye:", "Dyes", current_color), 6, TRUE)
+		return (c == "#000000") ? "#FFFFFF" : c
+
+	var/list/colors_to_pick = list()
+	if(GLOB.lordprimary)
+		colors_to_pick["Primary Keep Color"] = GLOB.lordprimary
+	if(GLOB.lordsecondary)
+		colors_to_pick["Secondary Keep Color"] = GLOB.lordsecondary
+	colors_to_pick += used_colors.Copy()
+	var/picked = input(user, "Choose your dye:", "Dyes", null) as null|anything in colors_to_pick
+	if(!picked)
+		return null
+	return colors_to_pick[picked]
+
+/obj/machinery/gear_painter/interact(mob/user)
 	if(!is_operational())
 		return ..()
 	user.set_machine(src)
-	var/datum/browser/menu = new(user, "colormate","Dye Station", 400, 400, src)
+	var/datum/browser/menu = new(user, "colormate","Dye Station", 500, 600, src)
 	var/list/dat = list("<TITLE>Dye Bin</TITLE><BR>")
 	if(!inserted)
 		dat += "No item inserted."
-		menu.set_content(dat.Join(""))
+		menu.set_content("<html>[dat.Join("")]</html>")
 		menu.open()
 		return
 
 	var/obj/item/inserted_item = inserted
 
-	dat += "Item inserted: [inserted]<HR>"
+	// == Preview system ==
+	dat += "<div style='text-align:center;'>"
+
+	// Create preview icon. extracts only SOUTH direction
+	var/obj/item/preview_item = inserted_item
+	var/icon/preview_icon = new /icon()
+	preview_icon.Insert(new /icon(preview_item.icon, preview_item.icon_state), "", SOUTH, 0)
+	preview_icon.Blend(activecolor, ICON_MULTIPLY)
+
+	// Apply detail overlay if exists
+	if(preview_item.detail_tag && preview_item.detail_color)
+		var/icon/detail_overlay = new /icon()
+		detail_overlay.Insert(new /icon(preview_item.icon, "[preview_item.icon_state][preview_item.detail_tag]"), "", SOUTH, 0)
+		detail_overlay.Blend(activecolor_detail, ICON_MULTIPLY)
+		preview_icon.Blend(detail_overlay, ICON_OVERLAY)
+
+	// Apply altdetail overlay if exists
+	if(preview_item.altdetail_tag && preview_item.altdetail_color)
+		var/icon/altdetail_overlay = new /icon()
+		altdetail_overlay.Insert(new /icon(preview_item.icon, "[preview_item.icon_state][preview_item.altdetail_tag]"), "", SOUTH, 0)
+		altdetail_overlay.Blend(activecolor_altdetail, ICON_MULTIPLY)
+		preview_icon.Blend(altdetail_overlay, ICON_OVERLAY)
+
+	// Show offmob item icon
+	dat += "<img src='data:image/png;base64,[icon2base64(preview_icon)]' style='vertical-align:middle; width:64px; height:64px; image-rendering: pixelated; image-rendering: crisp-edges;'>"
+
+	// Show onmob icon
+	if(istype(preview_item, /obj/item/clothing))
+		var/obj/item/clothing/clothing_item = preview_item
+		var/mob_icon_to_use = clothing_item.mob_overlay_icon
+
+		if(mob_icon_to_use)
+			var/worn_state = clothing_item.icon_state
+			var/icon/worn_preview = new /icon()
+			worn_preview.Insert(new /icon(mob_icon_to_use, worn_state), "", SOUTH, 0)
+			worn_preview.Blend(activecolor, ICON_MULTIPLY)
+
+			// apply detail overlay if exists
+			if(preview_item.detail_tag && preview_item.detail_color)
+				var/icon/detail_overlay = new /icon()
+				detail_overlay.Insert(new /icon(mob_icon_to_use, "[worn_state][preview_item.detail_tag]"), "", SOUTH, 0)
+				detail_overlay.Blend(activecolor_detail, ICON_MULTIPLY)
+				worn_preview.Blend(detail_overlay, ICON_OVERLAY)
+
+			// apply altdetail overlay if exists
+			if(preview_item.altdetail_tag && preview_item.altdetail_color)
+				var/icon/altdetail_overlay = new /icon()
+				altdetail_overlay.Insert(new /icon(mob_icon_to_use, "[worn_state][preview_item.altdetail_tag]"), "", SOUTH, 0)
+				altdetail_overlay.Blend(activecolor_altdetail, ICON_MULTIPLY)
+				worn_preview.Blend(altdetail_overlay, ICON_OVERLAY)
+
+			// add sleeved parts if they exist (for cloaks)
+			if(clothing_item.sleeved && ("[worn_state]" in icon_states(clothing_item.sleeved)))
+				// check if r_ and l_ prefixed states exist before trying to use them
+				if("r_[worn_state]" in icon_states(clothing_item.sleeved))
+					var/icon/r_sleeve = new /icon()
+					r_sleeve.Insert(new /icon(clothing_item.sleeved, "r_[worn_state]"), "", SOUTH, 0)
+					r_sleeve.Blend(activecolor, ICON_MULTIPLY)
+					worn_preview.Blend(r_sleeve, ICON_OVERLAY)
+
+				if("l_[worn_state]" in icon_states(clothing_item.sleeved))
+					var/icon/l_sleeve = new /icon()
+					l_sleeve.Insert(new /icon(clothing_item.sleeved, "l_[worn_state]"), "", SOUTH, 0)
+					l_sleeve.Blend(activecolor, ICON_MULTIPLY)
+					worn_preview.Blend(l_sleeve, ICON_OVERLAY)
+
+				// add sleeved detail if exists
+				if(preview_item.detail_tag && preview_item.detail_color && clothing_item.sleeved_detail)
+					if("r_[worn_state][preview_item.detail_tag]" in icon_states(clothing_item.sleeved))
+						var/icon/r_detail = new /icon()
+						r_detail.Insert(new /icon(clothing_item.sleeved, "r_[worn_state][preview_item.detail_tag]"), "", SOUTH, 0)
+						r_detail.Blend(activecolor_detail, ICON_MULTIPLY)
+						worn_preview.Blend(r_detail, ICON_OVERLAY)
+
+					if("l_[worn_state][preview_item.detail_tag]" in icon_states(clothing_item.sleeved))
+						var/icon/l_detail = new /icon()
+						l_detail.Insert(new /icon(clothing_item.sleeved, "l_[worn_state][preview_item.detail_tag]"), "", SOUTH, 0)
+						l_detail.Blend(activecolor_detail, ICON_MULTIPLY)
+						worn_preview.Blend(l_detail, ICON_OVERLAY)
+
+			dat += " <img src='data:image/png;base64,[icon2base64(worn_preview)]' style='vertical-align:middle; width:64px; height:64px; image-rendering: pixelated; image-rendering: crisp-edges;'>"
+
+	dat += "</div><BR>"
+
+	dat += "Item inserted: [inserted]<BR><BR>"
+
+	dat += "Color: <font color='[activecolor]'>&#10070;</font> "
 	dat += "<A href='?src=\ref[src];select=1'>Select new color.</A><BR>"
-	dat += "Color: <font color='[activecolor]'>&#10070;</font>"
-	dat += "<A href='?src=\ref[src];paint=1'>Apply new color</A> | "
-	dat += "<A href='?src=\ref[src];clear=1'>Remove paintjob</A><BR><BR>"
+	dat += "<A href='?src=\ref[src];paint_primary=1'>Apply new color</A> | "
+	dat += "<A href='?src=\ref[src];clear_primary=1'>Remove paintjob</A><BR>"
 
 	if(inserted_item.detail_color)
+		dat += "Detail Color: <font color='[activecolor_detail]'>&#10070;</font> "
 		dat += "<A href='?src=\ref[src];select_detail=1'>Select new detail color.</A><BR>"
-		dat += "Detail Color: <font color='[activecolor_detail]'>&#10070;</font>"
 		dat += "<A href='?src=\ref[src];paint_detail=1'>Apply new color</A> | "
-		dat += "<A href='?src=\ref[src];clear_detail=1'>Remove paintjob</A><BR><BR>"
-			
-	if(inserted_item.altdetail_color)
-		dat += "<A href='?src=\ref[src];select_altdetail=1'>Select new tertiary color.</A><BR>"
-		dat += "Alt. Detail Color: <font color='[activecolor_altdetail]'>&#10070;</font>"
-		dat += "<A href='?src=\ref[src];paint_altdetail=1'>Apply new color</A> | "
-		dat += "<A href='?src=\ref[src];clear_altdetail=1'>Remove paintjob</A><BR><BR>"
+		dat += "<A href='?src=\ref[src];clear_detail=1'>Remove paintjob</A><BR>"
 
-	dat += "<A href='?src=\ref[src];eject=1'>Eject item.</A><BR><BR>"
-	menu.set_content(dat.Join(""))
+	if(inserted_item.altdetail_color)
+		dat += "Alt. Detail Color: <font color='[activecolor_altdetail]'>&#10070;</font> "
+		dat += "<A href='?src=\ref[src];select_altdetail=1'>Select new tertiary color.</A><BR>"
+		dat += "<A href='?src=\ref[src];paint_altdetail=1'>Apply new color</A> | "
+		dat += "<A href='?src=\ref[src];clear_altdetail=1'>Remove paintjob</A><BR>"
+
+	dat += "<BR><A href='?src=\ref[src];eject=1'>Eject item.</A><BR>"
+	menu.set_content("<html>[dat.Join("")]</html>")
 	menu.open()
 
+/obj/machinery/gear_painter/ui_interact(mob/user, datum/tgui/ui)
+	interact(user)
+
 /obj/machinery/gear_painter/Topic(href, href_list)
-	if(!(. = ..()))
+	. = ..()
+	if(.)
 		return
 
 	add_fingerprint(usr)
@@ -144,104 +218,87 @@ var/global/list/colorlist = list(
 		return
 
 	if(href_list["select"])
-		var/choice
-		if(alert(usr, "Input Choice", "Primary Dye", "Color Wheel", "Color Preset") != "Color Wheel")
-			choice = input(usr, "Choose your dye:", "Dyes", null) as null|anything in used_colors
-			if(!choice)
-				return
-			activecolor = used_colors[choice]
-		else
-			activecolor = sanitize_hexcolor(color_pick_sanitized(usr, "Choose your dye:", "Dyes", choice ? choice : activecolor_detail), 6, TRUE)
-			if(activecolor == "#000000")
-				activecolor = "#FFFFFF"
-		updateUsrDialog()
+		var/c = pick_dye(usr, activecolor, "Primary Dye")
+		if(!c) return
+		activecolor = c
+		interact(usr)
 
 	if(href_list["select_detail"])
-		var/choice
-		if(alert(usr, "Input Choice", "Secondary Dye", "Color Wheel", "Color Preset") != "Color Wheel")
-			choice = input(usr, "Choose your dye:", "Dyes", null) as anything in used_colors|null
-			if(!choice)
-				return
-			activecolor_detail = used_colors[choice]
-		else
-			activecolor_detail = sanitize_hexcolor(color_pick_sanitized(usr, "Choose your dye:", "Dyes", choice ? choice : activecolor_detail), 6, TRUE)
-			if(activecolor == "#000000")
-				activecolor = "#FFFFFF"
-		updateUsrDialog()
+		var/c = pick_dye(usr, activecolor_detail, "Secondary Dye")
+		if(!c) return
+		activecolor_detail = c
+		interact(usr)
 
 	if(href_list["select_altdetail"])
-		var/choice
-		if(alert(usr, "Input Choice", "Tertiary Dye", "Color Wheel", "Color Preset") != "Color Wheel")
-			choice = input(usr, "Choose your dye:", "Dyes", null) as anything in used_colors|null
-			if(!choice)
-				return
-			activecolor_altdetail = used_colors[choice]
-		else
-			activecolor_altdetail = sanitize_hexcolor(color_pick_sanitized(usr, "Choose your dye:", "Dyes", choice ? choice : activecolor_detail), 6, TRUE)
-			if(activecolor == "#000000")
-				activecolor = "#FFFFFF"
-		updateUsrDialog()
+		var/c = pick_dye(usr, activecolor_altdetail, "Tertiary Dye")
+		if(!c) return
+		activecolor_altdetail = c
+		interact(usr)
 
-	if(href_list["paint"])
+	if(href_list["paint_primary"])
 		if(!inserted)
 			return
+		var/obj/item/inserted_item = inserted
 		inserted.add_atom_colour(activecolor, FIXED_COLOUR_PRIORITY)
+		inserted_item.update_icon()
 		playsound(src, "bubbles", 50, 1)
-		updateUsrDialog()
+		interact(usr)
 
 	if(href_list["paint_detail"])
 		if(!inserted)
 			return
 		var/obj/item/inserted_item = inserted
-		inserted_item.detail_color = activecolor_detail
+		if(inserted_item.detail_color)
+			inserted_item.detail_color = activecolor_detail
 		inserted_item.update_icon()
-		if(inserted_item in GLOB.lordcolor) //Prevent a latejoining duke from changing this color
-			GLOB.lordcolor -= inserted_item
 		playsound(src, "bubbles", 50, 1)
-		updateUsrDialog()
+		interact(usr)
 
 	if(href_list["paint_altdetail"])
 		if(!inserted)
 			return
 		var/obj/item/inserted_item = inserted
-		inserted_item.altdetail_color = activecolor_altdetail
+		if(inserted_item.altdetail_color)
+			inserted_item.altdetail_color = activecolor_altdetail
 		inserted_item.update_icon()
-		if(inserted_item in GLOB.lordcolor)
-			GLOB.lordcolor -= inserted_item
 		playsound(src, "bubbles", 50, 1)
-		updateUsrDialog()
+		interact(usr)
 
-	if(href_list["clear"])
+	if(href_list["clear_primary"])
 		if(!inserted)
 			return
+		var/obj/item/inserted_item = inserted
 		inserted.remove_atom_colour(FIXED_COLOUR_PRIORITY)
+		inserted_item.update_icon()
 		playsound(src, "bubbles", 50, 1)
-		updateUsrDialog()
+		interact(usr)
 
 	if(href_list["clear_detail"])
 		if(!inserted)
 			return
 		var/obj/item/inserted_item = inserted
-		inserted_item.detail_color = "#FFFFFF" //We don't initial() this in case it goes null
+		if(inserted_item.detail_color)
+			inserted_item.detail_color = "#FFFFFF"
 		inserted_item.update_icon()
 		playsound(src, "bubbles", 50, 1)
-		updateUsrDialog()
+		interact(usr)
 
 	if(href_list["clear_altdetail"])
 		if(!inserted)
 			return
 		var/obj/item/inserted_item = inserted
-		inserted_item.altdetail_color = "#FFFFFF"
+		if(inserted_item.altdetail_color)
+			inserted_item.altdetail_color = "#FFFFFF"
 		inserted_item.update_icon()
 		playsound(src, "bubbles", 50, 1)
-		updateUsrDialog()
+		interact(usr)
 
 	if(href_list["eject"])
 		if(!inserted)
 			return
 		inserted.forceMove(drop_location())
 		inserted = null
-		updateUsrDialog()
+		interact(usr)
 
 
 // PAINTBRUSH
@@ -278,15 +335,26 @@ var/global/list/colorlist = list(
 /obj/item/dye_brush/attack_self(mob/user)
 	..()
 
-	var/hexdye
 	if(dye)
 		to_chat(user, span_warning("[src] is already carrying <font color=[dye]>dye</font>. I need to wash it."))
 		return
 
-	hexdye = sanitize_hexcolor(color_pick_sanitized(usr, "Choose your dye:", "Dyes", null), 6, TRUE)
-	if (hexdye == "#000000")
-		return
-	dye = hexdye
+	var/choice_mode = alert(user, "Input Choice", "Brush Dye", "Color Wheel", "Color Preset")
+	if(choice_mode == "Color Preset")
+		var/list/presets = COLOR_MAP
+		presets += pridelist
+
+		var/picked = input(user, "Choose your dye:", "Dyes", null) as null|anything in presets
+		if(!picked)
+			return
+
+		dye = presets[picked]
+	else
+		var/hexdye = sanitize_hexcolor(color_pick_sanitized(user, "Choose your dye:", "Dyes", dye), 6, TRUE)
+		if(hexdye == "#000000")
+			return
+		dye = hexdye
+
 	update_icon()
 
 /obj/item/dye_brush/attack_turf(turf/T, mob/living/user)

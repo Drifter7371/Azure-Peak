@@ -3,6 +3,8 @@
 	var/list/classes
 	var/outfit
 	var/tutorial = "Choose me!"
+	/// Subclass-specific tutorial shown via to_chat on spawn, separate from the class-picker tutorial.
+	var/subclass_tutorial
 	var/list/allowed_sexes
 	var/list/allowed_races = RACES_ALL_KINDS
 	var/list/allowed_patrons
@@ -11,6 +13,7 @@
 	var/maximum_possible_slots = -1
 	var/total_slots_occupied = 0
 	var/min_pq = -100
+	var/class_select_category
 
 	var/horse = FALSE
 	var/vampcompat = TRUE
@@ -25,14 +28,59 @@
 	//What categories we are going to sort it in
 	var/list/category_tags = list(CTAG_DISABLED)
 
-/datum/advclass/proc/equipme(mob/living/carbon/human/H)
+	/// Whether this class will apply the adaptive name to the job it belongs to.
+	var/adaptive_name = FALSE
+
+	/// Stat ceilings for the specific subclass.
+	var/list/adv_stat_ceiling
+
+	/// Subclass stat bonuses.
+	var/list/subclass_stats
+
+	/// Subclass skills. Everything here is leveled UP TO using adjust_skillrank_up_to EX. list(/datum/skill = SKILL_LEVEL_JOURNEYMAN)
+	var/list/subclass_skills
+
+	/// Subclass languages.
+	var/list/subclass_languages
+
+	/// Subclass virtues.
+	var/list/subclass_virtues
+
+	/// Mage aspect system config. If set, opens the Grimoire on learnspell.
+	/// Keys: "mastery" (bool), "major" (int), "minor" (int), "utilities" (int)
+	var/list/subclass_mage_aspects
+
+	/// List of items to put in an item stash
+	var/list/subclass_stashed_items = list()
+
+	/// Extra fluff added to the role explanation in class selection.
+	var/extra_context
+
+	/// Set to FALSE to skip apply_character_post_equipment() which applies virtue, flaw, loadout
+	var/applies_post_equipment = TRUE
+
+	/// set to TRUE to reset stats in equipme, clearing any racial bonuses or bonuses the character had before becoming this class
+	var/reset_stats = FALSE
+
+	var/datum/class_age_mod/age_mod = null
+
+/datum/advclass/New()
+	if(ispath(age_mod) && !istype(age_mod))
+		var/datum/class_age_mod/newmod = new age_mod()
+		age_mod = newmod
+	. = ..()
+
+/datum/advclass/proc/equipme(mob/living/carbon/human/H, dummy = FALSE)
 	// input sleeps....
 	set waitfor = FALSE
 	if(!H)
 		return FALSE
 
 	if(outfit)
-		H.equipOutfit(outfit)
+		H.equipOutfit(outfit, dummy)
+
+		if(dummy)	//This means we're doing a Char Sheet preview. We don't need to equip the dummy with anything else, the outfits are likely to runtime on their own.
+			return
 
 	post_equip(H)
 
@@ -41,7 +89,11 @@
 	var/turf/TU = get_turf(H)
 	if(TU)
 		if(horse)
-			new horse(TU)
+			var/mob/horse_mob = new horse(TU)
+			if(istype(horse_mob, /mob/living/simple_animal/hostile/retaliate/rogue))
+				var/mob/living/simple_animal/hostile/retaliate/rogue/rogue_animal = horse_mob
+				rogue_animal.owner = H
+				rogue_animal.friends |= H
 
 	for(var/trait in traits_applied)
 		ADD_TRAIT(H, trait, ADVENTURER_TRAIT)
@@ -49,10 +101,46 @@
 	if(noble_income)
 		SStreasury.noble_incomes[H] = noble_income
 
+	if(adaptive_name)
+		H.adaptive_name = TRUE
+
+	if(length(subclass_languages))
+		for(var/lang in subclass_languages)
+			H.grant_language(lang)
+
+	if(reset_stats)
+		H.reset_stats()
+
+	if(length(subclass_stats))
+		for(var/stat in subclass_stats)
+			H.change_stat(stat, subclass_stats[stat])
+
+	if(length(subclass_skills))
+		for(var/skill in subclass_skills)
+			H.adjust_skillrank_up_to(skill, subclass_skills[skill], TRUE)
+
+	// Set up spell systems before virtues so Arcyne Potential can detect and add to them
+	if(LAZYLEN(subclass_mage_aspects))
+		H.mind?.setup_mage_aspects(subclass_mage_aspects.Copy())
+
+	if(length(subclass_virtues))
+		for(var/virtue in subclass_virtues)
+			apply_virtue(H, new virtue)
+
+	if(age_mod)
+		if(istype(age_mod))
+			age_mod.apply_age_mod(H)
+
+	if(length(subclass_stashed_items))
+		if(!H.mind)
+			return
+		for(var/stashed_item in subclass_stashed_items)
+			H.mind?.special_items[stashed_item] = subclass_stashed_items[stashed_item]
 
 	// After the end of adv class equipping, apply a SPECIAL trait if able
 
-	apply_character_post_equipment(H)
+	if(applies_post_equipment)
+		apply_character_post_equipment(H)
 
 /datum/advclass/proc/post_equip(mob/living/carbon/human/H)
 	addtimer(CALLBACK(H,TYPE_PROC_REF(/mob/living/carbon/human, add_credit), TRUE), 20)
@@ -85,16 +173,18 @@
 	if(length(allowed_ages) && !(H.age in allowed_ages))
 		return FALSE
 
-	if(length(allowed_patrons) && !(H.patron in allowed_patrons))
+	if(length(allowed_patrons) && !(H.patron.type in allowed_patrons))
 		return FALSE
 
 	if(maximum_possible_slots > -1)
 		if(total_slots_occupied >= maximum_possible_slots)
 			return FALSE
 
+	#ifdef USES_PQ
 	if(min_pq != -100) // If someone sets this we actually do the check.
 		if(!(get_playerquality(H.client.ckey) >= min_pq))
 			return FALSE
+	#endif
 
 	if(prob(pickprob))
 		return TRUE

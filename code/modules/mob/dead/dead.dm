@@ -73,51 +73,50 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 		dat += "Time To Start: SOON<br>"
 
 	dat += "Total players ready: [SSticker.totalPlayersReady]<br>"
+	if(src.ready)
+		dat += (span_good("Ready Bonus!") + "<a href='?src=[REF(src)];explainreadyupbonus=1'>(?)</a><br>")
+	else
+		dat += (span_highlight("No bonus! Ready up!") + "<a href='?src=[REF(src)];explainreadyupbonus=1'>(?)</a><br>")
 	dat += "<B>Classes:</B><br>"
 
 	dat += "</center>"
 
-	for(var/datum/job/job in SSjob.occupations)
-		if(istype(job, /datum/job/roguetown/adventurer/courtagent) || istype(job, /datum/job/roguetown/wretch))
+	var/list/job_list = list()
+	var/list/ready_players_by_job = list()
+	var/list/wanderer_jobs = list(
+		"Adventurer",
+		"Wretch",
+		"Court Agent"
+	)
+	var/list/count_only_job = list(
+		"Hag"
+	)
+
+	for (var/mob/dead/new_player/player in GLOB.player_list)
+		if (player.client?.ckey in GLOB.hiderole)
 			continue
-		if(!job)
-			continue
-		var/readiedas = 0
-		var/list/PL = list()
-		for(var/mob/dead/new_player/player in GLOB.player_list)
-			if(!player)
-				continue
-			if(player.client.prefs.job_preferences[job.title] == JP_HIGH)
-				if(player.ready == PLAYER_READY_TO_PLAY)
-					readiedas++
-					if(!(player.client.ckey in GLOB.hiderole))
-						if(player.client.prefs.real_name)
-							var/thing = "[player.client.prefs.real_name]"
-							if(istype(job, /datum/job/roguetown/hand))
-								if(player != src)
-									if(client.prefs.job_preferences["Grand Duke"] == JP_HIGH)
-										thing = "<a href='byond://?src=[REF(src)];sethand=[player.client.ckey]'>[player.client.prefs.real_name]</a>"
-								for(var/mob/dead/new_player/Lord in GLOB.player_list)
-									if(Lord.client.prefs.job_preferences["Grand Duke"] == JP_HIGH)
-										if(Lord.brohand == player.ckey)
-											thing = "*[thing]*"
-											break
-							PL += thing
+		var/job_choice = player.client?.prefs?.job_preferences
+		if (job_choice)
+			for (var/job_name in job_choice)
+				if (job_choice[job_name] == JP_HIGH)
+					if (job_name in wanderer_jobs)
+						job_name = "Wanderer"
+					if (player.ready == PLAYER_READY_TO_PLAY)
+						if (!ready_players_by_job[job_name])
+							ready_players_by_job[job_name] = list()
+						ready_players_by_job[job_name] += player.client.prefs.real_name
+						break
 
-		var/list/PL2 = list()
-		for(var/i in 1 to PL.len)
-			if(i == PL.len)
-				PL2 += "[PL[i]]"
-			else
-				PL2 += "[PL[i]], "
+	for (var/job_name in ready_players_by_job)
+		var/list/job_players = ready_players_by_job[job_name]
+		if (job_name in count_only_job)
+			job_list += "<B>[job_name]</B> ([job_players.len])<br>"
+		else
+			job_list += "<B>[job_name]</B> ([job_players.len]) - [job_players.Join(", ")]<br>"
+	
+	sortTim(job_list, cmp = GLOBAL_PROC_REF(cmp_text_asc))
 
-		var/str_job = job.title
-
-		if(readiedas)
-			if(PL2.len)
-				dat += "<B>[str_job]</B> ([readiedas]) - [PL2.Join()]<br>"
-			else
-				dat += "<B>[str_job]</B> ([readiedas])<br>"
+	dat += job_list
 	var/datum/browser/popup = new(src, "lobby_window", "<div align='center'>LOBBY</div>", 330, 430)
 	popup.set_window_options("can_close=1;can_minimize=0;can_maximize=0;can_resize=1;")
 	popup.set_content(dat.Join())

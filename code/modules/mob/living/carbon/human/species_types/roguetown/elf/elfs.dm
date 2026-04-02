@@ -4,7 +4,9 @@
 /datum/species/elf/wood
 	name = "Elf"
 	id = "elfw"
-	desc = "<b>Elf</b><br>\
+	psydonic = TRUE
+	sub_name = "Wood Elf"
+	desc = "<b>Wood Elf: Guardians of the Grove</b><br>\
 	\"Elf\" is a catch-all term used for tall, pointy-eared humanoids who can trace \
 	their heritage to the ancient and mysterious Snow Elves. This particular species \
 	of elf are what most imagine when they hear the word, and are also known among \
@@ -16,15 +18,16 @@
 	territorial disputes. This, however, does not stop many Humens and Elves from forming \
 	relationships, which are capable of producing half-elven children. Elves are known for \
 	their intelligence and sharp eyes, but their graceful nature typically leaves their bodies \
-	more frail and fagile than most. In these lands, only a handful of the many Elvish tribes are seen.<br>\
-	(+1 Speed)"
+	more frail and fragile than most. In these lands, only a handful of the many Elvish tribes are seen.<br>\
+	<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>+1 SPD</b></span><br>"
 
 	skin_tone_wording = "Tribal Identity"
+	max_age = 850
 
 	default_color = "FFFFFF"
 	species_traits = list(EYECOLOR,HAIR,FACEHAIR,LIPS,OLDGREY)
 	default_features = MANDATORY_FEATURE_LIST
-	use_skintones = 1
+	use_skintones = TRUE
 	disliked_food = NONE
 	liked_food = NONE
 	possible_ages = ALL_AGES_LIST
@@ -72,6 +75,8 @@
 		/datum/customizer/bodypart_feature/accessory,
 		/datum/customizer/bodypart_feature/face_detail,
 		/datum/customizer/bodypart_feature/underwear,
+		/datum/customizer/bodypart_feature/legwear,
+		/datum/customizer/bodypart_feature/piercing,
 		/datum/customizer/organ/ears/elf,
 		/datum/customizer/organ/testicles/anthro,
 		/datum/customizer/organ/penis/anthro,
@@ -85,6 +90,7 @@
 		/datum/body_marking_set/bellysocks,
 		/datum/body_marking_set/tiger,
 		/datum/body_marking_set/tiger_dark,
+		/datum/body_marking_set/gradient,
 	)
 
 	body_markings = list(

@@ -139,7 +139,7 @@
 
 
 /obj/item/organ/eyes/night_vision/argonian
-	name = "sissean eyes"
+	name = "zardman eyes"
 	desc = ""
 
 /obj/item/organ/eyes/night_vision/alien
@@ -185,6 +185,25 @@
 /obj/item/organ/eyes/night_vision/mushroom
 	name = "fung-eye"
 	desc = ""
+
+/obj/item/organ/eyes/night_vision/vampire/ui_action_click()
+	sight_flags = initial(sight_flags)
+	var/atom/movable/screen/plane_master/weather_plane = usr.hud_used?.plane_masters?["[WEATHER_EFFECT_PLANE]"]
+	switch(lighting_alpha)
+		if(LIGHTING_PLANE_ALPHA_VISIBLE)
+			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+			weather_plane?.alpha = 225
+		if(LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+			weather_plane?.alpha = 200
+		if(LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
+			lighting_alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+			weather_plane?.alpha = 170
+		else
+			lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
+			weather_plane?.alpha = 255
+			sight_flags &= ~SEE_BLACKNESS
+	owner.update_sight()
 
 /obj/item/organ/eyes/elf
 	name = "elf eyes"
@@ -450,4 +469,19 @@
 	desc = ""
 	eye_icon_state = "snail_eyes"
 	icon_state = "snail_eyeballs"
+
+
+/proc/set_eye_color(var/mob/living/carbon/mob, color_one, color_two)
+	var/obj/item/organ/eyes/eyes = mob.getorganslot(ORGAN_SLOT_EYES)
+	if(!eyes)
+		return
+	if(color_one)
+		eyes.eye_color = color_one
+	if(color_two)
+		eyes.second_color = color_two
+	eyes.update_accessory_colors()
+	if(eyes.owner)
+		eyes.owner.update_body_parts(TRUE)
+
+#undef RGB2EYECOLORSTRING
 

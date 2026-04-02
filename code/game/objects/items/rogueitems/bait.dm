@@ -17,15 +17,29 @@
 	var/attraction_chance = 100
 	var/deployed = 0
 	var/deploy_speed = 2 SECONDS
+	var/refund_bag = TRUE
 	resistance_flags = FLAMMABLE
 	grid_height = 32
 	grid_width = 32
+
+/obj/item/bait/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Activate the bait in your hand to plant it down. Left-click it, once planted, to gather it back up.")
+	. += span_info("Planted bait can attract various creechers for hunting, but only if it is left alone for long enough. Ensure no one is within seven paces of the bait, or can otherwise see it without obstruction.")
+	. += span_info("The deeper that bait is planted within the wilderness, the less time it'll take for it to attract more creechers. For the best results, hunters traditionally nestle it amongst the trees and tallgrass.")
+	. += span_info("Certain types of bait attract certain kinds of creechers. Sweeter treats allure calmer creechers, while meatier treats allure harsher creechers.")
+	. += span_info("More bait can be crafted by combining sacks with jackberries, raw meat, and more.")
 
 /obj/item/bait/Initialize()
 	. = ..()
 	check_counter = world.time
 
 /obj/item/bait/attack_self(mob/user)
+	var/area/A = get_area(user.loc)
+	if(!is_valid_hunting_area(A))
+		to_chat(user, span_warning("I should save [name] for the wilderness..."))
+		return
+
 	. = ..()
 	user.visible_message(span_notice("[user] begins deploying the bait..."), \
 						span_notice("I begin deploying the bait..."))
@@ -87,10 +101,11 @@
 									if(prob(75))
 										M = GLOB.animal_to_undead[M]
 							new M(T)
-							if(prob(66))
-								new /obj/item/storage/roguebag/crafted(T)
-							else
-								new /obj/item/natural/cloth(T)
+							if(refund_bag)
+								if(prob(66))
+									new /obj/item/storage/roguebag/crafted(T)
+								else
+									new /obj/item/natural/cloth(T)
 							qdel(src)
 					else
 						qdel(src)
@@ -112,7 +127,7 @@
 
 /obj/item/bait/bloody
 	name = "bag of bloodbait"
-	desc = "Imagine if vampires got attracted to these!"
+	desc = "Imagine if vampyres got attracted to these!"
 	icon_state = "baitb"
 	attracted_types = list(/mob/living/simple_animal/hostile/retaliate/rogue/wolf = 35,
 							/mob/living/simple_animal/hostile/retaliate/rogue/mole = 20,
@@ -120,3 +135,18 @@
 							/mob/living/simple_animal/hostile/retaliate/rogue/wolf/bobcat = 15,		//Annoying bastards
 							/mob/living/simple_animal/hostile/retaliate/rogue/direbear = 10,
 							/mob/living/simple_animal/hostile/retaliate/rogue/troll/bog = 5)			//RUH-ROH
+
+/obj/item/bait/spider
+	name = "silk bag of bloodbait"
+	desc = "Bait for my little pet!"
+	icon_state = "baits"
+	attracted_types = list(/mob/living/simple_animal/hostile/retaliate/rogue/drider/tame/saddled = 100)
+
+/obj/item/bait/leech
+	name = "bag of leechbait"
+	desc = "Bait that might attract a little Pestran friend."
+	icon_state = "baitb"
+	refund_bag = FALSE
+	attracted_types = list(/obj/item/leechtick = 43,
+							/mob/living/simple_animal/hostile/retaliate/rogue/direbear = 5,
+							/mob/living/simple_animal/hostile/retaliate/rogue/troll/bog = 2)

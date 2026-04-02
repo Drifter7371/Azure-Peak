@@ -436,9 +436,11 @@ ROUNDSTART_RACES tiefling
 ROUNDSTART_RACES tabaxi
 ROUNDSTART_RACES helf
 ROUNDSTART_RACES elfw
+ROUNDSTART_RACES elfc
 ROUNDSTART_RACES elfd
 ROUNDSTART_RACES halforc 
 ROUNDSTART_RACES aasimar
+ROUNDSTART_RACES dullahan
 
 ## Races that are a meme and should not be accessible in normal gameplay, unless you are insane
 #ROUNDSTART_RACES goblin
@@ -566,9 +568,6 @@ MICE_ROUNDSTART 0
 ## Uncomment to allow roundstart quirk selection in the character setup menu.
 ## This used to be named traits, hence the config name, but it handles quirks, not the other kind of trait!
 #ROUNDSTART_TRAITS
-
-## Uncomment to disable human moods.
-DISABLE_HUMAN_MOOD
 
 ## Enable night shifts ##
 ENABLE_NIGHT_SHIFTS

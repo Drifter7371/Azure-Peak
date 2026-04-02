@@ -1,8 +1,7 @@
-
 /obj/machinery/anvil
 	icon = 'icons/roguetown/misc/forge.dmi'
 	name = "iron anvil"
-	desc = "It's surface is marred by countless hammer strikes."
+	desc = "Its surface is marred by countless hammer strikes."
 	icon_state = "anvil"
 	var/hott = null
 	var/obj/item/ingot/hingot
@@ -12,6 +11,15 @@
 	climbable = TRUE
 	var/previous_material_quality = 0
 	var/advance_multiplier = 1 //Lower for auto-striking
+
+/obj/machinery/anvil/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Ingots, when held in a pair of tongs and heated at a forge, can be placed onto the anvil via left-clicking.")
+	. += span_info("Once on the anvil, left-clicking the ingot with a hammer allows for you to start pounding it into a recipe of your choice.")
+	. += span_info("Smithing armor uses the Armorsmithing skill, smithing weapons uses the Weaponsmithing skill, and smithing everything else - valuables, cutlery, tools - uses the Blacksmithing skill.")
+	. += span_info("If you attempt to smith a recipe that excedes your current skill's level, you'll run the risk of damaging and destroying the ingot-in-question.")
+	. += span_info("Once the recipe has been smithed to completion, pick the finished ingot back up and reheat it before quenching it in a water-filled washbin. This transforms the ingot into the smithed item.")
+	. += span_info("Armor, weapons, and other repairable items can be placed onto the anvil via left-clicking. Repairing items on an anvil is quicker and safer than repairing them on a table.")
 
 /obj/machinery/anvil/crafted
 	icon_state = "caveanvil"
@@ -42,6 +50,9 @@
 					return
 				return
 			else
+				if(T.hingot)
+					to_chat(user, span_warning("You're already holding something with your tongs!"))
+					return
 				hingot.forceMove(T)
 				T.hingot = hingot
 				hingot = null
@@ -50,6 +61,13 @@
 				return
 		else
 			if(T.hingot && istype(T.hingot, /obj/item/ingot))
+				// if the held ingot was deleted/qdeling somehow, just clear state
+				if(QDELETED(T.hingot) || QDELING(T.hingot))
+					T.hingot = null
+					T.hott = null
+					T.update_icon()
+					return
+
 				T.hingot.forceMove(src)
 				hingot = T.hingot
 				T.hingot = null
@@ -70,12 +88,13 @@
 
 	if(istype(W, /obj/item/rogueweapon/hammer))
 		user.changeNext_move(CLICK_CD_FAST)
+		var/obj/item/rogueweapon/hammer/hammer = W
 		if(!hingot)
 			return
 		if(!hingot.currecipe)
-			if(!choose_recipe(user))
-				return
-		advance_multiplier = 1 //Manual striking more effective than manual striking.
+			ui_interact(user)
+			return
+		advance_multiplier = 1
 		user.doing = FALSE
 		spawn(1)
 			while(hingot)
@@ -93,9 +112,9 @@
 						carbon_user.stamina_add(max(21 - (used_str * 3), 0)*advance_multiplier)
 					else
 						carbon_user.stamina_add(max(40 - (used_str * 3), 0)*advance_multiplier)
-				var/total_chance = 7 * user.get_skill_level(hingot.currecipe.appro_skill) * user.STAPER/10
+				var/total_chance = 7 * user.get_skill_level(hingot.currecipe.appro_skill) * user.STAPER/10 * hammer.quality
 				var/breakthrough = 0
-				if(prob((1 + total_chance)*advance_multiplier)) //Small chance to flash
+				if(prob((1 + total_chance)*advance_multiplier))
 					user.flash_fullscreen("whiteflash")
 					var/datum/effect_system/spark_spread/S = new()
 					var/turf/front = get_turf(src)
@@ -109,11 +128,10 @@
 					playsound(src,'sound/items/bsmithfail.ogg', 100, FALSE)
 					break
 				playsound(src,pick('sound/items/bsmith1.ogg','sound/items/bsmith2.ogg','sound/items/bsmith3.ogg','sound/items/bsmith4.ogg'), 100, FALSE)
-				if(do_after(user, 20, target = src)) //Let's do it all over again!
+				if(do_after(user, 20, target = src))
 					advance_multiplier = 0.50
 				else
 					break
-
 		return
 
 	if(hingot && hingot.currecipe && hingot.currecipe.needed_item && istype(W, hingot.currecipe.needed_item))
@@ -132,56 +150,82 @@
 		user.visible_message(span_info("[user] places [W] on the anvil."))
 		W.forceMove(src.loc)
 		return
+
 	..()
 
-/obj/machinery/anvil/proc/choose_recipe(mob/living/user)
-	if(!hingot || !hott)
-		return
+/obj/machinery/anvil/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "Anvil", "Anvil")
+		ui.open()
 
-	var/list/valid_types = list()
+/obj/machinery/anvil/ui_assets(mob/user)
+	return list(
+		get_asset_datum(/datum/asset/spritesheet/anvil_recipes)
+	)
+
+/obj/machinery/anvil/ui_data(mob/user)
+	var/list/data = ..()
+
+	data["hingot_type"] = hingot?.type
+
+	return data
+
+/obj/machinery/anvil/ui_static_data(mob/user)
+	var/list/data = ..()
+
+	var/list/recipes = list()
+
+	var/datum/asset/spritesheet/spritesheet = get_asset_datum(/datum/asset/spritesheet/anvil_recipes)
 
 	for(var/datum/anvil_recipe/R in GLOB.anvil_recipes)
-		if(istype(hingot, R.req_bar))
-			if(!valid_types.Find(R.i_type))
-				valid_types += R.i_type
+		UNTYPED_LIST_ADD(recipes, list(
+			"name" = R.name,
+			"category" = R.i_type,
+			"req_bar" = R.req_bar,
+			"ref" = REF(R),
+			"icon" = spritesheet.icon_class_name(sanitize_css_class_name("recipe_[REF(R)]"))
+		))
 
-	if(!valid_types.len)
+	data["recipes"] = recipes
+
+	return data
+
+/obj/machinery/anvil/ui_act(action, list/params, datum/tgui/ui)
+	. = ..()
+	if(.)
 		return
 
-	var/i_type_choice = input(user, "Choose a type", "Anvil") as null|anything in valid_types
-	if(!i_type_choice)
-		return
+	var/mob/user = ui.user
 
-	var/list/appro_recipe = list()
-	for(var/datum/anvil_recipe/R in GLOB.anvil_recipes)
-		if(R.i_type == i_type_choice && istype(hingot, R.req_bar))
-			appro_recipe += R
+	switch(action)
+		if("choose_recipe")
+			var/datum/anvil_recipe/recipe = locate(params["ref"])
+			if(!istype(recipe))
+				return TRUE
 
-	for(var/I in appro_recipe)
-		var/datum/anvil_recipe/R = I
-		if(!R.req_bar)
-			appro_recipe -= R
-		if(!istype(hingot, R.req_bar))
-			appro_recipe -= R
+			if(!istype(hingot, recipe.req_bar))
+				return TRUE
 
-	if(appro_recipe.len)
-		appro_recipe = sortNames(appro_recipe)
-		var/datum/anvil_recipe/chosen_recipe = input(user, "Choose A Creation", "Anvil") as null|anything in sortNames(appro_recipe.Copy())
-		if(!chosen_recipe)
-			return FALSE
-		var/smith_exp = user.get_skill_level(chosen_recipe.appro_skill)
-		if(smith_exp < chosen_recipe.craftdiff)
-			if(alert(user, "This recipe needs [SSskills.level_names_plain[chosen_recipe.craftdiff]] skill.","IT'S TOO DIFFICULT!","CONFIRM","CANCEL") != "CONFIRM")
-				return FALSE
-		if(!hingot.currecipe)
-			hingot.currecipe = new chosen_recipe.type(hingot)
+			var/smith_exp = user.get_skill_level(recipe.appro_skill)
+			if(smith_exp < recipe.craftdiff)
+				if(alert(user, "This recipe needs [SSskills.level_names_plain[recipe.craftdiff]] skill.","IT'S TOO DIFFICULT!","CONFIRM","CANCEL") != "CONFIRM")
+					return TRUE
+
+			// Half to check this again because we alert()ed
+			if(!istype(hingot, recipe.req_bar))
+				return TRUE
+
+			hingot.currecipe = new recipe.type(hingot)
 			hingot.currecipe.bar_health = 50 * (hingot.quality+1)
 			hingot.currecipe.max_progress = 100
 			hingot.currecipe.material_quality += hingot.quality
 			previous_material_quality = hingot.quality
+			ui.close()
+			var/obj/item/rogueweapon/hammer/hammer = user.get_active_held_item()
+			if(istype(hammer))
+				attackby(hammer, user)
 			return TRUE
-
-	return FALSE
 
 /obj/machinery/anvil/attack_hand(mob/user, params)
 	if(hingot)
@@ -191,13 +235,13 @@
 		else
 			var/obj/item/I = hingot
 			hingot = null
-			I.loc = user.loc
+			I.forceMove(user.loc)
 			user.put_in_active_hand(I)
 			update_icon()
 
 /obj/machinery/anvil/process()
 	if(hott)
-		if(world.time > hott + 10 SECONDS)
+		if(world.time > hott + 20 SECONDS)
 			hott = null
 			STOP_PROCESSING(SSmachines, src)
 	else
@@ -217,3 +261,9 @@
 		M.pixel_y = 5
 		M.pixel_x = 3
 		add_overlay(M)
+
+/obj/machinery/anvil/bronze
+	name = "bronze anvil"
+	desc = "Elevating humenity from its primordial stupor since the earliest daes of Psydonia."
+	icon_state = "broanvil"
+	max_integrity = 400

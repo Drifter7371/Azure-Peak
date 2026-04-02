@@ -1,6 +1,7 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/mole
 	icon = 'icons/roguetown/mob/monster/mole.dmi'
 	name = "mole"
+	desc = "A mighty giant mole, said by many dwarves to have been created at Malum's command to dig the first and oldest caverns of the world for his faithful to live in."
 	icon_state = "mole"
 	icon_living = "mole"
 	icon_dead = "mole_dead"
@@ -16,20 +17,21 @@
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 3,
 						/obj/item/natural/hide = 2,
 						/obj/item/natural/fur = 1,
-						/obj/item/natural/bone = 3, 
-						/obj/item/alch/sinew = 3, 
-						/obj/item/alch/bone = 1, 
-						/obj/item/alch/viscera = 1,
-						/obj/item/natural/head/mole = 1)
+						/obj/item/natural/bone = 3,
+						/obj/item/alch/sinew = 3,
+						/obj/item/alch/bone = 1,
+						/obj/item/alch/viscera = 1)
 	perfect_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/steak = 5,
 						/obj/item/natural/hide = 3,
 						/obj/item/natural/fur = 2,
-						/obj/item/natural/bone = 3, 
-						/obj/item/alch/sinew = 3, 
-						/obj/item/alch/bone = 1, 
-						/obj/item/alch/viscera = 1,
-						/obj/item/natural/head/mole = 1)
+						/obj/item/natural/bone = 3,
+						/obj/item/alch/sinew = 3,
+						/obj/item/alch/bone = 1,
+						/obj/item/alch/viscera = 1)
+	head_butcher = /obj/item/natural/head/mole
 	faction = list("wolfs")
+	threat_point = THREAT_MODERATE
+	ambush_faction = "wildlife"
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	health = MOLE_HEALTH
 	maxHealth = MOLE_HEALTH
@@ -69,6 +71,7 @@
 
 /obj/effect/decal/remains/mole
 	name = "remains"
+	desc = "This was once a great burrowing mole! Now it is bone and dessicated flesh."
 	gender = PLURAL
 	icon_state = "mole_bones"
 	icon = 'icons/roguetown/mob/monster/mole.dmi'

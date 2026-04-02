@@ -1,7 +1,7 @@
 /// Standard follower modifier for storytellers, ie. how many points they get for each follower
 #define STANDARD_FOLLOWER_MODIFIER 20
-/// Special follower modifier for Astrata, who is a default patron
-#define ASTRATA_FOLLOWER_MODIFIER STANDARD_FOLLOWER_MODIFIER - 2
+/// Lower follower modifier for special storytellers such as Astrata, who is a default patron
+#define LOWER_FOLLOWER_MODIFIER STANDARD_FOLLOWER_MODIFIER - 2
 
 ///The storyteller datum. He operates with the SSgamemode data to run events
 /datum/storyteller
@@ -9,6 +9,8 @@
 	var/name = "Badly coded storyteller"
 	/// Description of our storyteller.
 	var/desc = "Report this to the coders."
+	/// Description of our storyteller, shown when pressing (?) during a vote.
+	var/vote_desc = "Do what thou wilt."
 	/// Text that the players will be greeted with when this storyteller is chosen.
 	var/welcome_text = "Lift your Eyes to the Horizon." //changing this quote to match the one from the original eris PR.
 	/// This is the multiplier for repetition penalty in event weight. The lower the harsher it is
@@ -68,8 +70,12 @@
 	var/always_votable = FALSE
 	///weight this has of being picked for random storyteller/showing up in the vote if not always_votable
 	var/weight = 0
-	/// Influence factors, which are used to calculate storyteller influence. List of lists, which looks like RELEVANT_STATS = list(point gain, max capacity)
+	/// List of all influence sets. One factor is picked from each set during initialization to create the final influence factors. Example: "Set 1" = list(STATS1 = list("points" = 0.015, "capacity" = 90), STATS2 = list("points" = 8, "capacity" = 50))
+	var/list/influence_sets = list()
+	/// Chosen influence factors, which are used to calculate storyteller influence. List of lists, which looks like RELEVANT_STATS = list(point gain, max capacity)
 	var/influence_factors = list()
+	/// Point modifier to all influence factors including the follower count, default is 1 (100%)
+	var/influence_modifier = 1
 	/// How many influence points storyteller gets for each follower
 	var/follower_modifier = STANDARD_FOLLOWER_MODIFIER
 	/// Thematic color of the storyteller, used in statistics menu
@@ -78,15 +84,27 @@
 	var/times_chosen = 0
 	/// Bonus points to the storyteller total influence
 	var/bonus_points = 0
+	/// If the storyteller is ascendant this round, that is if he reached over 100 points in rankings of the gods
+	var/ascendant = FALSE
+	/// Which kind of gnoll scaling this storyteller prefers, default is 1 gnoll spawn.
+	var/preferred_gnoll_mode = GNOLL_SCALING_SINGLE
+
+/datum/storyteller/New()
+	. = ..()
+	for(var/set_name in influence_sets)
+		var/list/current_set = influence_sets[set_name]
+		var/selected_stat = pick(current_set)
+		influence_factors[selected_stat] = current_set[selected_stat]
+
 
 /datum/storyteller/process()
 	if(!round_started || disable_distribution) // we are differing roundstarted ones until base roundstart so we can get cooler stuff
 		return
 
-	if(!guarantees_roundstart_roleset && prob(roundstart_prob) && !roundstart_checks)
+	if(!is_roundstart_roles_blocked_storyteller() && !guarantees_roundstart_roleset && prob(roundstart_prob) && !roundstart_checks)
 		roundstart_checks = TRUE
 
-	if(SSgamemode.current_roundstart_event && !SSgamemode.ran_roundstart && (guarantees_roundstart_roleset || roundstart_checks))
+	if(!is_roundstart_roles_blocked_storyteller() && SSgamemode.current_roundstart_event && !SSgamemode.ran_roundstart && (guarantees_roundstart_roleset || roundstart_checks))
 		buy_event(SSgamemode.current_roundstart_event, EVENT_TRACK_CHARACTER_INJECTION, TRUE)
 		if(EVENT_TRACK_CHARACTER_INJECTION in SSgamemode.forced_next_events)
 			SSgamemode.forced_next_events[EVENT_TRACK_CHARACTER_INJECTION] = null

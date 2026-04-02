@@ -4,6 +4,10 @@
 /datum/species/elf/dark
 	name = "Dark Elf"
 	id = "elfd"
+	is_subrace = TRUE
+	origin_default = /datum/virtue/origin/racial/underdark
+	origin = "Underdark"
+	base_name = "Elf"
 	desc = "<b>Dark Elf</b><br>\
 	\"Elf\" is a catch-all term used for tall, pointy-eared humanoids who can trace their \
 	heritage to the ancient and mysterious Snow Elves. This species of elf, less frequently \
@@ -20,7 +24,7 @@
 	individual, such as a kinder heart fleeing from a brutal society that scorns them for their \
 	less cruel nature. However, not every dark elf seen on the surface can be safely assumed as \
 	kind, for some leave the Underdark simply to find their own greater heights of power.<br>\
-	(+1 Intellect, +1 Perception)"
+	<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>+1 PER | +1 WIL </b></span><br>"
 
 /*
 	Former RT Desc: These guys were undead which doesn't really fit considering now you have a ton of them walking around.
@@ -37,13 +41,19 @@
 	without careful upkeep...\
 	They typically trace their beginnings to how their progenator died before being raised."
 */
-	skin_tone_wording = "Origin City-State"
+	skin_tone_wording = "City-State"
+	use_skin_tone_wording_for_examine = FALSE
+	max_age = 850
 
 	species_traits = list(EYECOLOR,HAIR,FACEHAIR,LIPS,OLDGREY)
+	allowed_taur_types = list(
+		/obj/item/bodypart/taur/spider,
+	)
 	default_features = MANDATORY_FEATURE_LIST
-	use_skintones = 1
+	use_skintones = TRUE
 	disliked_food = NONE
 	liked_food = NONE
+	inherent_traits = list(TRAIT_CAVEDWELLER)
 	possible_ages = ALL_AGES_LIST
 	changesource_flags = MIRROR_BADMIN | WABBAJACK | MIRROR_MAGIC | MIRROR_PRIDE | RACE_SWAP | SLIME_EXTRACT
 	limbs_icon_m = 'icons/roguetown/mob/bodies/m/mem.dmi'
@@ -89,6 +99,8 @@
 		/datum/customizer/bodypart_feature/accessory,
 		/datum/customizer/bodypart_feature/face_detail,
 		/datum/customizer/bodypart_feature/underwear,
+		/datum/customizer/bodypart_feature/legwear,
+		/datum/customizer/bodypart_feature/piercing,
 		/datum/customizer/organ/ears/elf,
 		/datum/customizer/organ/testicles/anthro,
 		/datum/customizer/organ/penis/anthro,
@@ -101,6 +113,7 @@
 		/datum/body_marking_set/bellysocks,
 		/datum/body_marking_set/tiger,
 		/datum/body_marking_set/tiger_dark,
+		/datum/body_marking_set/gradient,
 	)
 	body_markings = list(
 		/datum/body_marking/flushed_cheeks,
@@ -115,6 +128,13 @@
 	gender_swapping = TRUE
 	stress_examine = TRUE
 	stress_desc = span_red("A loathesome dark elf.")
+
+/datum/species/elf/dark/raider
+	name = "Dark Elf Raider"
+	id = "elfd_raider"
+	is_subrace = FALSE
+	desc = "A hardened dark elf adapted for ruthless Underdark raids."
+
 
 /datum/species/elf/dark/get_span_language(datum/language/message_language)
 	if(!message_language)
@@ -132,6 +152,10 @@
 		"Llurth Dreir" = SKIN_COLOR_LLURTH_DREIR,
 		"Tafravma" = SKIN_COLOR_TAFRAVMA,
 		"Yuethindrynn" = SKIN_COLOR_YUETHINDRYNN,
+		"Koredynn" = SKIN_COLOR_KOREDYNN,
+		"Aiseedrynn" = SKIN_COLOR_AISEEDRYNN,
+		"Grenduskra" = SKIN_COLOR_GRENDUSKRA,
+		"Hun'sek" = SKIN_COLOR_HUNSEK
 	)
 
 /datum/species/elf/dark/get_hairc_list()

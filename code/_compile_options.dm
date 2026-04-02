@@ -1,6 +1,3 @@
-//#define TESTING				//By using the testing("message") proc you can create debug-feedback for people with this
-								//uncommented, but not visible in the release version)
-
 //#define DATUMVAR_DEBUGGING_MODE	//Enables the ability to cache datum vars and retrieve later for debugging which vars changed.
 
 #define MATURESERVER
@@ -34,14 +31,10 @@
 
 //#define FIND_REF_NO_CHECK_TICK	//Sets world.loop_checks to false and prevents find references from sleeping
 
-
-//#define VISUALIZE_ACTIVE_TURFS	//Highlights atmos active turfs in green
 #endif
 
-//#define UNIT_TESTS			//Enables unit tests via TEST_RUN_PARAMETERF
-
 #ifndef PRELOAD_RSC					//set to:
-#define PRELOAD_RSC		2			//	0 to allow using external resources or on-demand behaviour;
+#define PRELOAD_RSC		0			//	0 to allow using external resources or on-demand behaviour;
 #endif								//	1 to use the default behaviour;
 									//	2 for preloading absolutely everything;
 
@@ -66,7 +59,7 @@
 #define FIND_REF_NO_CHECK_TICK
 #endif
 
-#ifdef TRAVISBUILDING
+#if defined(CIBUILDING) && !defined(OPENDREAM)
 #define UNIT_TESTS
 #endif
 
@@ -77,6 +70,8 @@
 // Uncomment this for NPCs to display their 'thoughts' (AI planning steps) above their heads. Useful for debugging NPC logic.
 // #define NPC_THINK_DEBUG
 
-// A reasonable number of maximum overlays an object needs
-// If you think you need more, rethink it
-#define MAX_ATOM_OVERLAYS 100
+// Comment this to remove the PQ system
+#define USES_PQ
+// Comment this to remove traits based skill gating (The traits exist, but it will not have any effect)
+#define USES_TRAIT_SKILL_GATING
+

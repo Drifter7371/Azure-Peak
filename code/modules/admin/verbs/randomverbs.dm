@@ -108,7 +108,7 @@
 
 	if (!msg)
 		return
-	
+
 	M.adjust_triumphs(msg)
 	log_text = "by [msg], from [old_triumphs] to [old_triumphs + msg]"
 
@@ -132,7 +132,7 @@
 
 	if(!amt)
 		return
-	
+
 	prompt = "Please specify a reason for the adjustment:"
 	reason = input("Message:", prompt) as text|null
 	if(!reason)
@@ -567,7 +567,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 /client/proc/cmd_admin_gib_self()
 	set name = "Gibself"
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 
 	var/confirm = alert(src, "You sure?", "Confirm", "Yes", "No")
 	if(confirm == "Yes")
@@ -651,7 +651,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 
 /client/proc/run_weather()
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 	set name = "Run Weather"
 	set desc = ""
 	set hidden = 1 //Replaced by particle weather
@@ -690,12 +690,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	if(!SSticker)
 		return
 
-	SSticker.selected_tip = input
-
-	// If we've already tipped, then send it straight away.
-	if(SSticker.tipped)
-		SSticker.send_tip_of_the_round()
-
+	SSticker.send_tip_of_the_round(input)
 
 	message_admins("[key_name_admin(usr)] sent a tip of the round.")
 	log_admin("[key_name(usr)] sent \"[input]\" as the Tip of the Round.")
@@ -716,7 +711,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 /client/proc/smite(mob/living/target as mob)
 	set name = "Smite"
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 	if(!check_rights(R_ADMIN) || !check_rights(R_FUN))
 		return
 	var/static/list/punishment_list = list(
@@ -730,6 +725,8 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		ADMIN_PUNISHMENT_THROWMOB,
 		ADMIN_PUNISHMENT_CRIPPLE,
 		ADMIN_PUNISHMENT_PSYDON,
+		ADMIN_PUNISHMENT_DIVINE_WRATH,
+		ADMIN_PUNISHMENT_CHANDELIER,
 	)
 
 	var/punishment = input("Choose a punishment", "DIVINE SMITING") as null|anything in sortList(punishment_list)
@@ -745,7 +742,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 			if(ishuman(target))
 				var/mob/living/carbon/human/H = target
 				H.electrocution_animation(40)
-			GLOB.azure_round_stats[STATS_PEOPLE_SMITTEN]++
+			record_round_statistic(STATS_PEOPLE_SMITTEN)
 			to_chat(target, span_danger("The gods have punished you for your sins!"))
 		if(ADMIN_PUNISHMENT_BRAINDAMAGE)
 			target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 199, 199)
@@ -762,40 +759,9 @@ Traitors and the like can also be revived with the previous role mostly intact.
 			sleep(10)
 			target.gib(FALSE)
 		if(ADMIN_PUNISHMENT_GIB)
-			target.gib(FALSE)	
+			target.gib(FALSE)
 		if(ADMIN_PUNISHMENT_BSA)
 			bluespace_artillery(target)
-		/*if(ADMIN_PUNISHMENT_SUPPLYPOD_QUICK) These might be useful someday for another kind of payload send
-			var/target_path = input(usr,"Enter typepath of an atom you'd like to send with the pod (type \"empty\" to send an empty pod):" ,"Typepath","/obj/item/reagent_containers/food/snacks/grown/harebell") as null|text
-			var/obj/structure/closet/supplypod/centcompod/pod = new()
-			pod.damage = 40
-			pod.explosionSize = list(0,0,0,2)
-			pod.effectStun = TRUE
-			if (isnull(target_path)) //The user pressed "Cancel"
-				return
-			if (target_path != "empty")//if you didn't type empty, we want to load the pod with a delivery
-				var/delivery = text2path(target_path)
-				if(!ispath(delivery))
-					delivery = pick_closest_path(target_path)
-					if(!delivery)
-						alert("ERROR: Incorrect / improper path given.")
-						return
-				new delivery(pod)
-			new /obj/effect/DPtarget(get_turf(target), pod)
-		if(ADMIN_PUNISHMENT_SUPPLYPOD)
-			var/datum/centcom_podlauncher/plaunch  = new(usr)
-			if(!holder)
-				return
-			plaunch.specificTarget = target
-			plaunch.launchChoice = 0
-			plaunch.damageChoice = 1
-			plaunch.explosionChoice = 1
-			plaunch.temp_pod.damage = 40//bring the mother fuckin ruckus
-			plaunch.temp_pod.explosionSize = list(0,0,0,2)
-			plaunch.temp_pod.effectStun = TRUE
-			plaunch.ui_interact(usr)
-			return //We return here because punish_log() is handled by the centcom_podlauncher datum
-		*/
 		if(ADMIN_PUNISHMENT_CBT)
 			if(!ishuman(target))
 				to_chat(usr,span_warning("Target must be human!"))
@@ -835,7 +801,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 			direction = directions[direction]
 			var/target_tile = target.loc
 			for (var/i = 0; i < 10; i++)
-				var/turf/next_tile = get_step(target_tile, direction) 
+				var/turf/next_tile = get_step(target_tile, direction)
 				if (!next_tile)
 					break
 				target_tile = next_tile
@@ -872,6 +838,27 @@ Traitors and the like can also be revived with the previous role mostly intact.
 			for(var/slop in slop_lore)
 				to_chat(humie, slop)
 				sleep(3 SECONDS)
+		if(ADMIN_PUNISHMENT_DIVINE_WRATH)
+			if(!ishuman(target))
+				to_chat(usr,span_warning("Target must be human!"))
+				return
+			divine_wrath(target)
+		if(ADMIN_PUNISHMENT_CHANDELIER)
+			if(!ishuman(target))
+				to_chat(usr,span_warning("Target must be human!"))
+				return
+
+			var/mob/living/carbon/human/humie = target
+			var/obj/item/bodypart/affecting = humie.get_bodypart(BODY_ZONE_HEAD)
+			if(!affecting)
+				to_chat(usr,span_warning("Target must have a head!"))
+				return
+
+			var/obj/machinery/light/rogue/chand/chandelier = new /obj/machinery/light/rogue/chand(get_turf(humie))
+			chandelier.layer = ABOVE_MOB_LAYER
+			playsound(get_turf(humie), 'sound/combat/hits/blunt/frying_pan(4).ogg', 100, FALSE)
+			affecting.add_wound(/datum/wound/fracture/head)
+			humie.visible_message(span_userdanger("There is a sickening CRUNCH as a chandelier crashes down onto [humie]!"))
 	punish_log(target, punishment)
 
 /client/proc/punish_log(whom, punishment)
@@ -966,6 +953,8 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	switch(add_or_remove)
 		if("Add") //Not doing source choosing here intentionally to make this bit faster to use, you can always vv it.
 			ADD_TRAIT(D,chosen_trait,source)
+			message_admins("Admin [key_name_admin(usr)] add trait [chosen_trait] to [D]!")
+			log_admin("Admin [key_name_admin(usr)] add trait [chosen_trait] to [D]!")
 		if("Remove")
 			var/specific = input("All or specific source ?", "Trait Remove/Add") as null|anything in list("All","Specific")
 			if(!specific)
@@ -978,3 +967,5 @@ Traitors and the like can also be revived with the previous role mostly intact.
 					if(!source)
 						return
 			REMOVE_TRAIT(D,chosen_trait,source)
+			message_admins("Admin [key_name_admin(usr)] remove trait [chosen_trait] from [D]!")
+			log_admin("Admin [key_name_admin(usr)] remove trait [chosen_trait] from [D]!")

@@ -1,6 +1,6 @@
 /obj/item/natural/glass
 	name = "glass"
-	desc = "Windowpanes for construction work."
+	desc = "Glimmering panes that offer a slightly tinted glimpse into the outside world, while keeping the wind-and-weather at bay. Fit for fashioning windows, just be mindful not to drop them."
 	icon = 'icons/roguetown/items/crafting.dmi'
 	icon_state = "glasspane"
 	dropshrink = 0.8
@@ -94,7 +94,7 @@
 //................	Glass shard	............... //
 /obj/item/natural/glass_shard
 	name = "shard"
-	desc = "A sharp shard of glass."
+	desc = "A sharp shard of glass. Mind the jagged edge, especially if you lack a tough sole."
 	icon = 'icons/roguetown/items/crafting.dmi'
 	experimental_inhand = FALSE
 	icon_state = "shard1"
@@ -109,13 +109,13 @@
 	max_integrity = 40
 	smeltresult = /obj/item/natural/glass
 
-/obj/item/natural/glass/shard/Initialize()
+/obj/item/natural/glass_shard/Initialize()
 	. = ..()
 	AddComponent(/datum/component/caltrop, force)
 	AddComponent(/datum/component/butchering, 150, 65)
 
-/obj/item/natural/glass/shard/Crossed(mob/living/L)
-	if(istype(L) && has_gravity(loc))
+/obj/item/natural/glass_shard/Crossed(mob/living/L)
+	if(istype(L))
 		playsound(loc, 'sound/foley/glass_step.ogg', HAS_TRAIT(L, TRAIT_LIGHT_STEP) ? 30 : 50, TRUE)
 	return ..()
 

@@ -1,6 +1,9 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/fae/sprite
 	icon = 'icons/mob/summonable/32x32.dmi'
 	name = "sprite"
+	desc = "This is a sprite, a particularly small manner of fae-creature known often to surround \
+	groves frequented by their kind. Often taken as a sign of good luck, although they are occasionally \
+	mistaken for Will-o'-the-wisps."
 	icon_state = "sprite"
 	icon_living = "sprite"
 	icon_dead = "vvd"
@@ -15,6 +18,7 @@
 	move_to_delay = 3
 	base_intents = list(/datum/intent/unarmed/claw)
 	butcher_results = list()
+	death_loot = list(/obj/item/magic/fae/fairydust = 4)
 	faction = list("fae")
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	health = 50
@@ -26,20 +30,21 @@
 	aggro_vision_range = 11
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	simple_detect_bonus = 20
-	retreat_distance = 3
+	retreat_distance = 0
 	minimum_distance = 0
 	food_type = list()
-	footstep_type = FOOTSTEP_MOB_BAREFOOT
+	movement_type = FLYING
 	pooptype = null
-	STAEND = 6
+	STAWIL = 6
 	STACON = 6
 	STASTR = 2
 	STASPD = 17
 	simple_detect_bonus = 20
 	deaggroprob = 0
 	defprob = 40
+	candodge = TRUE
 	// del_on_deaggro = 44 SECONDS
-	retreat_health = 0.3
+	retreat_health = 0
 	food = 0
 	attack_sound = 'sound/combat/hits/bladed/smallslash (1).ogg'
 	attack_verb_continuous = "jabs"
@@ -50,14 +55,11 @@
 
 
 /mob/living/simple_animal/hostile/retaliate/rogue/fae/sprite/Initialize()
+	src.adjust_skillrank(/datum/skill/combat/unarmed, 2, TRUE)
 	. = ..()
 
 /mob/living/simple_animal/hostile/retaliate/rogue/fae/sprite/death(gibbed)
 	..()
-	var/turf/deathspot = get_turf(src)
-	new /obj/item/magic/fairydust(deathspot)
-	new /obj/item/magic/fairydust(deathspot)
-	new /obj/item/magic/fairydust(deathspot)
 	update_icon()
 	sleep(1)
 	qdel(src)

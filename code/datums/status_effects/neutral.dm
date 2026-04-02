@@ -6,6 +6,28 @@
 /datum/status_effect/incapacitating/off_balanced
 	id = "off_balanced"
 	alert_type = /atom/movable/screen/alert/status_effect/off_balanced
+	mob_effect_icon_state = "eff_offbalanced"
+	mob_effect_offset_y = -4	//We want this shown UNDER the feet of the mob.
+	mob_effect_layer = MOB_EFFECT_LAYER_OFFBALANCED
+
+/datum/status_effect/incapacitating/off_balanced/on_apply()
+	. = ..()
+	if(owner.has_status_effect(/datum/status_effect/balance_immune))
+		owner.remove_status_effect(/datum/status_effect/incapacitating/off_balanced)
+		return
+
+/datum/status_effect/incapacitating/off_balanced/on_creation(mob/living/new_owner, set_duration, updating_canmove)
+	var/cmode_involved = FALSE
+	if(new_owner.mind)	//We skip bothering with this at all if it's AI
+		for(var/mob/living/L in get_hearers_in_view(5, new_owner))
+			if(L.cmode)
+				cmode_involved = TRUE
+				break
+	else
+		cmode_involved = TRUE
+	//Request by a player to not have it appear if no combat is involved.
+	mob_effect_icon_state = cmode_involved ? initial(mob_effect_icon_state) : null
+	. = ..()
 
 /atom/movable/screen/alert/status_effect/off_balanced
 	name = "Off Balanced"
@@ -106,25 +128,36 @@
 	id = "bugged"
 	duration = -1
 	status_type = STATUS_EFFECT_MULTIPLE
-	alert_type = null
-	var/mob/living/listening_in
+	alert_type = /atom/movable/screen/alert/bugged
+	var/obj/item/listeningdevice/device
 
-/datum/status_effect/bugged/on_apply(mob/living/new_owner, mob/living/tracker)
+/datum/status_effect/bugged/on_apply(mob/living/new_owner, obj/item/listeningdevice/tracker)
 	. = ..()
-	if (.)
-		RegisterSignal(new_owner, COMSIG_MOVABLE_HEAR, PROC_REF(handle_hearing))
 
 /datum/status_effect/bugged/on_remove()
-	. = ..()
-	UnregisterSignal(owner, COMSIG_MOVABLE_HEAR)
+	..()
+	if(device)
+		owner.contents.Remove(device)
+		device.forceMove(owner.loc)
+		owner.put_in_hands(device)
 
-/datum/status_effect/bugged/proc/handle_hearing(datum/source, list/hearing_args)
-	listening_in.show_message(hearing_args[HEARING_MESSAGE])
+/atom/movable/screen/alert/bugged
+	name = "BUGGED"
+	desc = "AN AUDIO-PARASITE ON ME."
+	icon_state = "blackeye"	
 
-/datum/status_effect/bugged/on_creation(mob/living/new_owner, mob/living/tracker)
-	. = ..()
-	if(.)
-		listening_in = tracker
+/atom/movable/screen/alert/bugged/Click()
+	var/mob/living/L = usr
+
+	if(!L.has_status_effect(/datum/status_effect/bugged))
+		return FALSE
+
+	to_chat(L, span_notice("I tug and rip out the parasite."))
+	playsound(L, 'sound/foley/flesh_rem.ogg', 100, TRUE, -2)
+
+	L.remove_status_effect(/datum/status_effect/bugged)
+
+	return TRUE
 
 /datum/status_effect/ugotmail
 	id = "mail"
@@ -145,7 +178,7 @@
 /datum/status_effect/wheel/on_apply()
 	. = ..()
 	wheeleffect = rand(-5,5)
-	owner.change_stat("fortune", wheeleffect)
+	owner.change_stat(STATKEY_LCK, wheeleffect)
 	switch(wheeleffect)
 		if(-5 to -1)
 			to_chat(owner, span_boldnotice("My heart sinks, I feel as though I've lost something!"))
@@ -156,9 +189,58 @@
 
 /datum/status_effect/wheel/on_remove()
 	. = ..()
-	owner.change_stat("fortune", -wheeleffect)
+	owner.change_stat(STATKEY_LCK, -wheeleffect)
 
 /atom/movable/screen/alert/status_effect/wheel
 	name = "Lucky(?)"
 	desc = "I feel different since my fortune was changed..."
 	icon_state = "asleep"
+
+/atom/movable/screen/alert/status_effect/compliance
+	name = "Compliant"
+	desc = "I am currently not resisting any attempts to grab me, or to break free from my grasp. It is also effortless to restrain, subdue, and rob me.\n"\
+	+ span_info("Left click the icon to deactivate. Suppress messages under Options tab.")
+	icon_state = "compliance"
+
+// Sadly we can't rely on /atom/movable/screen/Click() to return TRUE at all.
+// We MUST use the shitcode method of copypasting if both examine and toggle are to work properly.
+/atom/movable/screen/alert/status_effect/compliance/Click(location, control, params)
+	if(!usr || !usr.client)
+		return FALSE
+	var/mob/user = usr
+	var/paramslist = params2list(params)
+	if(paramslist["shift"] && paramslist["left"]) // screen objects don't do the normal Click() stuff so we'll cheat
+		examine_ui(user)
+		return FALSE
+	var/mob/living/L = usr
+	if(!istype(L))
+		return
+	L.playsound_local(L, 'sound/misc/click.ogg', 100)
+	L.toggle_compliance()
+
+/datum/status_effect/compliance
+	id = "compliance"
+	alert_type = /atom/movable/screen/alert/status_effect/compliance
+	needs_processing = FALSE
+
+/datum/status_effect/zuranus // this will hook into dreamcode.
+	id = "zuranus"
+	alert_type = /atom/movable/screen/alert/status_effect/zuranus
+	duration = 25 MINUTES
+	// honestly this might be better off as something else but a status effect is temporary
+	// id prefer it to be hidden but i dont think i can hide it. lol.
+
+/atom/movable/screen/alert/status_effect/zuranus
+	name = "Something is Stirring"
+	desc = span_purple("I feel... off. There's a weird chill throughout my body. I feel an odd desire to put gilbranze under my tongue...?")
+
+/datum/status_effect/telescope_used
+	id = "telescope"
+	alert_type = /atom/movable/screen/alert/status_effect/telescope_used
+	duration = 15 MINUTES
+	// honestly this might be better off as something else but a status effect is temporary
+	// id prefer it to be hidden but i dont think i can hide it. lol.
+
+/atom/movable/screen/alert/status_effect/telescope_used
+	name = "Minds Eye Expended"
+	desc = span_purple("Gazing upon the tapestry's celestial bodies takes an odd amount of energy. I must rest before trying again.")

@@ -2,7 +2,7 @@
 	name = "fibers"
 	icon_state = "fibers"
 	possible_item_intents = list(/datum/intent/use)
-	desc = "Plant fibers. Peasants make their living turning these into clothing."
+	desc = "Plant fibers. Peasants make their living turning these into clothing, courtesy of a needle-and-thread."
 	force = 0
 	throwforce = 0
 	obj_flags = null
@@ -15,9 +15,18 @@
 	muteinmouth = TRUE
 	w_class = WEIGHT_CLASS_TINY
 	spitoutmouth = FALSE
-	experimental_inhand = FALSE
+	experimental_inhand = TRUE
 	sellprice = 2
 	bundletype = /obj/item/natural/bundle/fibers
+
+/obj/item/natural/fibers/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Fibers can be acquired by cutting grass or by foraging through bushes, alongside thorns. Likewise, two fibers can be crafted into a piece of cloth, once you have a needle.")
+	. += span_info("A thorn and fiber can be combined into a needle, by left-clicking the 'CRAFT' button on your HUD's upper-left corner and selecting the 'needle' recipe.")
+	. += span_info("Crafting recipes can require certain tools, stations, and skills. Your chances to successfully craft an item are reducable if you don't match the minimum skill requirement.")
+	. += span_info("Having a high Intelligence bonus or partial skills in whatever's required can increase your chance to successfully craft an item that's beyond your current skill level.")
+	. += span_info("Fibers can also be 'slapcrafted' into new items by left-clicking them with certain tools and materials. 'Slapcrafted' items don't require a Crafting skill to make.")
+	. += span_info("'Slapcrafts' for fibers include tools, bows, torches, amulets, bouquets, needles, bags, and flower crowns.")
 
 /obj/item/natural/fibers/Initialize()
 	. = ..()
@@ -34,7 +43,6 @@
 		/datum/crafting_recipe/roguetown/survival/stonesword,
 		/datum/crafting_recipe/roguetown/survival/woodsword,
 		/datum/crafting_recipe/roguetown/survival/bag,
-		/datum/crafting_recipe/roguetown/survival/bagx5,
 		/datum/crafting_recipe/roguetown/survival/rod,
 		/datum/crafting_recipe/roguetown/survival/pearlcross,
 		/datum/crafting_recipe/roguetown/survival/bpearlcross,
@@ -43,7 +51,6 @@
 		/datum/crafting_recipe/roguetown/survival/abyssoramulet,
 		/datum/crafting_recipe/roguetown/survival/broom,
 		/datum/crafting_recipe/roguetown/survival/woodcross,
-		/datum/crafting_recipe/roguetown/survival/mantrap,
 		/datum/crafting_recipe/roguetown/survival/tribalrags,
 		/datum/crafting_recipe/roguetown/survival/skullmask,
 		/datum/crafting_recipe/roguetown/survival/bonespear,
@@ -56,6 +63,8 @@
 		/datum/crafting_recipe/roguetown/survival/flowercrown_rosa,
 		/datum/crafting_recipe/roguetown/survival/flowercrown_salvia,
 		/datum/crafting_recipe/roguetown/survival/slingpouchcraft,
+		/datum/crafting_recipe/roguetown/survival/oar,
+		/datum/crafting_recipe/roguetown/survival/boat,
 		)
 
 	AddElement(
@@ -106,7 +115,7 @@
 	muteinmouth = TRUE
 	w_class = WEIGHT_CLASS_TINY
 	spitoutmouth = FALSE
-	experimental_inhand = FALSE
+	experimental_inhand = TRUE
 	bundletype = /obj/item/natural/bundle/silk
 
 /obj/item/natural/silk/attack_right(mob/user)
@@ -138,9 +147,9 @@
 	I = mob.get_active_held_item()
 	if(I)
 		if(I.return_blood_DNA())
-			testing("yep")
+
 		else
-			testing("nope")
+
 
 #endif
 
@@ -162,19 +171,35 @@
 	muteinmouth = TRUE
 	w_class = WEIGHT_CLASS_TINY
 	spitoutmouth = FALSE
-	experimental_inhand = FALSE
+	experimental_inhand = TRUE
 	bundletype = /obj/item/natural/bundle/cloth
 	sellprice = 4
+	detail_tag = "_soaked"
 	var/wet = 0
-	/// Effectiveness when used as a bandage, how much bloodloss we can staunch
-	var/bandage_effectiveness = 0.9
+	/// Effectiveness when used as a bandage, how much it'll lower the bloodloss, bloodloss will get multiplied by this.
+	var/bandage_effectiveness = 0.5
+	var/bandage_speed = 7 SECONDS
+	///How much you can bleed into the bandage until it needs to be changed
+	var/bandage_health = 150 //75 total blood stopped
+	//bandage_health * (1 - bandage_effectiveness) = total amount of blood saved from one bandage
+	/// If the bandage is soaked in some kind of medicine.
+	var/medicine_quality
+	var/medicine_amount = 0
+
+/obj/item/natural/cloth/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Right-clicking a washbin or pool of water allows you to soak the cloth, which can then clean up various stains-and-dirtiness by left-clicking them.")
+	. += span_info("Left-clicking someone will banadage the targeted limb. Examine yourself - or click the heart on your HUD - to check your limbs, and click any highlighted mentions of the bandaging to remove it.")
+	. += span_info("Bandaged limbs will bleed much slower. If the underlying wounds are severe enough, however, the bandagings'll eventually bleed through and negate its effectiveness.")
+	. += span_info("This scales with the bandaged individual's Constitution. The higher their Constitution is, the longer it'll take for the effects of blood loss to be felt.")
+	. += span_info("Drinking water and, to a lesser extent, lifeblood can help counteract the effects of blood loss. Lifeblood, needles, cauteries, and miracles can stop a wound from bleeding.")
+	. += span_info("Target someone's mouth and left-click them with an open hand on the 'WEAK' intent to manually breathe into them. This counteracts the onset of suffocation that comes with critical blood loss.")
 
 /obj/item/natural/cloth/Initialize()
 	. = ..()
 	var/static/list/slapcraft_recipe_list = list(
 		/datum/crafting_recipe/roguetown/survival/longbowpartial,
 		/datum/crafting_recipe/roguetown/survival/bag,
-		/datum/crafting_recipe/roguetown/survival/bagx5,
 		/datum/crafting_recipe/roguetown/survival/book_crafting_kit,
 		/datum/crafting_recipe/roguetown/survival/slingpouchcraft,
 		)
@@ -214,7 +239,7 @@
 // CLEANING
 
 /obj/item/natural/cloth/attack_obj(obj/O, mob/living/user)
-	testing("attackobj")
+
 	if(user.client && ((O in user.client.screen) && !user.is_holding(O)))
 		to_chat(user, span_warning("I need to take that [O.name] off before cleaning it!"))
 		return
@@ -258,18 +283,110 @@
 
 // BANDAGING
 /obj/item/natural/cloth/attack(mob/living/M, mob/user)
-	testing("attack")
+
 	bandage(M, user)
 
 /obj/item/natural/cloth/wash_act()
 	. = ..()
 	wet = 10
+	bandage_health = initial(bandage_health)
+	medicine_amount = 0
+	medicine_quality = 0
+	detail_color = null
+	desc = initial(desc)
+	update_icon()
+
+/obj/item/natural/cloth/attackby(obj/item/I, mob/living/user, params)
+	var/obj/item/reagent_containers/C = I
+	if(!istype(C))
+		return ..()
+	if(C.reagents.has_reagent(/datum/reagent/medicine/healthpot, 10) && !medicine_amount)
+		to_chat(user, span_notice("You start soaking the [src] in lyfeblood..."))
+		if(do_after(user, 3 SECONDS, target = src))
+			C.reagents.remove_reagent(/datum/reagent/medicine/healthpot, 10)
+			medicine_quality = 1
+			medicine_amount += 10
+			desc += " It has been soaked in lyfeblood."
+			detail_color = "#ff0000"
+			update_icon()
+	if(C.reagents.has_reagent(/datum/reagent/medicine/stronghealth, 10) && !medicine_amount)
+		to_chat(user, span_notice("You start soaking the [src] in strong lyfeblood..."))
+		if(do_after(user, 3 SECONDS, target = src))
+			C.reagents.remove_reagent(/datum/reagent/medicine/stronghealth, 10)
+			medicine_quality = 2
+			medicine_amount += 10
+			desc += " It has been soaked in strong lyfeblood."
+			detail_color = "#820000"
+			update_icon()
+	if(C.reagents.has_reagent(/datum/reagent/consumable/ethanol/aqua_vitae, 10) && !medicine_amount)
+		to_chat(user, span_notice("You start soaking the [src] in aqua vitae..."))
+		if(do_after(user, 3 SECONDS, target = src))
+			C.reagents.remove_reagent(/datum/reagent/consumable/ethanol/aqua_vitae, 10)
+			medicine_quality = 0.5 //slower than health potions, more healing overall. Good for fractures or other big wounds.
+			medicine_amount += 60
+			desc += " It has been soaked in aqua vitae."
+			detail_color = "#6e6e6e"
+			update_icon()
+	if(C.reagents.has_reagent(/datum/reagent/water/blessed, 10) && !medicine_amount)
+		to_chat(user, span_notice("You start soaking the [src] in blessed water..."))
+		if(do_after(user, 3 SECONDS, target = src))
+			C.reagents.remove_reagent(/datum/reagent/water/blessed, 10)
+			medicine_quality = 0.2 //cheap, easy to get, doesn't even heal wounds if it's not on a bandage
+			medicine_amount += 20
+			desc += " It has been soaked in blessed water."
+			detail_color = "#6a9295"
+			update_icon()
+	if(C.reagents.has_reagent(/datum/reagent/water/medicine, 10) && !medicine_amount)
+		to_chat(user, span_notice("You start soaking the [src] in Pestran Medicine..."))
+		if(do_after(user, 3 SECONDS, target = src))
+			C.reagents.remove_reagent(/datum/reagent/water/medicine, 10)
+			medicine_quality = 0.6 //cheap yet not very common
+			medicine_amount += 30 // medicine_amount is equal to half the medication duration on a bandage, this will heal a total of 36 on a targeted area
+			desc += " It has been soaked in Pestran Medicine."
+			detail_color = "#428b42"
+			update_icon()
+
+/obj/item/natural/cloth/update_icon()
+	cut_overlays()
+	if(medicine_amount > 0)
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(get_detail_color())
+			pic.color = get_detail_color()
+		add_overlay(pic)
 
 /obj/item/natural/cloth/proc/bandage(mob/living/M, mob/user)
+	var/used_time = bandage_speed
+	var/medskill = 0
+
+	if(ishuman(user))
+		var/mob/living/carbon/human/human_user = user
+		medskill = human_user.get_skill_level(/datum/skill/misc/medicine)
+		used_time -= ((medskill * 10) + (human_user.STASPD / 2)) //With 20 SPD you can insta bandage at max medicine.
+
+	if(istype(M, /mob/living/simple_animal))
+		var/mob/living/simple_animal/animal_patient = M
+		if(!animal_patient.bruteloss)
+			to_chat(user, span_warning("[animal_patient] doesn't need bandaging right now."))
+			return
+		playsound(loc, 'sound/foley/bandage.ogg', 100, FALSE)
+		if(!move_after(user, used_time, target = animal_patient))
+			return
+		playsound(loc, 'sound/foley/bandage.ogg', 100, FALSE)
+		animal_patient.adjustHealth(-((animal_patient.maxHealth / 5) * (medskill + 1)), TRUE)
+		user.visible_message(span_notice("[user] bandages [M]'s wounds."), span_notice("I bandage [M]'s wounds."))
+		// clear all the wounds
+		for(var/datum/wound/wound as anything in animal_patient.get_wounds())
+			qdel(wound)
+		qdel(src)
+		return
+
 	if(!M.can_inject(user, TRUE))
 		return
+
 	if(!ishuman(M))
 		return
+
 	var/mob/living/carbon/human/H = M
 	var/obj/item/bodypart/affecting = H.get_bodypart(check_zone(user.zone_selected))
 	if(!affecting)
@@ -277,10 +394,9 @@
 	if(affecting.bandage)
 		to_chat(user, span_warning("There is already a bandage."))
 		return
-	var/used_time = 70
-	used_time -= (H.get_skill_level(/datum/skill/misc/medicine) * 10)
+
 	playsound(loc, 'sound/foley/bandage.ogg', 100, FALSE)
-	if(!do_mob(user, M, used_time))
+	if(!move_after(user, used_time, target = M))
 		return
 	playsound(loc, 'sound/foley/bandage.ogg', 100, FALSE)
 
@@ -289,9 +405,9 @@
 	H.update_damage_overlays()
 
 	if(M == user)
-		user.visible_message(span_notice("[user] bandages [user.p_their()] [affecting]."), span_notice("I bandage my [affecting]."))
+		user.visible_message(span_notice("[user] bandages [user.p_their()] [affecting]."), span_notice("I bandage my [affecting.name]."))
 	else
-		user.visible_message(span_notice("[user] bandages [M]'s [affecting]."), span_notice("I bandage [M]'s [affecting]."))
+		user.visible_message(span_notice("[user] bandages [M]'s [affecting]."), span_notice("I bandage [M]'s [affecting.name]."))
 
 /obj/item/natural/thorn
 	name = "thorn"
@@ -304,6 +420,13 @@
 	embedding = list("embedded_unsafe_removal_time" = 20, "embedded_pain_chance" = 10, "embedded_pain_multiplier" = 1, "embed_chance" = 35, "embedded_fall_chance" = 0)
 	resistance_flags = FLAMMABLE
 	max_integrity = 20
+
+/obj/item/natural/thorn/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Thorns can be acquired by foraging through bushes, alongside fibers.")
+	. += span_info("A thorn and fiber can be combined into a needle, by left-clicking the 'CRAFT' button on your HUD's upper-left corner and selecting the 'needle' recipe.")
+	. += span_info("Crafting recipes can require certain tools, stations, and skills. Your chances to successfully craft an item are reducable if you don't match the minimum skill requirement.")
+	. += span_info("Having a high Intelligence bonus or partial skills in whatever's required can increase your chance to successfully craft an item that's beyond your current skill level.")
 
 /obj/item/natural/thorn/Initialize()
 	. = ..()
@@ -355,7 +478,7 @@
 	muteinmouth = TRUE
 	w_class = WEIGHT_CLASS_TINY
 	spitoutmouth = FALSE
-	experimental_inhand = FALSE
+	experimental_inhand = TRUE
 	stacktype = /obj/item/natural/fibers
 	icon1step = 3
 	icon2step = 6
@@ -366,6 +489,14 @@
 	icon_state = "fibersroll2"
 	amount = 6
 	firefuel = 30 MINUTES
+	grid_width = 64
+
+/obj/item/natural/bundle/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Right-click a bundle with a free hand to take a single portion of whatever's been bundled up.")
+	. += span_info("Left-click a bundle with a free hand to take a specified amount of whatever's been bundled up.")
+	. += span_info("When holding a bundle, left-click a matching portion to automatically add it into the bundle. Alternatively, left-click the tile to start automatically collecting any-and-all matching portions on it.")
+	. += span_info("The more portions that've been stacked into a bundle, the larger the bundle becomes. Larger bundles take up more space, when stored within inventories.")
 
 /obj/item/natural/bundle/silk
 	name = "silken weave"
@@ -383,7 +514,7 @@
 	max_integrity = 20
 	muteinmouth = TRUE
 	w_class = WEIGHT_CLASS_TINY
-	spitoutmouth = FALSE
+	spitoutmouth = TRUE
 	stacktype = /obj/item/natural/silk
 	icon1step = 3
 	icon2step = 6
@@ -401,7 +532,7 @@
 	resistance_flags = FLAMMABLE
 	w_class = WEIGHT_CLASS_TINY
 	spitoutmouth = FALSE
-	experimental_inhand = FALSE
+	experimental_inhand = TRUE
 	stacktype = /obj/item/natural/cloth
 	stackname = "cloth"
 	icon1 = "clothroll1"
@@ -409,7 +540,7 @@
 	icon2 = "clothroll2"
 	icon2step = 10
 	grid_width = 32
-	grid_height = 64
+	grid_height = 32
 
 /obj/item/natural/bundle/stick
 	name = "bundle of sticks"
@@ -424,7 +555,7 @@
 	resistance_flags = FLAMMABLE
 	w_class = WEIGHT_CLASS_TINY
 	spitoutmouth = FALSE
-	experimental_inhand = FALSE
+	experimental_inhand = TRUE
 	stacktype = /obj/item/grown/log/tree/stick
 	stackname = "sticks"
 	icon1 = "stickbundle1"
@@ -432,6 +563,9 @@
 	icon2 = "stickbundle2"
 	icon2step = 7
 	icon3 = "stickbundle3"
+
+/obj/item/natural/bundle/stick/full
+	amount = 10
 
 /obj/item/natural/bundle/stick/attackby(obj/item/W, mob/living/user)
 	. = ..()
@@ -484,13 +618,11 @@
 	muteinmouth = TRUE
 	w_class = WEIGHT_CLASS_TINY
 	spitoutmouth = FALSE
-	experimental_inhand = FALSE
+	experimental_inhand = TRUE
 	stacktype = /obj/item/natural/bone
 	stackname = "bones"
 	icon1 = "bonestack1"
-	icon1step = 2
 	icon2 = "bonestack2"
-	icon2step = 4
 
 /obj/item/natural/bundle/bone/full
 	amount = 6
@@ -551,9 +683,9 @@
 	maxamount = 12
 	icon_state = "worm2"
 	icon1 = "worm2"
-	icon1step = 4
+	icon1step = 6
 	icon2 = "worm4"
-	icon2step = 6
+	icon2step = 12
 	icon3 = "worm6"
 	stacktype = /obj/item/natural/worms
 	stackname = "worms"

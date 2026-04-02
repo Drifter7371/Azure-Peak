@@ -1,6 +1,6 @@
 /obj/item/roguebin
 	name = "wood bin"
-	desc = "A washbin, a trashbin, a bloodbin... Your choices are limitless."
+	desc = "A washbin, a trashbin, a bloodbin... your choices are truly limitless."
 	icon = 'icons/roguetown/misc/structure.dmi'
 	icon_state = "washbin1"
 	var/base_state
@@ -15,6 +15,13 @@
 	throw_range = 1
 	blade_dulling = DULLING_BASHCHOP
 	obj_flags = CAN_BE_HIT
+
+/obj/item/roguebin/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_notice("Right-click the washbin to begin cleaning whatever item is in your active hand.")
+	. += span_notice("Right-click the washbin without anything in your active hand to wash yourself. Depending on the stainage, you might need to further strip down to completely clean everything on your person.")
+	. += span_notice("Washbins need to be filled with water, in order to clean. This can be done by left-clicking it with another container on the 'FEED' intent, or leaving it out in the rain. Using a washbin will pollute the water inside, making it unsafe to drink.")
+	. += span_notice("Middle-clicking the washbin with the 'KICK' subintent selected will knock it over.")
 
 /obj/item/roguebin/weather_trigger(W)
 	if(W==/datum/weather/rain)
@@ -100,7 +107,7 @@
 		if(!reagents || !reagents.maximum_volume)
 			return
 		if(isliving(user))
-			var/mob/living/L = user
+			var/mob/living/carbon/L = user
 			if(L.stat != CONSCIOUS)
 				return
 			var/removereg = /datum/reagent/water
@@ -118,11 +125,15 @@
 				if(do_after(L, 30, target = src))
 					wash_atom(user, CLEAN_STRONG)
 					playsound(user, pick(wash), 100, FALSE)
+					user.remove_stress(/datum/stressevent/sewertouched)
 			else
 				user.visible_message(span_info("[user] starts to wash [item2wash] in [src]."))
 				if(do_after(L, 30, target = src))
 					wash_atom(item2wash, CLEAN_STRONG)
 					playsound(user, pick(wash), 100, FALSE)
+					if(iscarbon(user))
+						var/mob/living/carbon/C = user
+						C.update_inv_hands()
 			var/datum/reagent/water_to_dirty = reagents.has_reagent(/datum/reagent/water, 5)
 			if(water_to_dirty)
 				var/amount_to_dirty = water_to_dirty.volume

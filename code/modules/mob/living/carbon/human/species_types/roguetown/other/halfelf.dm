@@ -4,6 +4,9 @@
 /datum/species/human/halfelf
 	name = "Half-Elf"
 	id = "helf"
+	psydonic = TRUE
+	is_subrace = TRUE
+	base_name = "Humen"
 	desc = "<b>Half Elf</b><br>\
 	The child of an Elf and Humen, Half-Elves are generally frowned \
 	upon by the more conservatively minded. However, as racial tensions lower, \
@@ -15,14 +18,16 @@
 	characteristics can be either more Elvish or more Humen, depending on which of their parents' genes \
 	are more predominant. In terms of cultural identity, a Half-Elf will typically choose to lean more \
 	towards either their Humen or Elvish heritages.<br>\
-	(+1 Constitution, +1 Perception)" 
+	<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>+1 CON | +1 PER </b></span><br>" 
 
-	skin_tone_wording = "Identity"
+	skin_tone_wording = "Ancestry"
+	max_age = 250
+
 	default_color = "FFFFFF"
 	species_traits = list(EYECOLOR,HAIR,FACEHAIR,LIPS,STUBBLE,OLDGREY)
 	inherent_traits = list(TRAIT_NOMOBSWAP)
 	default_features = MANDATORY_FEATURE_LIST
-	use_skintones = 1
+	use_skintones = TRUE
 	possible_ages = ALL_AGES_LIST
 	disliked_food = NONE
 	liked_food = NONE
@@ -52,7 +57,7 @@
 		ORGAN_SLOT_HEART = /obj/item/organ/heart,
 		ORGAN_SLOT_LUNGS = /obj/item/organ/lungs,
 		ORGAN_SLOT_EYES = /obj/item/organ/eyes/halfelf,
-		ORGAN_SLOT_EARS = /obj/item/organ/ears/elf,
+		ORGAN_SLOT_EARS = /obj/item/organ/ears,//Because they can be way more than just mostly elf
 		ORGAN_SLOT_TONGUE = /obj/item/organ/tongue,
 		ORGAN_SLOT_LIVER = /obj/item/organ/liver,
 		ORGAN_SLOT_STOMACH = /obj/item/organ/stomach,
@@ -60,11 +65,14 @@
 		)
 	customizers = list(
 		/datum/customizer/organ/eyes/humanoid,
+		/datum/customizer/organ/ears/elf,
 		/datum/customizer/bodypart_feature/hair/head/humanoid,
 		/datum/customizer/bodypart_feature/hair/facial/humanoid,
 		/datum/customizer/bodypart_feature/accessory,
 		/datum/customizer/bodypart_feature/face_detail,
 		/datum/customizer/bodypart_feature/underwear,
+		/datum/customizer/bodypart_feature/legwear,
+		/datum/customizer/bodypart_feature/piercing,
 		/datum/customizer/organ/testicles/anthro,
 		/datum/customizer/organ/penis/anthro,
 		/datum/customizer/organ/breasts/human,
@@ -76,6 +84,7 @@
 		/datum/body_marking_set/bellysocks,
 		/datum/body_marking_set/tiger,
 		/datum/body_marking_set/tiger_dark,
+		/datum/body_marking_set/gradient,
 	)
 	body_markings = list(
 		/datum/body_marking/flushed_cheeks,
@@ -88,10 +97,6 @@
 		/datum/language/common,
 		/datum/language/elvish
 	)
-
-/datum/species/human/halfelf/on_species_gain(mob/living/carbon/literally_him, datum/species/old_species)
-	..()
-	languages(literally_him)
 
 /datum/species/human/halfelf/get_skin_list()
 	return list(
@@ -119,10 +124,6 @@
 		"Tafravma-kin" = SKIN_COLOR_TAFRAVMA,
 		"Yuethindrynn-kin" = SKIN_COLOR_YUETHINDRYNN
 	)
-
-/datum/species/human/halfelf/proc/languages(mob/living/carbon/human/literally_him)
-	if(literally_him.skin_tone == SKIN_COLOR_NALEDI_BORN)
-		literally_him.grant_language(/datum/language/celestial)
 
 /datum/species/human/halfelf/get_hairc_list()
 	return sortList(list(
@@ -166,7 +167,6 @@
 			randname = pick( world.file2list("strings/rt/names/elf/elfwm.txt") )
 		if(gender == FEMALE)
 			randname = pick( world.file2list("strings/rt/names/elf/elfwf.txt") )
-	randname += " Halfelven"
 	return randname
 
 /datum/species/human/halfelf/random_surname()

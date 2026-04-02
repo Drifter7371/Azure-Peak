@@ -680,24 +680,6 @@
 		visible_message(span_warning("[src] dies of old age!"))
 		qdel(src)
 
-
-/*
-/obj/item/clothing/head/beekeeper_head
-	name = "beekeeper hat"
-	desc = "A hat with a mesh veil to protect from angry bees."
-	icon_state = "beekeeper"
-	clothing_flags = THICKMATERIAL
-	flags_cover = HEADCOVERSMOUTH
-
-/obj/item/clothing/armor/beekeeper_suit
-	name = "beekeeper suit"
-	desc = "A suit designed to protect from bee stings."
-	icon_state = "beekeeper"
-	clothing_flags = THICKMATERIAL
-	body_parts_covered = CHEST|GROIN|ARMS|LEGS
-	allowed = list(/obj/item/bee_smoker)
-*/
-
 /obj/item/bee_smoker
 	name = "bee smoker"
 	desc = "A device used to calm bees with smoke."
@@ -887,25 +869,29 @@
 /obj/item/reagent_containers/food/snacks/rogue/honey/ambrosia
 	name = "relaxing honey"
 	desc = "Sweet honey with subtle relaxing properties."
-	icon_state = "honey_green"
+	icon_state = "greyscale_honey"
+	honey_color = COLOR_GREEN_GRAY
 	list_reagents = list(/datum/reagent/consumable/honey = 5, /datum/reagent/consumable/nutriment = 3, /datum/reagent/drug/space_drugs = 2)
 
 /obj/item/reagent_containers/food/snacks/rogue/honey/healing
 	name = "medicinal honey"
 	desc = "Sweet honey with healing properties."
-	icon_state = "honey_red"
+	icon_state = "greyscale_honey"
+	honey_color = COLOR_MAROON
 	list_reagents = list(/datum/reagent/consumable/honey = 5, /datum/reagent/consumable/nutriment = 3)
 
 /obj/item/reagent_containers/food/snacks/rogue/honey/toxic
 	name = "strange honey"
 	desc = "This honey has an unusual smell and appearance."
-	icon_state = "honey_toxic"
+	icon_state = "greyscale_honey"
+	honey_color = "#CF3600"
 	list_reagents = list(/datum/reagent/consumable/honey = 5, /datum/reagent/toxin = 2)
 
 /obj/item/reagent_containers/food/snacks/rogue/honey/luminescent
 	name = "glowing honey"
 	desc = "This honey gives off a soft bioluminescent glow."
-	icon_state = "honey_glowing"
+	icon_state = "greyscale_honey"
+	honey_color = "#CCFF99"
 	list_reagents = list(/datum/reagent/consumable/honey = 5, /datum/reagent/consumable/nutriment = 3)
 	light_system = MOVABLE_LIGHT
 	light_outer_range = 2
@@ -1146,7 +1132,7 @@
 /obj/item/reagent_containers/food/snacks/rogue/honey/wild
 	name = "wild honey"
 	desc = "Sweet wild honey. It has a more complex flavor than regular honey."
-	icon_state = "honey_wild"
+	icon_state = "greyscale_honey"
 	honey_color = "#6d4633"
 	list_reagents = list(/datum/reagent/consumable/honey = 7, /datum/reagent/consumable/nutriment = 3)
 

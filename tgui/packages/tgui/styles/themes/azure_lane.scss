@@ -1,0 +1,25 @@
+@use 'azure_base' as *;
+
+// Noccite — noccite chant palette (deep ocean blues)
+.theme-azure_lane:root {
+  @include azure-theme((
+    'base':            #0a0e1a,
+    'base-light':      #101828,
+    'base-dark':       #060a14,
+    'section':         rgba(21, 32, 48, 0.45),
+    'section-title':   #6e8ec9,
+    'text':            #a0b8d4,
+    'label':           #8098b0,
+    'accent':          #556b8b,
+    'accent-bright':   #5070a0,
+    'border':          #253545,
+    'btn-text':        #a0b8d4,
+    'btn-selected':    #4a6a90,
+    'btn-disabled':    #404a58,
+    'scrollbar-thumb': #556b8b,
+    'glow':            rgba(85, 107, 139, 0.2),
+    'link':            #6e8ec9,
+    'link-visited':    #b0c8e0,
+    'link-hover':      #a0b8d4,
+  ), '../assets/azure_default/topbar_blue.svg');
+}

@@ -16,33 +16,6 @@
 	cost = 13
 	contains = list(/obj/item/reagent_containers/glass/bottle/waterskin)
 
-/datum/supply_pack/rogue/adventure_supplies/satchel
-	name = "Satchel"
-	cost = 13
-	contains = list(/obj/item/storage/backpack/rogue/satchel)
-
-/datum/supply_pack/rogue/adventure_supplies/backpack
-	name = "Backpack"
-	cost = 18
-	contains = list(/obj/item/storage/backpack/rogue/backpack)
-
-/datum/supply_pack/rogue/adventure_supplies/pouches
-	name = "Pouch"
-	cost = 8
-	contains = list(
-					/obj/item/storage/belt/rogue/pouch,
-					/obj/item/storage/belt/rogue/pouch,
-					/obj/item/storage/belt/rogue/pouch)
-
-/datum/supply_pack/rogue/adventure_supplies/belts
-	name = "Belt"
-	cost = 14
-	contains = list(
-					/obj/item/storage/belt/rogue/leather,
-					/obj/item/storage/belt/rogue/leather,
-					/obj/item/storage/belt/rogue/leather,
-				)
-
 /datum/supply_pack/rogue/adventure_supplies/ropes
 	name = "Ropes"
 	cost = 10
@@ -51,6 +24,7 @@
 					/obj/item/rope,
 					/obj/item/rope,
 				)
+
 /datum/supply_pack/rogue/adventure_supplies/woodstaff
 	name = "Six Foot Pole"
 	cost = 6
@@ -65,6 +39,16 @@
 	name = "Folding Table"
 	cost = 35
 	contains = list(/obj/item/folding_table_stored)
+
+/datum/supply_pack/rogue/adventure_supplies/folding_alchstation
+	name = "alchemical station kit"
+	cost = 45
+	contains = list(/obj/item/folding_alchstation_stored)
+
+/datum/supply_pack/rogue/adventure_supplies/folding_alchcauldron
+	name = "folding cauldron"
+	cost = 45
+	contains = list(/obj/item/folding_alchcauldron_stored)
 
 /datum/supply_pack/rogue/adventure_supplies/mess_kit
 	name = "Mess Kit"
@@ -85,3 +69,23 @@
 					/obj/item/ration,
 					/obj/item/ration,
 				)
+
+/datum/supply_pack/rogue/adventure_supplies/rationpaper
+	name = "Roll of bandages"
+	cost = 25
+	contains = list(/obj/item/natural/bundle/cloth/bandage/full)
+
+/datum/supply_pack/rogue/adventure_supplies/small_tent
+	name = "Small Tent Kit"
+	cost = 50
+	contains = list(/obj/item/tent_kit)
+
+/datum/supply_pack/rogue/adventure_supplies/ger
+	name = "Ger Kit"
+	cost = 100
+	contains = list(/obj/item/tent_kit/ger)
+
+/datum/supply_pack/rogue/adventure_supplies/yurt
+	name = "Yurt Kit"
+	cost = 200
+	contains = list(/obj/item/tent_kit/yurt)

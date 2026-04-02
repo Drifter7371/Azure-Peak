@@ -84,8 +84,10 @@
 	qdel(src)
 
 /obj/item/toy/cards
+	desc = "A source of moral decay, says the church."
 	resistance_flags = FLAMMABLE
 	max_integrity = 50
+	no_use_cd = TRUE
 	var/parentdeck = null
 	var/deckstyle = "syndicate"
 	var/card_hitsound = null
@@ -106,7 +108,8 @@
 
 /obj/item/toy/cards/deck
 	name = "deck of cards"
-	desc = ""
+	desc = "A deck of simple printing cards, belted out in immense quantities from a \
+	printing press somewhere. An esteemed method to kill time."
 	icon = 'icons/obj/toy.dmi'
 	deckstyle = "syndicate"
 	icon_state = "deck_syndicate_full"
@@ -115,6 +118,10 @@
 	var/list/cards = list()
 	grid_width = 32
 	grid_height = 32
+
+/obj/item/toy/cards/deck/examine()
+	. = ..()
+	. += span_smallnotice("Use the deck in your hand to shuffle the cards. Draw a card by clicking on it with an empty hand.")
 
 /obj/item/toy/cards/deck/Initialize()
 	. = ..()
@@ -167,9 +174,9 @@
 		icon_state = "deck_[deckstyle]_empty"
 
 /obj/item/toy/cards/deck/attack_self(mob/user)
-	if(cooldown < world.time - 50)
+	if(cooldown < world.time - 25)
 		cards = shuffle(cards)
-		playsound(src, 'sound/blank.ogg', 50, TRUE)
+		playsound(src, 'sound/items/cardshuffle.ogg', 100, TRUE)
 		user.visible_message("<span class='notice'>[user] shuffles the deck.</span>", "<span class='notice'>I shuffle the deck.</span>")
 		cooldown = world.time
 
@@ -235,8 +242,7 @@
 	user.set_machine(src)
 	interact(user)
 
-/obj/item/toy/cards/cardhand/ui_interact(mob/user)
-	. = ..()
+/obj/item/toy/cards/cardhand/interact(mob/user)
 	var/dat = "You have:<BR>"
 	for(var/t in currenthand)
 		dat += "<A href='?src=[REF(src)];pick=[t]'>A [t].</A><BR>"
@@ -293,7 +299,6 @@
 			src.currenthand += C.cardname
 			user.visible_message("<span class='notice'>[user] adds a card to [user.p_their()] hand.</span>", "<span class='notice'>I add the [C.cardname] to your hand.</span>")
 			qdel(C)
-			interact(user)
 			if(currenthand.len > 4)
 				src.icon_state = "[deckstyle]_hand5"
 			else if(currenthand.len > 3)
@@ -335,7 +340,7 @@
 		if(cardUser.is_holding(src))
 			cardUser.visible_message("<span class='notice'>[cardUser] checks [cardUser.p_their()] card.</span>", "<span class='notice'>The card reads: [cardname].</span>")
 		else
-			. += "<span class='warning'>I need to have the card in your hand to check it!</span>"
+			. += "<span class='warning'>You need to have the card in your hand to check it!</span>"
 
 
 /obj/item/toy/cards/singlecard/verb/Flip()
@@ -442,10 +447,11 @@
 
 /obj/item/toy/cards/deck/tarot/populate_deck()
 	icon_state = "deck_[deckstyle]_full"
-	for(var/suit in list("Hearts", "Pikes", "Clovers", "Tiles"))
-		for(var/i in 1 to 10)
+	for(var/suit in list("Pentacles", "Swords", "Wands", "Cups"))
+		cards += "Ace of [suit]"
+		for(var/i in 2 to 10)
 			cards += "[i] of [suit]"
-		for(var/person in list("Valet", "Chevalier", "Dame", "Roi"))
+		for(var/person in list("Page", "Knight", "Queen", "King"))
 			cards += "[person] of [suit]"
 	for(var/trump in list("The Magician", "The High Priestess", "The Empress", "The Emperor", "The Hierophant", "The Lover", "The Chariot", "Justice", "The Hermit", "The Wheel of Fortune", "Strength", "The Hanged Man", "Death", "Temperance", "The Devil", "The Tower", "The Star", "The Moon", "The Sun", "Judgement", "The World", "The Fool"))
 		cards += trump

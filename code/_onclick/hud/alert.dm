@@ -86,10 +86,6 @@
 		client.screen -= alert
 	qdel(alert)
 
-#define ALERT_STATUS	0
-#define ALERT_DEBUFF	1
-#define ALERT_BUFF		2
-
 /atom/movable/screen/alert
 	icon = 'icons/mob/screen_alert.dmi'
 	icon_state = "status"
@@ -103,17 +99,26 @@
 	var/mob/mob_viewer //the mob viewing this alert
 	var/alert_group = ALERT_STATUS //decides where on the screen the alert shows up, if it's a debuff, status effect, or buff
 	nomouseover = FALSE
+	var/atom/movable/screen/maptext_holder/maptext_holder
 
-/atom/movable/screen/alert/MouseEntered(location,control,params)
-	..()
-//	if(!QDELETED(src))
-//		openToolTip(usr,src,params,title = name,content = desc,theme = alerttooltipstyle)
-
-
-/atom/movable/screen/alert/MouseExited()
-	..()
-//	closeToolTip(usr)
-
+/atom/movable/screen/alert/proc/update_countdown(remaining_deciseconds)
+	if(remaining_deciseconds <= 0 || remaining_deciseconds >= 3 MINUTES)
+		if(istype(maptext_holder))
+			maptext_holder.maptext = null
+		return
+	if(!istype(maptext_holder))
+		maptext_holder = new(src)
+		maptext_holder.x = 4
+		maptext_holder.y = 0
+		maptext_holder.color = "#800000"
+		vis_contents.Add(maptext_holder)
+	var/seconds_left = round(remaining_deciseconds / (1 SECONDS), 0.1)
+	if(seconds_left >= 60)
+		var/mins = round(seconds_left / 60)
+		var/secs = round(seconds_left) % 60
+		maptext_holder.maptext = MAPTEXT("[mins]:[secs < 10 ? "0[secs]" : "[secs]"]")
+	else
+		maptext_holder.maptext = MAPTEXT("[seconds_left]s")
 
 //Gas alerts
 /atom/movable/screen/alert/not_enough_oxy
@@ -250,9 +255,8 @@
 		if(ishuman(usr))
 			var/mob/living/carbon/human/H = usr
 			var/list/msg = list("***\n")
-			for(var/X in H.bodyparts)
-				var/obj/item/bodypart/BP = X
-				for(var/obj/item/I in BP.embedded_objects)
+			for(var/obj/item/bodypart/BP as anything in H.bodyparts)
+				for(var/obj/item/I as anything in BP.embedded_objects)
 					msg += "<a href='?src=[REF(H)];embedded_object=[REF(I)];embedded_limb=[REF(BP)]' class='warning'>[I] - [BP.name]</a>\n"
 			msg += "***"
 			to_chat(H, "[msg.Join()]")
@@ -261,16 +265,6 @@
 	name = "Weightless"
 	desc = ""
 	icon_state = "weightless"
-
-/atom/movable/screen/alert/highgravity
-	name = "High Gravity"
-	desc = ""
-	icon_state = "paralysis"
-
-/atom/movable/screen/alert/veryhighgravity
-	name = "Crushing Gravity"
-	desc = ""
-	icon_state = "paralysis"
 
 /atom/movable/screen/alert/fire
 	name = "On Fire"
@@ -286,6 +280,15 @@
 	if(L.mobility_flags & MOBILITY_MOVE)
 		return L.resist_fire() //I just want to start a flame in your hearrrrrrtttttt.
 
+/atom/movable/screen/alert/fire/sunder
+	name = "Sundered!"
+	desc = ""
+	icon_state = "sunder"
+
+/atom/movable/screen/alert/fire/sunder/blessed
+	name = "Sundered!"
+	desc = ""
+	icon_state = "supersunder"
 
 //BLOBS
 
@@ -495,6 +498,7 @@
 	return 1
 
 /atom/movable/screen/alert/Destroy()
+	QDEL_NULL(maptext_holder)
 	severity = 0
 	master = null
 	mob_viewer = null

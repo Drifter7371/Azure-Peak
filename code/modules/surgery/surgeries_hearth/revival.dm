@@ -32,11 +32,7 @@
 	if(!H)
 		to_chat(user, "[target] is missing their heart!")
 		return FALSE
-	if(target.mind && !target.mind.active)
-		to_chat(user, "[target]'s heart is inert. Maybe it will respond later?")
-		return FALSE
-	if(HAS_TRAIT(target, TRAIT_NECRAS_VOW))
-		to_chat(user, "[target] has pledged a vow to Necra. This will not work.")
+	if(!target.check_revive(user))
 		return FALSE
 
 /datum/surgery_step/infuse_lux/preop(mob/user, mob/living/target, target_zone, obj/item/tool, datum/intent/intent)
@@ -75,7 +71,7 @@
 	target.grab_ghost(force = TRUE) // even suicides
 	target.emote("breathgasp")
 	target.Jitter(100)
-	GLOB.azure_round_stats[STATS_LUX_REVIVALS]++
+	record_round_statistic(STATS_LUX_REVIVALS)
 	target.update_body()
 	target.visible_message(span_notice("[target] is dragged back from Necra's hold!"), span_green("I awake from the void."))
 	qdel(tool)
@@ -83,6 +79,7 @@
 		if(revive_pq && !HAS_TRAIT(target, TRAIT_IWASREVIVED) && user?.ckey)
 			adjust_playerquality(revive_pq, user.ckey)
 			ADD_TRAIT(target, TRAIT_IWASREVIVED, "[type]")
+	target.mind.remove_antag_datum(/datum/antagonist/zombie)
 	target.remove_status_effect(/datum/status_effect/debuff/rotted_zombie)	//Removes the rotted-zombie debuff if they have it - Failsafe for it.
 	target.apply_status_effect(/datum/status_effect/debuff/revived)	//Temp debuff on revive, your stats get hit temporarily. Doubly so if having rotted.
 	return TRUE

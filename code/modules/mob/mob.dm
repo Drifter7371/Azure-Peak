@@ -30,6 +30,9 @@ GLOBAL_VAR_INIT(mobids, 1)
 	GLOB.alive_mob_list -= src
 	GLOB.mob_directory -= tag
 	focus = null
+	if(mind?.current == src)
+		mind.set_current(null)
+		mind.soulOwner = null
 
 	for (var/alert in alerts)
 		clear_alert(alert, TRUE)
@@ -40,11 +43,35 @@ GLOBAL_VAR_INIT(mobids, 1)
 	qdel(hud_used)
 	for(var/cc in client_colours)
 		qdel(cc)
+	used_intent = null
+	used_rmb_intent = null
+	if(a_intent && a_intent.mastermob == src)
+		a_intent.mastermob = null
+	a_intent = null
+	o_intent = null
+	QDEL_LIST(possible_a_intents)
+	QDEL_LIST(possible_offhand_intents)
+	QDEL_NULL(mmb_intent)
+	QDEL_NULL(rmb_intent)
+	QDEL_NULL(unarmed_special)
+	for(var/datum/action/A in actions)
+		A.Remove(src)
+	actions = null
+	SScrediticons.processing -= src
+	SScrediticons.currentrun -= src
+	SStreasury.remove_person(src) // Call me overly cautious I dunno when they giving dogs bank account
+	if(skills && skills.current == src)
+		var/datum/skill_holder/my_skill = skills
+		my_skill.current = null
+		QDEL_NULL(skills)
 	client_colours = null
-	testing("EPICWIN!! [src] [type]")
+	last_reach_target = null
+	last_reach_tool = null
+	if(active_storage)
+		active_storage.hide_from(src)
 	ghostize(drawskip=TRUE)
 	..()
-	return QDEL_HINT_HARDDEL
+	return QDEL_HINT_QUEUE
 
 /**
  * Intialize a mob
@@ -84,6 +111,7 @@ GLOBAL_VAR_INIT(mobids, 1)
 	set_nutrition(rand(NUTRITION_LEVEL_START_MIN, NUTRITION_LEVEL_START_MAX))
 	set_hydration(rand(HYDRATION_LEVEL_START_MIN, HYDRATION_LEVEL_START_MAX))
 	. = ..()
+	become_hearing_sensitive()
 	update_config_movespeed()
 	update_movespeed(TRUE)
 
@@ -172,6 +200,8 @@ GLOBAL_VAR_INIT(mobids, 1)
 		return
 	if(!islist(ignored_mobs))
 		ignored_mobs = list(ignored_mobs)
+	if(!isnum(vision_distance))
+		vision_distance = DEFAULT_MESSAGE_RANGE
 	var/list/hearers = get_hearers_in_view(vision_distance, src) //caches the hearers and then removes ignored mobs.
 	hearers -= ignored_mobs
 	if(self_message)
@@ -207,19 +237,19 @@ GLOBAL_VAR_INIT(mobids, 1)
  * * deaf_message (optional) is what deaf people will see.
  * * hearing_distance (optional) is the range, how many tiles away the message can be heard.
  */
-/atom/proc/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, runechat_message = null, log_seen = NONE, log_seen_msg = null)
+/atom/proc/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, runechat_message = null, log_seen = NONE, log_seen_msg = null, custom_spans = list("emote"), used_language = /datum/language/common)
 	var/list/hearers = get_hearers_in_view(hearing_distance, src)
 	if(self_message)
 		hearers -= src
 	for(var/mob/M in hearers)
 		M.show_message(message, MSG_AUDIBLE, deaf_message, MSG_VISUAL)
 		if(runechat_message && M.can_see_runechat(src) && M.can_hear())
-			M.create_chat_message(src, raw_message = runechat_message, spans = list("emote"))
+			M.create_chat_message(src, used_language, raw_message = runechat_message, spans = custom_spans)
 	if(log_seen)
 		log_seen(src, null, hearers, (log_seen_msg ? log_seen_msg : message), log_seen)
 
 /**
- * Show a message to all mobs in a vertical plane around the source atom. 
+ * Show a message to all mobs in a vertical plane around the source atom.
  * Only use this for cases where the action being done is important enough to ignore z level / LOS.
  * vars:
  * * message is the message output. Keep in mind that its end will be appended with "Far Above / Above / Below / Far Below" & "North / East / West / South" etc
@@ -244,7 +274,7 @@ GLOBAL_VAR_INIT(mobids, 1)
 		if(!is_in_zweb(src.z,M.z))
 			continue
 		listening |= M
-	
+
 	for(var/mob/living/L in listening)
 		var/strz
 		var/strdir
@@ -285,7 +315,7 @@ GLOBAL_VAR_INIT(mobids, 1)
  * * deaf_message (optional) is what deaf people will see.
  * * hearing_distance (optional) is the range, how many tiles away the message can be heard.
  */
-/mob/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, runechat_message = null, log_seen = NONE, log_seen_msg = null)
+/mob/audible_message(message, deaf_message, hearing_distance = DEFAULT_MESSAGE_RANGE, self_message, runechat_message = null, log_seen = NONE, log_seen_msg = null, custom_spans = list("emote"), used_language = /datum/language/common)
 	. = ..()
 	if(self_message)
 		show_message(self_message, MSG_AUDIBLE, deaf_message, MSG_VISUAL)
@@ -312,9 +342,9 @@ GLOBAL_VAR_INIT(mobids, 1)
 	var/obj/item/W = get_active_held_item()
 
 	if(istype(W))
-		testing("clothes1")
+
 		if(equip_to_slot_if_possible(W, slot,0,0,0))
-			testing("clothes2")
+
 			return 1
 
 	if(!W)
@@ -475,7 +505,7 @@ GLOBAL_VAR_INIT(mobids, 1)
 				target = "themselves"
 			else if(A.loc == src)
 				target = "[src.p_their()] [A.name]"
-			else if(A.loc.loc == src)
+			else if(A.loc?.loc == src)
 				message = "[src] looks into"
 				target = "[src.p_their()] [A.loc.name]"
 			else if(isliving(A) && src.cmode)
@@ -489,65 +519,15 @@ GLOBAL_VAR_INIT(mobids, 1)
 
 	var/list/result = A.examine(src)
 	if(result)
-		to_chat(src, result.Join("\n"))
+		var/list/mechanics_result = A.get_mechanics_examine(src)
+		if(length(mechanics_result))
+			var/mechanics_result_str = "<details><summary>Mechanics</summary>"
+			for(var/line in mechanics_result)
+				mechanics_result_str += " - " + line + "\n"
+			mechanics_result_str += "</details>"
+			result += mechanics_result_str
+		to_chat(src, usr.client.prefs.no_examine_blocks ? result.Join("\n") : examine_block(result.Join("\n")))
 	SEND_SIGNAL(src, COMSIG_MOB_EXAMINATE, A)
-
-/**
- * Point at an atom
- *
- * mob verbs are faster than object verbs. See
- * [this byond forum post](https://secure.byond.com/forum/?post=1326139&page=2#comment8198716)
- * for why this isn't atom/verb/pointed()
- *
- * note: ghosts can point, this is intended
- *
- * visible_message will handle invisibility properly
- *
- * overridden here and in /mob/dead/observer for different point span classes and sanity checks
- */
-/mob/verb/pointed(atom/A as mob|obj|turf in view())
-	set name = "Point To"
-	set hidden = 1
-	if(!src || !isturf(src.loc) || !(A in view(client.view, src)))
-		return FALSE
-	if(istype(A, /obj/effect/temp_visual/point))
-		return FALSE
-
-	var/tile = get_turf(A)
-	if (!tile)
-		return FALSE
-
-	new /obj/effect/temp_visual/point(src,invisibility)
-
-	return TRUE
-
-/mob/proc/linepoint(atom/A as mob|obj|turf in view(), params)
-	if(world.time < lastpoint + 50)
-		return FALSE
-
-	if(stat)
-		return FALSE
-
-	if(client)
-		if(!src || !isturf(src.loc) || !(A in view(client.view, src)))
-			return FALSE
-
-	var/turf/tile = get_turf(A)
-	if (!tile)
-		return FALSE
-
-	var/turf/our_tile = get_turf(src)
-	var/obj/visual = new /obj/effect/temp_visual/point/still(our_tile, invisibility)
-	animate(visual, pixel_x = (tile.x - our_tile.x) * world.icon_size + A.pixel_x, pixel_y = (tile.y - our_tile.y) * world.icon_size + A.pixel_y, time = 2, easing = EASE_OUT)
-
-	lastpoint = world.time
-	var/obj/I = get_active_held_item()
-	if(I)
-		src.visible_message("<span class='info'>[src] points [I] at [A].</span>", "<span class='info'>I point [I] at [A].</span>")
-	else
-		src.visible_message("<span class='info'>[src] points at [A].</span>", "<span class='info'>I point at [A].</span>")
-
-	return TRUE
 
 ///Can this mob resist (default FALSE)
 /mob/proc/can_resist()
@@ -761,11 +741,13 @@ GLOBAL_VAR_INIT(mobids, 1)
  * For mobs this just shows the inventory
  */
 /mob/MouseDrop_T(atom/dropping, atom/user)
-	..()
+	. = ..()
+	if(.)
+		return .
 	if(ismob(dropping) && dropping != user)
 		var/mob/U = user
 		var/mob/M = dropping
-		if (!U.cmode || U.client.prefs.toggles & CMODE_STRIPPING)
+		if (!U.cmode || U.client.prefs.combat_toggles & CMODE_STRIPPING)
 			M.show_inv(user)
 		return TRUE
 
@@ -781,47 +763,38 @@ GLOBAL_VAR_INIT(mobids, 1)
  */
 /mob/Stat()
 	..()
-	// && check_rights(R_ADMIN,0)
-	var/ticker_time = world.time - SSticker.round_start_time
-	var/time_left = SSgamemode.round_ends_at - ticker_time
-	if(client && client.holder)
-		if(statpanel("Status"))
-			if (client)
-				stat(null, "Ping: [round(client.lastping, 1)]ms (Average: [round(client.avgping, 1)]ms)")
-			stat(null, "Map: [SSmapping.config?.map_name || "Loading..."]")
-			var/datum/map_config/cached = SSmapping.next_map_config
-			if(cached)
-				stat(null, "Next Map: [cached.map_name]")
-			stat(null, "Round ID: [GLOB.rogue_round_id ? GLOB.rogue_round_id : "NULL"]")
-//			stat(null, "Server Time: [time2text(world.timeofday, "YYYY-MM-DD hh:mm:ss")]")
-			stat(null, "Round Time: [time2text(STATION_TIME_PASSED(), "hh:mm:ss", 0)] [world.time - SSticker.round_start_time]")
-			if(SSgamemode.roundvoteend)
-				stat("Round End: [DisplayTimeText(time_left)]")
-			stat(null, "Round TrueTime: [worldtime2text()] [world.time]")
-			stat(null, "TimeOfDay: [GLOB.tod]")
-			stat(null, "IC Time: [station_time_timestamp()] [station_time()]")
-			stat(null, "Time Dilation: [round(SStime_track.time_dilation_current,1)]% AVG:([round(SStime_track.time_dilation_avg_fast,1)]%, [round(SStime_track.time_dilation_avg,1)]%, [round(SStime_track.time_dilation_avg_slow,1)]%)")
-			if(check_rights(R_ADMIN,0))
-				stat(null, SSmigrants.get_status_line())
 
-	if(client)
-		if(statpanel("RoundInfo"))
-			stat("Round ID: [GLOB.rogue_round_id]")
-			stat("Round Time: [time2text(STATION_TIME_PASSED(), "hh:mm:ss", 0)] [world.time - SSticker.round_start_time]")
-			if(SSgamemode.roundvoteend)
-				stat("Round End: [DisplayTimeText(time_left)]")
-			stat("TimeOfDay: [GLOB.tod]")
+	if(!client)
+		return
 
-	if(client && client.holder && check_rights(R_DEBUG,0))
+	var/datum/controller/subsystem/statpanel/SS = SSstatpanel
+
+	if(statpanel("RoundInfo"))
+		for(var/line in SS.base_roundinfo_text)
+			stat(null, line)
+
+		if(client.holder)
+			for(var/line in SS.debug_roundinfo_text)
+				stat(null, line)
+
+		stat(null, SS.ic_date_text)
+		stat(null, SS.timeofday_text)
+		stat(null, "PING: [round(client.lastping,1)]ms (AVG: [round(client.avgping,1)]ms)")
+		stat(null, SS.td_info_text)
+
+		if(check_rights(R_ADMIN,0))
+			for(var/line in SS.admin_roundinfo_text)
+				stat(null, line)
+
+	if(client?.holder && check_rights(R_DEBUG, 0))
 		if(statpanel("MC"))
 			var/turf/T = get_turf(client.eye)
 			stat("Location:", COORD(T))
-			stat("CPU:", "[world.cpu]")
-			stat("Instances:", "[num2text(world.contents.len, 10)]")
-			stat("World Time:", "[world.time]")
+			for(var/line in SSstatpanel.mc_info_text)
+				stat(null, line)
+
 			GLOB.stat_entry()
 			config.stat_entry()
-			stat(null)
 			if(Master)
 				Master.stat_entry()
 			else
@@ -830,12 +803,16 @@ GLOBAL_VAR_INIT(mobids, 1)
 				Failsafe.stat_entry()
 			else
 				stat("Failsafe Controller:", "ERROR")
-			if(Master)
-				stat(null)
-				for(var/datum/controller/subsystem/SS in Master.subsystems)
-					SS.stat_entry()
+				
+			stat(null)
+
+			for(var/entry in SSstatpanel.mc_cache)
+				var/datum/controller/subsystem/SSsub = entry["subsystem"]
+				stat(entry["title"], SSsub.statclick.update(entry["msg"]))
+				
 		if(statpanel("Tickets"))
 			GLOB.ahelp_tickets.stat_entry()
+
 		if(length(GLOB.sdql2_queries))
 			if(statpanel("SDQL2"))
 				stat("Access Global SDQL2 List", GLOB.sdql2_vv_statobj)
@@ -848,10 +825,12 @@ GLOBAL_VAR_INIT(mobids, 1)
 			listed_turf = null
 		else
 			statpanel(listed_turf.name, null, listed_turf)
+
 			var/list/overrides = list()
 			for(var/image/I in client.images)
 				if(I.loc && I.loc.loc == listed_turf && I.override)
 					overrides += I.loc
+
 			for(var/atom/A in listed_turf)
 				if(!A.mouse_opacity)
 					continue
@@ -859,10 +838,8 @@ GLOBAL_VAR_INIT(mobids, 1)
 					continue
 				if(overrides.len && (A in overrides))
 					continue
-				if(A.IsObscured())
-					continue
-				statpanel(listed_turf.name, null, A)
 
+				statpanel(listed_turf.name, null, A)
 
 //	if(mind)
 //		add_spells_to_statpanel(mind.spell_list)
@@ -1024,6 +1001,12 @@ GLOBAL_VAR_INIT(mobids, 1)
 	mob_spell_list += S
 	S.action.Grant(src)
 
+/mob/proc/HasSpell(var/spell_type)
+	for(var/obj/effect/proc_holder/spell/spell as anything in mob_spell_list)
+		if(spell.type == spell_type)
+			return spell
+	return null
+
 ///Remove a spell from the mobs spell list
 /mob/proc/RemoveSpell(obj/effect/proc_holder/spell/spell)
 	if(!spell)
@@ -1073,10 +1056,13 @@ GLOBAL_VAR_INIT(mobids, 1)
 	M.pixel_y = initial(M.pixel_y) + height
 	if(M.layer < layer)
 		M.layer = layer + 0.1
+	candodge = FALSE
+
 ///Call back post unbuckle from a mob, (reset your visual height here)
 /mob/post_unbuckle_mob(mob/living/M)
 	M.layer = initial(M.layer)
 	M.pixel_y = initial(M.pixel_y)
+	candodge = initial(M.candodge)
 
 ///returns the height in pixel the mob should have when buckled to another mob.
 /mob/proc/get_mob_buckling_height(mob/seat)
@@ -1309,10 +1295,31 @@ GLOBAL_VAR_INIT(mobids, 1)
 /mob/verb/open_language_menu()
 	set name = "Open Language Menu"
 	set category = "IC"
-	set hidden = 1
+	set hidden = 0
 
 	var/datum/language_holder/H = get_language_holder()
 	H.open_language_menu(usr)
+
+/// Custom pose setting
+/mob/living/carbon/human/verb/set_pose()
+	set name = "Set Pose"
+	set category = "IC"
+	set hidden = FALSE
+
+	if(stat != CONSCIOUS)
+		to_chat(src, span_warning("I can't set my pose right now."))
+		return
+	var/new_pose = tgui_input_text(src, "Set your character's pose (MARKDOWN AVAILABLE):", "SET POSE", pose_text, multiline = FALSE,  encode = FALSE, bigmodal = TRUE, max_length = 256)
+	if(isnull(new_pose))
+		return
+
+	if(!length(new_pose))
+		pose_text = ""
+		to_chat(src, span_notice("I clear my pose."))
+		return
+
+	pose_text = parsemarkdown_basic(new_pose)
+	to_chat(src, span_notice("I set my pose."))
 
 ///Adjust the nutrition of a mob
 /mob/proc/adjust_nutrition(change) //Honestly FUCK the oldcoders for putting nutrition on /mob someone else can move it up because holy hell I'd have to fix SO many typechecks
@@ -1396,3 +1403,12 @@ GLOBAL_VAR_INIT(mobids, 1)
 	if(HAS_TRAIT(src, TRAIT_MISSING_NOSE))
 		return FALSE
 	return TRUE
+
+/mob/proc/become_uncliented()
+	if(!canon_client)
+		return
+
+	clear_important_client_contents()
+	canon_client = null
+
+#undef MOB_FACE_DIRECTION_DELAY

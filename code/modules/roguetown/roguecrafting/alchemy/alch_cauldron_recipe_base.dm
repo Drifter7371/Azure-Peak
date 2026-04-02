@@ -25,7 +25,7 @@
 
 	html += "Requires [SSskills.level_names_plain[skill_required]] level of skills<br>"
 	
-	html += "Boil 30+ ounces of water in a Cauldron.<br>"
+	html += "Boil 90+ drams of water in a Cauldron.<br>"
 
 	html += "Add at least two ingredients with the smell of [smells_like]<br>"
 
@@ -35,7 +35,7 @@
 			var/count = output_reagents[path]
 			if(ispath(path, /datum/reagent))
 				var/datum/reagent/R = path
-				html += "[CEILING(count / 3, 1)] oz of [initial(R.name)]<br>"
+				html += "[FLOOR(count, 1)] [UNIT_FORM_STRING(FLOOR(count, 1))] of [initial(R.name)]<br>"
 		html += "</div>"
 
 	if(output_items.len)

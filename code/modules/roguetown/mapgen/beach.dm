@@ -7,7 +7,7 @@
 	startTurfY = 1
 
 /datum/mapGenerator/beach
-	modules = list(/datum/mapGeneratorModule/ambushing,/datum/mapGeneratorModule/beach,/datum/mapGeneratorModule/beachgrass,/datum/mapGeneratorModule/beachroad,/datum/mapGeneratorModule/beachcoast,/datum/mapGeneratorModule/beachsand)
+	modules = list(/datum/mapGeneratorModule/beach,/datum/mapGeneratorModule/beachgrass,/datum/mapGeneratorModule/beachroad,/datum/mapGeneratorModule/beachcoast,/datum/mapGeneratorModule/beachsand)
 
 /datum/mapGeneratorModule/beach
 	clusterCheckFlags = CLUSTER_CHECK_DIFFERENT_ATOMS
@@ -20,7 +20,8 @@
 							/obj/item/natural/stone = 18,
 							/obj/item/natural/rock = 2,
 							/obj/item/grown/log/tree/stick = 3,
-							/obj/structure/closet/dirthole/closed/loot=3,
+							/obj/structure/leyline/normal/coast = 2,
+						/obj/structure/closet/dirthole/closed/loot=3,
 							/obj/structure/flora/roguetree/burnt = 3)
 	spawnableTurfs = list(/turf/open/floor/rogue/dirt/road=5)
 	allowed_areas = list(/area/rogue/outdoors/beach/forest)

@@ -1,6 +1,7 @@
 /mob/living/simple_animal/hostile/retaliate/rogue/mossback
 	icon = 'icons/roguetown/mob/monster/boglobster.dmi'
 	name = "mossback"
+	desc = "Much feared by all those who live on Psydonia's coasts, these creatures are said to be the envoys of Abyssor. They engender respect for the ocean through the violence they inflict to the unwary, and provide rich meals to those able to hunt them; as the seas take from the unready, they give back to those deserving."
 	icon_state = "mossback"
 	icon_living = "mossback"
 	icon_dead = "mossback_dead"
@@ -20,6 +21,8 @@
 	perfect_butcher_results = list(/obj/item/reagent_containers/food/snacks/rogue/meat/crab = 5, 
 									/obj/item/alch/viscera = 2)
 	faction = list("crabs")
+	threat_point = THREAT_MODERATE
+	ambush_faction = "wildlife"
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	health = MOSSBACK_HEALTH
 	maxHealth = MOSSBACK_HEALTH
@@ -56,9 +59,9 @@
 	AddElement(/datum/element/ai_retaliate)
 	ai_controller.set_blackboard_key(BB_BASIC_FOODS, food_type)
 	if(user)
-		summoner = user.name
+		summoner = user.mind.current.real_name
 		if (townercrab)
-			faction = list("neutral")
+			faction = list("neutral", "[summoner]_faction")
 			tamed(user)
 
 /mob/living/simple_animal/hostile/retaliate/rogue/mossback/get_sound(input)

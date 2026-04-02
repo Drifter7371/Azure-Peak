@@ -5,12 +5,13 @@
 	chargedrain = 2
 	charging_slowdown = 3
 
-/datum/intent/shoot/bow/can_charge()
-	if(mastermob)
-		if(mastermob.get_num_arms(FALSE) < 2)
-			return FALSE
-		if(mastermob.get_inactive_held_item())
-			return FALSE
+/datum/intent/shoot/bow/can_charge(atom/clicked_object)
+	if(mastermob?.get_num_arms(FALSE) < 2 || mastermob.get_inactive_held_item())
+		to_chat(mastermob, span_warning("I need a free hand to draw [masteritem]!"))
+		return FALSE
+	if(istype(clicked_object, /obj/item/quiver) && istype(mastermob?.get_active_held_item(), /obj/item/gun/ballistic))
+		return FALSE
+
 	return TRUE
 
 /datum/intent/shoot/bow/prewarning()
@@ -25,8 +26,11 @@
 		if(strength_check == TRUE)
 			newtime = ((newtime + 10) - (mastermob.STASTR / 2))
 		else
-			newtime = newtime 
+			newtime = newtime
 		newtime = ((newtime + 20) - (mastermob.STAPER))
+		var/obj/item/gun/ballistic/gun = masteritem
+		if(istype(gun) && gun.chambered)
+			newtime *= gun.chambered.charge_time_mult
 		if(newtime > 1)
 			return newtime //this value is how fast we can accurately shoot a bow. most builds will turn up with about 6 - 12 on non heavy bows.
 		else
@@ -42,12 +46,13 @@
 	chargedrain = 2
 	charging_slowdown = 3
 
-/datum/intent/arc/bow/can_charge()
-	if(mastermob)
-		if(mastermob.get_num_arms(FALSE) < 2)
-			return FALSE
-		if(mastermob.get_inactive_held_item())
-			return FALSE
+/datum/intent/arc/bow/can_charge(atom/clicked_object)
+	if(mastermob?.get_num_arms(FALSE) < 2 || mastermob.get_inactive_held_item())
+		to_chat(mastermob, span_warning("I need a free hand to draw [masteritem]!"))
+		return FALSE
+	if(istype(clicked_object, /obj/item/quiver) && istype(mastermob?.get_active_held_item(), /obj/item/gun/ballistic))
+		return FALSE
+
 	return TRUE
 
 /datum/intent/arc/bow/prewarning()
@@ -62,8 +67,11 @@
 		if(strength_check == TRUE)
 			newtime = ((newtime + 10) - (mastermob.STASTR / 2))
 		else
-			newtime = newtime 
+			newtime = newtime
 		newtime = ((newtime + 20) - (mastermob.STAPER))
+		var/obj/item/gun/ballistic/gun = masteritem
+		if(istype(gun) && gun.chambered)
+			newtime *= gun.chambered.charge_time_mult
 		if(newtime > 3)
 			return newtime
 		else
@@ -80,7 +88,7 @@
 	name = "crude selfbow"
 	desc = "This roughly hewn selfbow is just a bit too little of everything. Too little length, \
 	too little poundage, too slow a shot."
-	icon = 'icons/roguetown/weapons/32.dmi'
+	icon = 'icons/roguetown/weapons/misc32.dmi'
 	icon_state = "bow"
 	item_state = "bow"
 	experimental_onhip = TRUE
@@ -103,6 +111,11 @@
 	load_sound = 'sound/foley/nockarrow.ogg'
 	obj_flags = UNIQUE_RENAME
 	var/heavy_bow = FALSE //used for adding a STR check to the charge time of a bow
+	cartridge_articles = "an"
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/bow/get_mechanics_examine(mob/user)
+	. += span_info("Bows increase in damage and accuracy the higher your <b>PERCEPTION</b>.")
+	. += span_info("Bows with a heavy draw, such as longbows, have an increased draw time for characters with low <b>STRENGTH</b>.")
 
 /obj/item/gun/ballistic/revolver/grenadelauncher/bow/Initialize()
 	. = ..()
@@ -210,9 +223,8 @@
 			update_icon()
 
 /obj/item/gun/ballistic/revolver/grenadelauncher/bow/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
-	if(user.get_num_arms(FALSE) < 2)
-		return FALSE
-	if(user.get_inactive_held_item())
+	if(user.get_inactive_held_item() || user.get_num_arms(FALSE) < 2)
+		to_chat(user, span_warning("I need a free hand to fire \the [src]!"))
 		return FALSE
 	if(user.client)
 		if(user.client.chargedprog >= 100)
@@ -233,11 +245,9 @@
 			BB.accuracy -= 15
 		else
 			BB.damage = BB.damage
-		BB.damage *= damfactor * (user.STAPER > 10 ? user.STAPER / 10 : 1)
-	if(user.has_status_effect(/datum/status_effect/buff/clash) && ishuman(user))
-		var/mob/living/carbon/human/H = user
-		H.bad_guard(span_warning("I can't focus on my Guard and loose arrows! This drains me!"), cheesy = TRUE)
-	. = ..()
+		var/per_scaling = 1 + (min(user.STAPER, RANGED_STAT_SOFTCAP) * RANGED_STAT_MULT) + (max(0, user.STAPER - RANGED_STAT_SOFTCAP) * RANGED_STAT_CAPPEDMULT)
+		BB.damage *= damfactor * per_scaling
+	return ..()
 
 /obj/item/gun/ballistic/revolver/grenadelauncher/bow/update_icon()
 	..()
@@ -247,7 +257,7 @@
 
 	cut_overlays()
 	if(chambered)
-		var/mutable_appearance/ammo = mutable_appearance('icons/roguetown/weapons/ammo.dmi', chambered.icon_state)
+		var/mutable_appearance/ammo = mutable_appearance(chambered.icon, chambered.icon_state)
 		ammo.transform = mat
 		add_overlay(ammo)
 
@@ -358,7 +368,7 @@
 	icon = 'icons/roguetown/weapons/64.dmi'
 	icon_state = "longbow"
 	slot_flags = ITEM_SLOT_BACK
-	damfactor = 1.2
+	damfactor = 1.3
 	accfactor = 0.9
 	pixel_y = -16
 	pixel_x = -16
@@ -420,3 +430,81 @@
 					"eastabove" = 0,
 					"westabove" = 0,
 					)
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/bow/classic
+	name = "bow"
+	desc = "The bow is your life; to hold it high and pull the string is to know the path of destiny."
+	var/hasloadedsprite = TRUE
+	accfactor = 1.15 //A fairly mild alternative to the Crude Selfbow, themed to be more like a proper ranged weapon. Same general stats, but with an increased bonus to accuracy.
+	icon_state = "classicbow0"
+	item_state = "classicbow"
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/bow/classic/update_icon()
+	. = ..()
+	cut_overlays()
+	icon_state = "[item_state][0]"
+
+	if(chambered && hasloadedsprite)
+		icon_state = "[item_state][1]"
+
+	if(!ismob(loc))
+		return
+	var/mob/M = loc
+	M.update_inv_hands()
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/bow/classic/getonmobprop(tag)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.7,"sx" = -3,"sy" = -2,"nx" = 5,"ny" = -1,"wx" = -3,"wy" = 0,"ex" = 0,"ey" = -2,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 9,"sturn" = -100,"wturn" = -102,"eturn" = 10,"nflip" = 1,"sflip" = 8,"wflip" = 8,"eflip" = 1)
+			if("onbelt")
+				return list("shrink" = 0.6,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
+			if("onback")
+				return list("shrink" = 0.6,"sx" = 1,"sy" = -1,"nx" = 1,"ny" = -1,"wx" = 3,"wy" = -1,"ex" = 0,"ey" = -1,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 8,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 1,"southabove" = 0,"eastabove" = 0,"westabove" = 0)
+
+
+//Unique Bows
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve/warden
+	name = "blackhorn bow"
+	desc = "When a northern black-horned saiga is old enough, it will shed its two-metre long antlers. As time passes, they harden progressively more but keep a degree of flexibility that can outdo even yew.\
+		Wardens often collect such antlers in the rare occasion they are found and send them to be filed, strung and treated by a master bowyer. Such tradition carries merit even todae, \
+		and thus one can see Azurian wardens carrying their endemic blackhorn bows with pride."
+	icon_state = "recurve_warden"
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/bow/longbow/warden
+	name = "blackhorn longbow"
+	desc = "When a northern black-horned saiga is old enough, it will shed its two-metre long antlers. As time passes, they harden progressively more but keep a degree of flexibility that can outdo even yew.\
+		Wardens often collect such antlers in the rare occasion they are found and send them to be filed, strung and treated by a master bowyer. The end result is a war bow such as this one."
+	icon_state = "longbow_warden"
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/bow/recurve/steppesman
+	name = "aavnic riding bow"
+	desc = "A short recurve warbow made for the express purpose of shooting on saigaback, a skill every archer in Aavnr takes much more seriously than their Northern counterparts. Every seasoned Druzhina is themselves a good bowyer and usually makes their own bow, this one is made with the purpure-ish crimson wood of a Vörötslevé tree."
+	icon_state = "recurve_riding"
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/bow/short
+	name = "short bow"
+	desc = "As the eagle was killed by the arrow winged with his own feather, so the hand of the world is wounded by its own skill."
+	icon = 'icons/roguetown/weapons/misc32.dmi'
+	icon_state = "bow" //No time for sprite this shit
+	item_state = "bow" 
+	possible_item_intents = list(
+		/datum/intent/shoot/bow/short,
+		/datum/intent/arc/bow/short,
+		INTENT_GENERIC,
+		)
+	randomspread = 1
+	spread = 1
+	force = 9
+	damfactor = 0.9
+
+/datum/intent/shoot/bow/short
+	chargetime = 0.75
+	chargedrain = 1.5
+	charging_slowdown = 2.5
+
+/datum/intent/arc/bow/short
+	chargetime = 0.75
+	chargedrain = 1.5
+	charging_slowdown = 2.5

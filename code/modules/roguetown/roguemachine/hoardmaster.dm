@@ -41,7 +41,7 @@
 
 /obj/structure/roguemachine/Hoardmaster/Topic(href, href_list)
 	. = ..()
-	if(!HAS_TRAIT(usr, TRAIT_COMMIE))
+	if(!HAS_TRAIT(usr, TRAIT_FREEMAN))
 		return
 	if(!usr.canUseTopic(src, BE_CLOSE))
 		return
@@ -66,13 +66,21 @@
 		var/l
 		for(l=1,l<=shoplength,l++)
 			var/pathi = pick(PA.contains)
-			new pathi(get_turf(M))
+			var/atom/hmasteritem = new pathi(get_turf(M))
+			hmasteritem.flags_1 |= HOARDMASTER_SPAWNED_1
+			if(istype(hmasteritem, /obj/item))
+				var/obj/item/newitem = hmasteritem
+				newitem.sellprice = 0
+				if(newitem.smeltresult)
+					newitem.smeltresult = /obj/item/ash
+				if(newitem.salvage_result)
+					newitem.salvage_result = /obj/item/ash
 	if(href_list["changecat"])
 		current_cat = href_list["changecat"]
 	return attack_hand(usr)
 
 /obj/structure/roguemachine/Hoardmaster/attack_hand(mob/living/user)
-	if(!HAS_TRAIT(user, TRAIT_COMMIE))
+	if(!HAS_TRAIT(user, TRAIT_FREEMAN))
 		return
 	var/datum/antagonist/bandit/B = usr.mind.has_antag_datum(/datum/antagonist/bandit)
 	. = ..()
@@ -92,11 +100,11 @@
 			unlocked_cats+="Brigand"
 		if("Sellsword")
 			unlocked_cats+="Sellsword"
-		if("Sawbones")
-			unlocked_cats+="Sawbones"
+		if("Hedge Alchemist")
+			unlocked_cats+="Alchemist"
 		if("Hedge Knight")
 			unlocked_cats+="Knight"
-		if("Rogue Mage")
+		if("Hedge Mage")
 			unlocked_cats+="Mage"
 		if("Knave")
 			unlocked_cats+="Knave"

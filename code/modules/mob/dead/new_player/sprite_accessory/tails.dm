@@ -127,6 +127,7 @@
 /datum/sprite_accessory/tail/horse
 	name = "Horse"
 	icon_state = "horse"
+	can_wag = TRUE
 
 /datum/sprite_accessory/tail/husky
 	name = "Husky"
@@ -245,6 +246,9 @@
 	color_key_names = list("Tails", "Tips")
 	can_wag = TRUE
 
+/datum/sprite_accessory/tail/tamamo_kitsune/is_visible(obj/item/organ/organ, obj/item/bodypart/bodypart, mob/living/carbon/owner)
+	return TRUE	//Always visible.
+
 /datum/sprite_accessory/tail/tentacle
 	name = "Tentacle"
 	icon_state = "tentacle"
@@ -283,6 +287,9 @@
 	icon_state = "lunasune"
 	can_wag = TRUE
 
+/datum/sprite_accessory/tail/lunasune/is_visible(obj/item/organ/organ, obj/item/bodypart/bodypart, mob/living/carbon/owner)
+	return TRUE	//Always visible.
+
 /datum/sprite_accessory/tail/spade
 	name = "Succubus Spade Tail"
 	icon_state = "spade"
@@ -312,6 +319,9 @@
 	icon_state = "sabresune"
 	color_keys = 2
 	color_key_names = list("Tails", "Tips")
+
+/datum/sprite_accessory/tail/sabresune/is_visible(obj/item/organ/organ, obj/item/bodypart/bodypart, mob/living/carbon/owner)
+	return TRUE	//Always visible.
 
 /datum/sprite_accessory/tail/lizard
 	abstract_type = /datum/sprite_accessory/tail/lizard
@@ -352,6 +362,20 @@
 	color_key_defaults = list(KEY_SKIN_COLOR)
 	can_wag = TRUE
 
+/datum/sprite_accessory/tail/dullahan
+	name = "Revenant"
+	icon = 'icons/mob/sprite_accessory/tails/tiefling.dmi'
+	icon_state = "tiebtail"
+	color_key_defaults = list(KEY_SKIN_COLOR)
+	can_wag = TRUE
+
+/datum/sprite_accessory/tail/dullahan/heart
+	name = "Succubus"
+	icon = 'icons/mob/sprite_accessory/tails/tiefling.dmi'
+	icon_state = "hearttail"
+	color_key_defaults = list(KEY_SKIN_COLOR)
+	can_wag = TRUE
+
 /datum/sprite_accessory/tail/rattlesnake
 	name = "Rattlesnake"
 	icon_state = "rattlesnake"
@@ -364,3 +388,44 @@
 	icon_state = "lynx"
 	color_keys = 2
 	color_key_names = list("Tail", "Tip")
+
+/datum/sprite_accessory/tail/owl
+	name = "Owl"
+	icon_state = "owl"
+
+/datum/sprite_accessory/tail/forked_long
+	name = "Forked Long"
+	icon_state = "forked_long"
+
+/datum/sprite_accessory/tail/haven
+	name = "Haven"
+	icon_state = "haven"
+
+/datum/sprite_accessory/tail/swallow
+	name = "Swallow"
+	icon_state = "swallow"
+
+/datum/sprite_accessory/tail/zorzor
+	name = "Zorgoia"
+	icon_state = "zorgoia"
+	color_keys = 3
+	color_key_names = list("Tail", "Tail Fluff", "Tail Barb")
+
+//From Caustic Cove
+/datum/sprite_accessory/tail/large_snake
+	icon = 'icons/mob/tails/large_snake.dmi'
+	name = "Large Snake"
+	icon_state = "large_snake"
+	color_keys = 2
+	color_key_names = list("Tail", "Underbelly")
+
+/datum/sprite_accessory/tail/large_snake/is_visible(obj/item/organ/organ, obj/item/bodypart/bodypart, mob/living/carbon/owner)
+	return TRUE	//Always visible.
+
+/datum/sprite_accessory/tail/large_snake_plain
+	icon = 'icons/mob/tails/large_snake.dmi'
+	name = "Large Snake Plain"
+	icon_state = "large_snake_plain"	
+
+/datum/sprite_accessory/tail/large_snake_plain/is_visible(obj/item/organ/organ, obj/item/bodypart/bodypart, mob/living/carbon/owner)
+	return TRUE	//Always visible.

@@ -19,6 +19,13 @@
 	var/lumber = /obj/item/grown/log/tree/small //These are solely for lumberjack calculations
 	var/lumber_amount = 1
 
+/obj/item/grown/log/tree/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Full logs can be halved by left-clicking them with an axe. The chance of successfully halving it into two small logs scales with your Woodcutting skill.")
+	. += span_info("Full logs and small logs can both be manually hatcheted apart, otherwise, to bypass the standard timed action. Hatcheting a small log will turn it into sticks.")
+	. += span_info("Full logs, small logs, and sticks can be 'slapcrafted' into new items by left-clicking them with certain tools and materials. 'Slapcrafted' items don't require a Crafting skill to make.")
+	. += span_info("'Slapcrafts' for full logs include quarterstaffs, bows, oars, and boats.")
+
 /obj/item/grown/log/tree/Initialize()
 	. = ..()
 	var/static/list/slapcraft_recipe_list = list(
@@ -26,6 +33,8 @@
 		/datum/crafting_recipe/roguetown/survival/quarterstaff,
 		/datum/crafting_recipe/roguetown/survival/recurvepartial,
 		/datum/crafting_recipe/roguetown/survival/longbowpartial,
+		/datum/crafting_recipe/roguetown/survival/oar,
+		/datum/crafting_recipe/roguetown/survival/boat,
 		)
 
 	AddElement(
@@ -60,8 +69,16 @@
 		if(skill_level > 0) // If skill level is 1 or higher, we get more minimum wood!
 			minimum = 2
 		lumber_amount = rand(minimum, max(round(skill_level), minimum))
+		var/sound_played = FALSE
 		for(var/i = 0; i < lumber_amount; i++)
 			new lumber(get_turf(src))
+				// Scaling is less steep than tanning as lumberjacking is easier to level and get
+			if(prob(skill_level + user.goodluck(2)))
+				new /obj/item/natural/cured/essence(get_turf(user))
+				if(!sound_played)
+					sound_played = TRUE
+					to_chat(user, span_warning("Dendor weeps..."))
+					playsound(src,pick('sound/items/gem.ogg'), 100, FALSE)
 		if(!skill_level)
 			to_chat(user, span_info("Due to inexperience, I ruin some of the timber..."))
 		user.mind.add_sleep_experience(/datum/skill/labor/lumberjacking, (user.STAINT*0.5))
@@ -85,6 +102,10 @@
 	w_class = WEIGHT_CLASS_BULKY
 	smeltresult = /obj/item/rogueore/coal/charcoal
 	lumber_amount = 0
+
+/obj/item/grown/log/tree/small/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("'Slapcrafts' for small logs include stone-and-wooden tools, cutlery, prosthetics, buckets, paper, weapons, shields, tarots, and bows. Left-clicking a small log with a handsaw turns it into planks, which is quite useful for carpentry and construction.")
 
 /obj/item/grown/log/tree/small/Initialize()
 	. = ..()
@@ -115,7 +136,6 @@
 		/datum/crafting_recipe/roguetown/survival/woodtray,
 		/datum/crafting_recipe/roguetown/survival/woodbowl,
 		/datum/crafting_recipe/roguetown/survival/pipe,
-		/datum/crafting_recipe/roguetown/survival/mantrap,
 		/datum/crafting_recipe/roguetown/survival/paperscroll,
 		/datum/crafting_recipe/roguetown/survival/boneaxe,
 		/datum/crafting_recipe/roguetown/survival/prosthetic/woodleftarm,
@@ -124,7 +144,6 @@
 		/datum/crafting_recipe/roguetown/survival/prosthetic/woodrightleg,
 		/datum/crafting_recipe/roguetown/survival/tarot_deck,
 		/datum/crafting_recipe/roguetown/survival/heatershield,
-		/datum/crafting_recipe/roguetown/survival/woodshaft,
 		/datum/crafting_recipe/roguetown/survival/peasantry/thresher/whetstone,
 		/datum/crafting_recipe/roguetown/survival/peasantry/shovel/whetstone,
 		/datum/crafting_recipe/roguetown/survival/peasantry/hoe/whetstone,
@@ -145,15 +164,35 @@
 		return
 	user.changeNext_move(CLICK_CD_INTENTCAP)
 	var/skill_level = user.get_skill_level(/datum/skill/craft/carpentry)
-	var/planking_time = (45 - (skill_level * 5))
+	var/planking_time = (35 - (skill_level * 5))
+	var/woodtotal = 1
+	switch (skill_level) //how many planks you get is random, but higher with more carpentry skill
+		if (0)
+			woodtotal = 1
+		if (1)
+			woodtotal = 1
+		if (2)
+			woodtotal = pick(1,2)
+		if (3)
+			woodtotal = pick(1,2,3)
+		if (4)
+			woodtotal = pick(2,3)
+		if (5)
+			woodtotal = pick(2,3,4)
+		if (6)
+			woodtotal = pick(3,4)
+		else
+			woodtotal = 1
+	if(HAS_TRAIT(user, TRAIT_MASTER_CARPENTER)) //we give extra to those in the role
+		woodtotal += pick(1,2)
 	if(I.tool_behaviour == TOOL_SAW)
 		playsound(get_turf(src.loc), 'sound/foley/sawing.ogg', 100)
 		user.visible_message("<span class='notice'>[user] starts sawing planks from [src].</span>")
 		if(do_after(user, planking_time))
-			var/obj/item/natural/wood/plank/S = new /obj/item/natural/wood/plank(get_turf(src.loc))
 			if(user.is_holding(src))
 				user.dropItemToGround(src)
-				user.put_in_hands(S)
+			for(var/i=1, i<=woodtotal, ++i)
+				new /obj/item/natural/wood/plank(get_turf(src.loc))
 			user.mind.add_sleep_experience(/datum/skill/craft/carpentry, (user.STAINT*0.5))
 			new /obj/effect/decal/cleanable/debris/woody(get_turf(src))
 			qdel(src)
@@ -224,6 +263,10 @@
 	grid_width = 32
 	grid_height = 32
 
+/obj/item/grown/log/tree/stick/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("'Slapcrafts' for sticks include torches, arrows, spades, tools, and knives. Left-click a stick with a tool that has the 'CUT' intent selected to carve it into a stake.")
+
 /obj/item/grown/log/tree/stick/Crossed(mob/living/L)
 	. = ..()
 	if(istype(L))
@@ -232,6 +275,8 @@
 			prob2break = 0
 		if(L.m_intent == MOVE_INTENT_RUN)
 			prob2break = 100
+		if (L.is_flying()) //if you're flying you shouldn't break things on the ground
+			prob2break = 0
 		if(prob(prob2break))
 			if(!(HAS_TRAIT(L, TRAIT_AZURENATIVE) || HAS_TRAIT(L, TRAIT_WOODWALKER) && L.m_intent != MOVE_INTENT_RUN))
 				playsound(src,'sound/items/seedextract.ogg', 100, FALSE)
@@ -260,6 +305,7 @@
 		/datum/crafting_recipe/roguetown/survival/torch,
 		/datum/crafting_recipe/roguetown/survival/stonearrow,
 		/datum/crafting_recipe/roguetown/survival/stonearrow_five,
+		/datum/crafting_recipe/roguetown/survival/wood_stake
 		)
 
 	AddElement(
@@ -334,7 +380,7 @@
 /obj/item/grown/log/tree/stake
 	name = "stake"
 	icon_state = "stake"
-	desc = "A sharpened piece of wood, fantastic for piercing"
+	desc = "A snapped tree branch with a hand-whittled tip; the bane of both unspooled tarps and lesser nitecreechers. </br>With a whetstone, I could further sharpen this stake and gift it a proper handle for use against the unholy."
 	grid_width = 32
 	grid_height = 64
 	force = 10
@@ -352,6 +398,20 @@
 	slot_flags = ITEM_SLOT_MOUTH|ITEM_SLOT_HIP
 	lumber_amount = 0
 
+/obj/item/grown/log/tree/stake/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Stakes can be crafted with a stone to make whetstones, which are better at sharpening blades.")
+	. += span_info("Stakes are weak, but can double as improvised weapons with total armor penetration. Crafting a stake with a whetstone can make it into a more refined weapon.")
+
+/obj/item/grown/log/tree/stake/getonmobprop(tag)
+	. = ..()
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.4,"sx" = -10,"sy" = 0,"nx" = 11,"ny" = 0,"wx" = -4,"wy" = 0,"ex" = 2,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
+			if("onbelt")
+				return list("shrink" = 0.3,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
+
 /obj/item/grown/log/tree/stake/Initialize()
 	. = ..()
 	var/static/list/slapcraft_recipe_list = list(
@@ -362,6 +422,26 @@
 		/datum/element/slapcrafting,\
 		slapcraft_recipes = slapcraft_recipe_list,\
 		)
+
+/obj/item/grown/log/tree/stake/attack_obj(obj/O, mob/living/user)
+	. = ..()
+	if(isitem(O))
+		var/obj/item/I = O
+		if(istype(I, /obj/item/ingot/iron))
+			if(!do_after(user, 4 SECONDS, target = I))
+				return
+			to_chat(user, span_warning("The [user] breaks an [I] into small parts with the stake!"))
+			new /obj/item/scrap(get_turf(I))
+			new /obj/item/scrap(get_turf(I))
+			new /obj/item/scrap(get_turf(I))
+			qdel(I)
+		if(I.anvilrepair)
+			if(I.smeltresult == /obj/item/ingot/iron)
+				if(!do_after(user, 4 SECONDS, target = I))
+					return
+				to_chat(user, span_warning("The [user] breaks an [I] into small parts with the stake!"))
+				new /obj/item/scrap(get_turf(I))
+				qdel(I)
 
 /////////////
 // Planks //
@@ -385,6 +465,7 @@
 	max_integrity = 20
 	firefuel = 5 MINUTES
 	w_class = WEIGHT_CLASS_BULKY
+	sellprice = 4
 	bundletype = /obj/item/natural/bundle/plank
 	smeltresult = /obj/item/ash
 	

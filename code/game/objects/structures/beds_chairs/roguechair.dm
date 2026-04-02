@@ -1,5 +1,6 @@
 /obj/structure/chair/bench
 	name = "bench"
+	desc = "A stouter, wider chair. It doesn't look terribly comfortable."
 	icon_state = "bench"
 	icon = 'icons/roguetown/misc/structure.dmi'
 	buildstackamount = 1
@@ -21,6 +22,8 @@
 
 /obj/structure/chair/bench/Initialize()
 	. = ..()
+	var/static/list/loc_connections = list(COMSIG_ATOM_EXIT = PROC_REF(on_exit))
+	AddElement(/datum/element/connect_loc, loc_connections)
 	handle_layer()
 
 /obj/structure/chair/bench/handle_layer()
@@ -34,13 +37,10 @@
 /obj/structure/chair/bench/post_buckle_mob(mob/living/M)
 	..()
 	density = TRUE
-//	M.pixel_y = 10
 
 /obj/structure/chair/bench/post_unbuckle_mob(mob/living/M)
 	..()
 	density = FALSE
-//	M.pixel_x = M.get_standard_pixel_x_offset(M.lying)
-//	M.pixel_y = M.get_standard_pixel_y_offset(M.lying)
 
 /obj/structure/chair/bench/CanAStarPass(ID, travel_dir, caller)
 	if(travel_dir == dir)
@@ -52,39 +52,48 @@
 		return 0
 	return !density
 
-/obj/structure/chair/bench/CheckExit(atom/movable/O, turf/target)
-	if(get_dir(target, O.loc) == dir)
-		return 0
-	return !density
+/obj/structure/chair/bench/proc/on_exit(datum/source, atom/movable/leaving, atom/new_location)
+	SIGNAL_HANDLER
+	if(istype(leaving, /obj/projectile))
+		return
+	if(get_dir(new_location, leaving.loc) == dir)
+		leaving.Bump(src)
+		return COMPONENT_ATOM_BLOCK_EXIT
 
 /obj/structure/chair/bench/couch
+	desc = "A comfortable-looking piece of furniture, padded with fabric!"
 	icon_state = "redcouch"
 
 /obj/structure/chair/bench/church/smallbench
+	desc = "An unusually small, modest bench. Better than the floor."
 	icon_state = "benchsmall"
 
 /obj/structure/chair/bench/couch/r
 	icon_state = "redcouch2"
 
 /obj/structure/chair/bench/ultimacouch
+	desc = "A particularly affluent piece of furniture, upholstered with brown-green fabric."
 	icon_state = "ultimacouchleft"
 
 /obj/structure/chair/bench/ultimacouch/r
 	icon_state = "ultimacouchright"
 
 /obj/structure/chair/bench/coucha
+	desc = "A particularly affluent piece of furniture, upholstered with red fabric."
 	icon_state = "couchaleft"
 
 /obj/structure/chair/bench/coucha/r
 	icon_state = "coucharight"
 
 /obj/structure/chair/bench/couchablack
+	desc = "A particularly affluent piece of furniture, upholstered with black fabric."
 	icon_state = "couchablackaleft"
 
 /obj/structure/chair/bench/couchablack/r
 	icon_state = "couchablackaright"
 
 /obj/structure/chair/bench/couchamagenta
+	desc = "A particularly affluent piece of furniture, upholstered with magenta fabric."
 	icon_state = "couchamagentaleft"
 
 /obj/structure/chair/bench/couchamagenta/r
@@ -115,6 +124,11 @@
 	destroy_sound = 'sound/combat/hits/onwood/destroyfurniture.ogg'
 	attacked_sound = "woodimpact"
 
+/obj/structure/chair/wood/rogue/Initialize()
+	. = ..()
+	var/static/list/loc_connections = list(COMSIG_ATOM_EXIT = PROC_REF(on_exit))
+	AddElement(/datum/element/connect_loc, loc_connections)
+
 /obj/structure/chair/wood/rogue/chair3
 	icon_state = "chair3"
 	icon = 'icons/roguetown/misc/structure.dmi'
@@ -141,6 +155,7 @@
 
 /obj/structure/chair/wood/rogue/throne
 	icon_state = "thronechair"
+	desc = "Someone important must sit here."
 	icon = 'icons/roguetown/misc/structure.dmi'
 	blade_dulling = DULLING_BASHCHOP
 	destroy_sound = 'sound/combat/hits/onwood/destroyfurniture.ogg'
@@ -154,22 +169,35 @@
 	origin_type = /obj/structure/chair/wood/rogue
 	blade_dulling = DULLING_BASHCHOP
 	can_parry = TRUE
-	gripped_intents = list(/datum/intent/hit)
+	force = 20
+	force_wielded = 20
+	throwforce = 25
+	wdefense = 1
+	possible_item_intents = list(/datum/intent/mace/strike/wood, /datum/intent/mace/smash/wood)
+	gripped_intents = list(/datum/intent/mace/strike/wood, /datum/intent/mace/smash/wood)
+	max_integrity = 50
 	obj_flags = CAN_BE_HIT
-	max_integrity = 100
 	destroy_sound = 'sound/combat/hits/onwood/destroyfurniture.ogg'
 	attacked_sound = "woodimpact"
-	sleepy = 0.35
+	associated_skill = /datum/skill/combat/unarmed
+	swingsound = BLUNTWOOSH_LARGE
+
+/obj/item/chair/rogue/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Click-dragging yourself onto a seat, while on the same tile, will 'buckle' you in; this represents your character sitting down. Sitting down gradually restores energy, and can be used to prop up people who'd normally be unable to stand.")
+	. += span_info("Left-click on the seat to 'unbuckle' yourself; this represents your character getting up. You can alternatively get up by pressing the 'RESIST' hotkey.")
+	. += span_info("This can be done to other people, as well. Click-dragging someone onto a seat will sit them down, and left-clicking the seat will 'unbuckle' them once more.")
+	. += span_info("Restrained people are unable to 'unbuckle' themeselves, or otherwise get up from whatever they're tied to. Pressing the 'RESIST' hotkey will allow them to start struggling out of their restraints. The time needed to accomplish this scales with the character's Strength.")
+	. += span_info("Some chairs and stools can be used as improvised weapons, by click-dragging them onto yourself. Activating a chair or stool in your hand will set it down in whatever direction you're facing.")
 
 /obj/item/chair/rogue/getonmobprop(tag)
 	. = ..()
 	if(tag)
 		switch(tag)
-			if("wieldedl")
-				return list("shrink" = 0.7,"sx" = 2,"sy" = 1,"nx" = -17,"ny" = 0,"wx" = -11,"wy" = 0,"ex" = 2,"ey" = 0,"westabove" = 1,"eastbehind" = 0,"nturn" = 9,"sturn" = -42,"wturn" = 21,"eturn" = -27,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0)
-			if("wielded")
-				return list("shrink" = 0.7,"sx" = 2,"sy" = 1,"nx" = -17,"ny" = 0,"wx" = -11,"wy" = 0,"ex" = 2,"ey" = 0,"westabove" = 1,"eastbehind" = 0,"nturn" = 9,"sturn" = -42,"wturn" = 21,"eturn" = -27,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,)
-	..()
+			if("gen") 
+				return list("shrink" = 0.7,"sx" = -1,"sy" = 0,"nx" = 11,"ny" = 1,"wx" = 0,"wy" = 1,"ex" = 4,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 15,"sturn" = 0,"wturn" = 0,"eturn" = 39,"nflip" = 8,"sflip" = 0,"wflip" = 0,"eflip" = 8)
+			if("wielded") 
+				return list("shrink" = 0.7,"sx" = -9,"sy" = 4,"nx" = -7,"ny" = 0,"wx" = -7,"wy" = 2,"ex" = 8,"ey" = 5,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = -42,"sturn" = 190,"wturn" = -170,"eturn" = -10,"nflip" = -8,"sflip" = 1,"wflip" = 1,"eflip" = 0)
 
 /obj/structure/chair/wood/rogue/CanPass(atom/movable/mover, turf/target)
 	if(isliving(mover))
@@ -190,6 +218,8 @@
 /obj/structure/chair/wood/rogue/onkick(mob/user)
 	if(!user)
 		return
+	if(!item_chair)
+		return
 	if(isturf(loc))
 		playsound(loc, 'sound/foley/chairfall.ogg', 100, FALSE)
 		var/obj/item/I = new item_chair(loc)
@@ -198,20 +228,22 @@
 		qdel(src)
 		return FALSE
 
-/obj/structure/chair/wood/rogue/CheckExit(atom/movable/O, turf/target)
-	if(isliving(O))
-		var/mob/living/M = O
-		if((M.mobility_flags & MOBILITY_STAND))
-			if(isturf(loc))
-				var/movefrom = get_dir(M.loc, target)
-				if(movefrom == turn(dir, 180) && item_chair != null)
-					playsound(loc, 'sound/foley/chairfall.ogg', 100, FALSE)
-					var/obj/item/I = new item_chair(loc)
-					item_chair = null
-					I.dir = dir
-					qdel(src)
-					return FALSE
-	return ..()
+/obj/structure/chair/wood/rogue/proc/on_exit(datum/source, atom/movable/leaving, atom/new_location)
+    SIGNAL_HANDLER
+    if(!isliving(leaving))
+        return
+    var/mob/living/M = leaving
+    if(!(M.mobility_flags & MOBILITY_STAND))
+        return
+    if(get_dir(leaving.loc, new_location) == REVERSE_DIR(dir))
+        if(!item_chair)
+            return
+        playsound(loc, 'sound/foley/chairfall.ogg', 100, FALSE)
+        var/obj/item/I = new item_chair(loc)
+        item_chair = null
+        I.dir = dir
+        qdel(src)
+        return COMPONENT_ATOM_BLOCK_EXIT
 
 /obj/structure/chair/wood/rogue/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1)
 	if(damage_amount > 5 && item_chair != null)
@@ -221,9 +253,7 @@
 		I.dir = dir
 		qdel(src)
 		return FALSE
-	else
-		..()
-
+	return ..()
 
 /obj/structure/chair/wood/rogue/fancy
 	icon_state = "chair1"
@@ -271,20 +301,31 @@
 	origin_type = /obj/structure/chair/stool/rogue
 	blade_dulling = DULLING_BASHCHOP
 	can_parry = TRUE
-	gripped_intents = list(/datum/intent/hit)
+	force = 15
+	force_wielded = 15
+	throwforce = 20
+	wdefense = 1
+	possible_item_intents = list(/datum/intent/mace/strike/wood, /datum/intent/mace/smash/wood)
+	gripped_intents = list(/datum/intent/mace/strike/wood, /datum/intent/mace/smash/wood)
+	max_integrity = 50
 	obj_flags = CAN_BE_HIT
-	max_integrity = 100
 	destroy_sound = 'sound/combat/hits/onwood/destroyfurniture.ogg'
 	attacked_sound = "woodimpact"
+	associated_skill = /datum/skill/combat/unarmed
+	swingsound = BLUNTWOOSH_LARGE
+
+/obj/item/chair/stool/bar/rogue/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Some chairs and stools can be used as improvised weapons, by click-dragging them onto yourself. Activating a chair or stool in your hand will set it down in whatever direction you're facing.")
 
 /obj/item/chair/stool/bar/rogue/getonmobprop(tag)
 	. = ..()
 	if(tag)
 		switch(tag)
-			if("wieldedl")
-				return list("shrink" = 0.8,"sx" = 3,"sy" = -8,"nx" = -19,"ny" = -6,"wx" = -13,"wy" = -7,"ex" = 1,"ey" = -5,"westabove" = 1,"eastbehind" = 0,"nturn" = 30,"sturn" = -18,"wturn" = 30,"eturn" = -24,"nflip" = 8,"sflip" = 0,"wflip" = 8,"eflip" = 0)
-			if("wielded")
-				return list("shrink" = 0.8,"sx" = -20,"sy" = -6,"nx" = 0,"ny" = -7,"wx" = -18,"wy" = -5,"ex" = -4,"ey" = -8,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = -42,"sturn" = 33,"wturn" = 33,"eturn" = -21,"nflip" = 0,"sflip" = 8,"wflip" = 8,"eflip" = 0)
+			if("gen") 
+				return list("shrink" = 0.7,"sx" = -1,"sy" = 0,"nx" = 11,"ny" = 1,"wx" = 0,"wy" = 1,"ex" = 4,"ey" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 15,"sturn" = 0,"wturn" = 0,"eturn" = 39,"nflip" = 8,"sflip" = 0,"wflip" = 0,"eflip" = 8)
+			if("wielded") 
+				return list("shrink" = 0.7, "sx" = -12, "sy" = -8, "nx" = 13, "ny" = -7, "wx" = -10, "wy" = -5, "ex" = 7, "ey" = -6, "northabove" = 0, "southabove" = 1, "eastabove" = 1, "westabove" = 0, "nturn" = -13, "sturn" = 110, "wturn" = -60, "eturn" = -30, "nflip" = 1, "sflip" = 1, "wflip" = 8, "eflip" = 1)
 
 /obj/structure/bed/rogue
 	icon_state = "bed"
@@ -294,6 +335,33 @@
 	buckle_lying = 90
 	sleepy = 3
 	debris = list(/obj/item/grown/log/tree/small = 1)
+	var/broken_matress = FALSE
+	var/broken_percentage = 0
+
+/obj/structure/bed/rogue/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Click-dragging yourself onto a bed, while on the same tile, will 'buckle' you in; this represents your character laying down. Laying down gradually restores energy, and allows your character to begin sleeping.")
+	. += span_info("Once laying down on a bed, you can close your eyes by clicking the small arrows that border the top-and-bottom of your HUD's eye. If your eyes are closed and you're laying down, you'll begin to drift off into sleep.")
+	. += span_info("Most people can't sleep while wearing helmets and chestpieces. Left-click the items-in-question in your inventory to take them off. You can either press the 'Z' key to drop them, or left-click a table or opened closet to set them aside.")
+	. += span_info("If you aren't interrupted, you'll fall asleep after a bit. Sleeping clears the daily 'Tired' debuff and allows you to further learn more skills. The higher your Intelligence is, the more skills - and skill points - you'll earn with each sleep.")
+	. += span_info("Sleeping will gradually heal most wounds and damages, over time. This can be further enhanced by sleeping next to a lit campfire or fireplace. To begin waking back up, click the arrows that border the HUD's eye once again. If you can see the eye, that means you'll wake up soon.")
+	. += span_info("Once awake, hit the 'RESIST' hotkey or left-click the bed to 'unbuckle' yourself. Once unbuckled, pressing the 'V' key will allow you to fully rise up.")
+	. += span_info("Note that you can still sleep anywhere you wish, even without a bed, by simply laying down and closing your eyes. While this can work in a pinch to stave off tiredness or bolster your characters to survive a critical wound, it's much less ideal.")
+
+/obj/structure/bed/rogue/proc/damage_bed(dam_value)
+	if(sleepy <= 2) // the bed is already pretty awful and broken (i.e: straw bed/bedroll), so don't break it even further
+		return
+	broken_percentage += dam_value
+	if(!broken_matress && (broken_percentage >= 100))
+		broken_matress = TRUE
+		sleepy = 1 //Worse than a bedroll, better than nothing
+		visible_message(span_warning("\The [src] gives a violent snap. It looks broken!"))
+		playsound(src, 'sound/misc/mat/bed break.ogg', 50, TRUE, ignore_walls = FALSE)
+		desc += " The bed looks stained and has seen better days."
+	else if(broken_percentage >= 100)
+		broken_percentage = 100
+	else
+		playsound(src, pick(list('sound/misc/mat/bed squeak (1).ogg','sound/misc/mat/bed squeak (2).ogg','sound/misc/mat/bed squeak (3).ogg')), 30, TRUE, ignore_walls = FALSE)
 
 /obj/structure/bed/rogue/OnCrafted(dirin)
 	dirin = turn(dirin, 180)
@@ -309,7 +377,7 @@
 	name = "straw bed"
 	desc = "A rough bed of straw. It's scratchy, and probably hides lots of bugs, but at least it's dry and warm."
 	icon_state = "shitbed"
-	sleepy = 1
+	sleepy = 1.5
 
 /obj/structure/bed/rogue/post_buckle_mob(mob/living/M)
 	..()
@@ -344,6 +412,10 @@
 	grid_width = 32
 	grid_height = 64
 
+/obj/item/bedroll/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Activate the bedroll in your hand to set it down, and left-click the placed-down bedroll to pick it back up.")
+
 /obj/item/bedroll/attack_self(mob/user, params)
 	..()
 	var/turf/T = get_turf(loc)
@@ -362,6 +434,15 @@
 		var/obj/structure/bed/rogue/bedroll/new_bedroll = new /obj/structure/bed/rogue/bedroll(get_turf(src))
 		new_bedroll.color = src.color
 		qdel(src)
+
+/obj/item/bedroll/getonmobprop(tag)
+	. = ..()
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.5,"sx" = -1,"sy" = -1,"nx" = 7,"ny" = -1,"wx" = 0,"wy" = -1,"ex" = 4,"ey" = -2,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0,"nturn" = 15,"sturn" = 0,"wturn" = 0,"eturn" = 39,"nflip" = 8,"sflip" = 0,"wflip" = 0,"eflip" = 8)
+			if("onbelt")
+				return list("shrink" = 0.3,"sx" = -2,"sy" = -5,"nx" = 4,"ny" = -5,"wx" = 0,"wy" = -5,"ex" = 2,"ey" = -5,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
 
 /obj/structure/bed/rogue/inn
 	icon_state = "inn_bed"
@@ -419,7 +500,7 @@
 	anchored = TRUE
 	can_buckle = TRUE
 	buckle_lying = 90
-	sleepy = 3
+	sleepy = 2
 	debris = list(/obj/item/grown/log/tree/small = 1)
 
 /obj/structure/bed/rogue/inn/wool
@@ -437,4 +518,4 @@
 	anchored = TRUE
 	can_buckle = TRUE
 	buckle_lying = 90
-	sleepy = 3
+	sleepy = 1

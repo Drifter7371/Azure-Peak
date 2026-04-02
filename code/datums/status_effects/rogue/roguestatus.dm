@@ -3,8 +3,9 @@
 
 /datum/status_effect/mood/bad
 	id = "mood"
-	effectedstats = list("fortune" = -1)
+	effectedstats = list(STATKEY_LCK = -1)
 	alert_type = /atom/movable/screen/alert/status_effect/moodbad
+	needs_processing = FALSE
 
 /atom/movable/screen/alert/status_effect/moodbad
 	name = "Stressed"
@@ -13,8 +14,9 @@
 
 /datum/status_effect/mood/vbad
 	id = "mood"
-	effectedstats = list("fortune" = -2)
+	effectedstats = list(STATKEY_LCK = -2)
 	alert_type = /atom/movable/screen/alert/status_effect/moodvbad
+	needs_processing = FALSE
 
 /atom/movable/screen/alert/status_effect/moodvbad
 	name = "Max Stress"
@@ -23,8 +25,9 @@
 
 /datum/status_effect/mood/good
 	id = "mood"
-	effectedstats = list("fortune" = 1)
+	effectedstats = list(STATKEY_LCK = 1)
 	alert_type = /atom/movable/screen/alert/status_effect/moodgood
+	needs_processing = FALSE
 
 /atom/movable/screen/alert/status_effect/moodgood
 	name = "Inner Peace"
@@ -33,8 +36,9 @@
 
 /datum/status_effect/mood/vgood
 	id = "mood"
-	effectedstats = list("fortune" = 2)
+	effectedstats = list(STATKEY_LCK = 2)
 	alert_type = /atom/movable/screen/alert/status_effect/moodvgood
+	needs_processing = FALSE
 
 /atom/movable/screen/alert/status_effect/moodvgood
 	name = "Max Peace"

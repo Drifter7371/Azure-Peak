@@ -66,6 +66,10 @@
 	name = "Drake"
 	icon_state = "drake"
 
+/datum/sprite_accessory/horns/drake_wide
+	name = "Drake, Wide"
+	icon_state = "drake_wide"
+
 /datum/sprite_accessory/horns/knight
 	name = "Knight"
 	icon_state = "knight"
@@ -109,6 +113,10 @@
 /datum/sprite_accessory/horns/liftedhorns
 	name = "Lifted Horns"
 	icon_state = "lifted"
+
+/datum/sprite_accessory/horns/brokenliftedhorns
+	name = "Lifted Horns (Broken)"
+	icon_state = "liftedbroken"
 
 /datum/sprite_accessory/horns/sideswept
 	name = "Side Swept Horns"
@@ -174,6 +182,46 @@
 	name = "Big Antlers"
 	icon_state = "big_antlers"
 	relevant_layers = list(BODY_ADJ_LAYER, BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/horns/large/large_antlers
+	name = "Large Antlers"
+	icon_state = "large_antlers"
+	relevant_layers = list(BODY_ADJ_LAYER, BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/horns/large/regal_antlers
+	name = "Regal Antlers"
+	icon_state = "regal_antlers"
+	relevant_layers = list(BODY_ADJ_LAYER, BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/horns/large/dukely_antlers
+	name = "Dukely Antlers"
+	icon_state = "dukely_antlers"
+	relevant_layers = list(BODY_ADJ_LAYER, BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/horns/large/short_antlers
+	name = "Short Antlers"
+	icon_state = "short_antlers"
+	relevant_layers = list(BODY_ADJ_LAYER, BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/horns/large/branching_antlers
+	name = "Branching Antlers"
+	icon_state = "branching_antlers"
+	relevant_layers = list(BODY_ADJ_LAYER, BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/horns/large/pronghorn
+	name = "Pronghorn Antlers"
+	icon_state = "pronghorn_antlers"
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/horns/large/spire
+	name = "Spires"
+	icon_state = "spirehorns"
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/horns/large/highrise
+	name = "Towering"
+	icon_state = "toweringhorns"
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/horns/tiefling
 	name = "Tiefling"

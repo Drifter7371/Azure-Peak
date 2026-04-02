@@ -51,7 +51,6 @@
 	var/static_light = 0
 	var/static_environ
 
-	var/has_gravity = 0
 	///Are you forbidden from teleporting to the area? (centcom, mobs, wizard, hand teleporter)
 	var/noteleport = FALSE
 	///Hides area from player Teleport function.
@@ -62,8 +61,6 @@
 	var/unique = TRUE
 
 //	var/no_air = null
-
-	var/parallax_movedir = 0
 
 	var/list/ambientsounds = GENERIC
 	var/list/ambientrain = null
@@ -93,7 +90,10 @@
 	flags_1 = CAN_BE_DIRTY_1 | CULT_PERMITTED_1
 	var/soundenv = 0
 
+	/// The text displayed on top of the screen the first time a player enter an area in a round
 	var/first_time_text = null
+	/// Detail text. When a player enter an area, a small message appears in chat with a href. see area_detail_txt.dm for style guidee
+	var/detail_text = null
 
 	var/list/firedoors
 	var/list/cameras
@@ -104,11 +104,18 @@
 	/// typecache to limit the areas that atoms in this area can smooth with, used for shuttles IIRC
 	var/list/canSmoothWithAreas
 
-	var/list/ambush_types
 	var/list/ambush_mobs
 	var/list/ambush_times
 
 	var/converted_type
+
+	var/threat_region = "" // Key used to look up threat region this area belongs to
+	/// Message used for deathsight. Try to be deliberately obtuse but not too obtuse.
+	var/deathsight_message = "a locale wreathed in enigmatic fog"
+
+	var/coven_protected = FALSE
+	/// Whether or not an area protects against Necra's vengeful fog
+	var/fog_protected = FALSE
 
 
 /**
@@ -153,6 +160,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	// rather than waiting for atoms to initialize.
 	if (unique)
 		GLOB.areas_by_type[type] = src
+	GLOB.areas += src
 	return ..()
 
 /area/proc/can_craft_here()
@@ -246,6 +254,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /area/Destroy()
 	if(GLOB.areas_by_type[type] == src)
 		GLOB.areas_by_type[type] = null
+	GLOB.areas -= src
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 
@@ -381,27 +390,10 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if(!L.ckey || L.stat == DEAD)
 		return
 
-	// Ambience goes down here -- make sure to list each area separately for ease of adding things in later, thanks! Note: areas adjacent to each other should have the same sounds to prevent cutoff when possible.- LastyScratch
-//	if(L.client && !L.client.ambience_playing && L.client.prefs.toggles & SOUND_SHIP_AMBIENCE)
-//		L.client.ambience_playing = 1
-//		SEND_SOUND(L, sound('sound/blank.ogg', repeat = 1, wait = 0, volume = 35, channel = CHANNEL_BUZZ))
-
 	if(first_time_text)
 		L.intro_area(src)
-
-	var/mob/living/living_arrived = M
-
-	if(istype(living_arrived) && living_arrived.client && !living_arrived.cmode)
-		//Ambience if combat mode is off
-		SSdroning.area_entered(src, living_arrived.client)
-		SSdroning.play_loop(src, living_arrived.client)
-		var/found = FALSE
-		for(var/datum/weather/rain/R in SSweather.curweathers)
-			found = TRUE
-		if(found)
-			SSdroning.play_rain(src, living_arrived.client)
-
-//	L.play_ambience(src)
+	if(SSevent_scheduler.fog_active)
+		SSevent_scheduler.update_mob_fog_status(M, fog_protected)
 
 /client
 	var/musicfading = 0
@@ -409,9 +401,13 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /mob/living/proc/intro_area(area/A)
 	if(!mind)
 		return
-	if(A.first_time_text in mind.areas_entered)
-		return
 	if(!client)
+		return
+	if(A.first_time_text && A.detail_text)
+		to_chat(client, span_info("You enter <a href='?src=[REF(A)];getdescription=1'>[A.name]</a>."))
+	else if (A.first_time_text) // Avoid trivial introduction
+		to_chat(client, span_info("You enter [A.name]."))
+	if(A.first_time_text in mind.areas_entered)
 		return
 	mind.areas_entered += A.first_time_text
 	var/atom/movable/screen/area_text/T = new()
@@ -547,3 +543,9 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			found = TRUE
 		if(found)
 			SSdroning.play_rain(get_area(boarder.client), boarder.client)
+
+/area/Topic(href, href_list)
+	..()
+	if(href_list["getdescription"])
+		if(detail_text)
+			to_chat(usr, span_info("[detail_text]"))

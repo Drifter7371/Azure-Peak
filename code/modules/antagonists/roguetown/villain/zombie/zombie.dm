@@ -26,7 +26,7 @@
 	var/STASPD
 	var/STAINT
 	var/STACON
-	var/STAEND
+	var/STAWIL
 	var/cmode_music
 	var/list/base_intents
 
@@ -36,7 +36,6 @@
 	var/last_bite
 	/// Traits applied to the owner mob when we turn into a zombie
 	var/static/list/traits_zombie = list(
-		TRAIT_CRITICAL_RESISTANCE,
 		TRAIT_INFINITE_STAMINA,
 		TRAIT_NOMOOD,
 		TRAIT_NOHUNGER,
@@ -44,7 +43,7 @@
 		TRAIT_NOPAIN,
 		TRAIT_NOPAINSTUN,
 		TRAIT_NOBREATH,
-		TRAIT_NOBREATH,
+		TRAIT_DEATHLESS,
 		TRAIT_TOXIMMUNE,
 		TRAIT_CHUNKYFINGERS,
 		TRAIT_NOSLEEP,
@@ -54,7 +53,9 @@
 		TRAIT_ZOMBIE_SPEECH,
 		TRAIT_ZOMBIE_IMMUNE,
 		TRAIT_ROTMAN,
-		TRAIT_NORUN
+		TRAIT_NORUN,
+		TRAIT_SILVER_WEAK,
+		TRAIT_DEADITE,
 	)
 	/// Traits applied to the owner when we are cured and turn into just "rotmen"
 	var/static/list/traits_rotman = list(
@@ -62,15 +63,16 @@
 		TRAIT_NOPAIN,
 		TRAIT_NOPAINSTUN,
 		TRAIT_NOBREATH,
+		TRAIT_DEATHLESS,
 		TRAIT_TOXIMMUNE,
 		TRAIT_ZOMBIE_IMMUNE,
 		TRAIT_ROTMAN,
+		TRAIT_SILVER_WEAK,
 	)
 
 /datum/antagonist/zombie/examine_friendorfoe(datum/antagonist/examined_datum,mob/examiner,mob/examined)
-	if(istype(examined_datum, /datum/antagonist/vampirelord))
-		var/datum/antagonist/vampirelord/V = examined_datum
-		if(!V.disguised)
+	if(istype(examined_datum, /datum/antagonist/vampire))
+		if(!SEND_SIGNAL(examined_datum.owner, COMSIG_DISGUISE_STATUS))
 			return span_boldnotice("Another deadite.")
 	if(istype(examined_datum, /datum/antagonist/zombie))
 		var/datum/antagonist/zombie/fellow_zombie = examined_datum
@@ -78,31 +80,31 @@
 	if(istype(examined_datum, /datum/antagonist/skeleton))
 		return span_boldnotice("Another deadite.")
 
-//Housekeeping/saving variables from pre-zombie 
+//Housekeeping/saving variables from pre-zombie
 
 /*Death transformation process goes:
-	death -> 
-	/mob/living/carbon/human/death(gibbed) -> 
-	zombie_check_can_convert() -> 
-	zombie.on_gain() -> 
-	rotting.dm process -> 
-	time passes -> 
-	zombie.wake_zombie() -> 
+	death ->
+	/mob/living/carbon/human/death(gibbed) ->
+	zombie_check_can_convert() ->
+	zombie.on_gain() ->
+	rotting.dm process ->
+	time passes ->
+	zombie.wake_zombie() ->
 	transform
 */
 /*
 	Deadite transformation is 2 ways. First is on the initial bite (low chance) and second is on being chewed on.
 
 	Initial bite is: other_mobs.dm, /mob/living/carbon/onbite(mob/living/carbon/human/user) ->
-	bite_victim.zombie_infect_attempt() -> 
+	bite_victim.zombie_infect_attempt() ->
 	attempt_zombie_infection(src, "bite", ZOMBIE_BITE_CONVERSION_TIME) -> rng check here
 	time passes ->
 	wake_zombie.
 
 	Wound transformation goes: grabbing.dm, /obj/item/grabbing/bite/proc/bitelimb(mob/living/carbon/human/user) ->
-	/datum/wound/proc/zombie_infect_attempt() -> 
+	/datum/wound/proc/zombie_infect_attempt() ->
 	human_owner.attempt_zombie_infection(src, "wound", zombie_infection_time) ->
-	time passes -> 
+	time passes ->
 	wake_zombie
 
 	Infection transformation process goes -> infection -> timered transform in zombie_infect_attempt() [drink red/holy water and kill timer?] -> /datum/antagonist/zombie/proc/wake_zombie -> zombietransform
@@ -124,18 +126,24 @@
 	base_intents = zombie.base_intents
 
 	//Just need to clear it to snapshot. May get things we don't want to get.
-	for(var/status_effect in zombie.status_effects)
-		zombie.remove_status_effect(status_effect)
+	// A later coder. Sincerely, what the ****???
+	// If we ever need this again, change this to something that removes status effects that are CLEAR to be dispelled by this.
+	// for(var/status_effect in zombie.status_effects)
+	// 	zombie.remove_status_effect(status_effect)
+	zombie.grant_language(/datum/language/undead)
+	var/datum/language_holder/language_holder = zombie.get_language_holder()
+	language_holder.selected_default_language = /datum/language/undead
 
 	src.STASTR = zombie.STASTR
 	src.STASPD = zombie.STASPD
 	src.STAINT = zombie.STAINT
 	src.STACON = zombie.STACON
-	src.STAEND = zombie.STAEND
+	src.STAWIL = zombie.STAWIL
 	cmode_music = zombie.cmode_music
 
-	//Special because deadite status is latent as opposed to the others. 
+	//Special because deadite status is latent as opposed to the others.
 	if(admin_granted)
+		zombie.infected = TRUE
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wake_zombie), zombie, FALSE, TRUE), 5 SECONDS, TIMER_STOPPABLE)
 	return ..()
 
@@ -147,10 +155,11 @@
 	var/mob/living/carbon/human/zombie = owner?.current
 	if(zombie)
 
+		zombie.infected = FALSE // Makes sure admins removing deadification removes the infected var if they do it before they turn
 		zombie.verbs -= /mob/living/carbon/human/proc/zombie_seek
 		zombie.mind?.special_role = special_role
 		zombie.ambushable = ambushable
-		
+
 		if(zombie.dna?.species)
 			zombie.dna.species.soundpack_m = soundpack_m
 			zombie.dna.species.soundpack_f = soundpack_f
@@ -161,27 +170,30 @@
 		zombie.npc_jump_chance = initial(zombie.npc_jump_chance)
 		zombie.rude = initial(zombie.rude)
 		zombie.tree_climber = initial(zombie.tree_climber)
-		if(zombie.charflaw)
-			zombie.charflaw.ephemeral = FALSE
+		for(var/datum/charflaw/cf in zombie.charflaws)
+			cf.ephemeral = FALSE
 		zombie.update_body()
 
 		zombie.STASTR = src.STASTR
 		zombie.STASPD = src.STASPD
 		zombie.STAINT = src.STAINT
 		zombie.STACON = src.STACON
-		zombie.STAEND = src.STAEND
+		zombie.STAWIL = src.STAWIL
 
 
 
 		GLOB.dead_mob_list -= zombie // Remove it from global dead/alive mob list here here, if they're a zombie they probably died.
 									 // There is a better way to maintain it but needs overhaul. Will cover the two methods of zombie
-		GLOB.alive_mob_list += zombie// in both cure rot and medicine. 
+		GLOB.alive_mob_list += zombie// in both cure rot and medicine.
 
 		zombie.cmode_music = cmode_music
 
 		for(var/trait in traits_zombie)
 			REMOVE_TRAIT(zombie, trait, "[type]")
 		zombie.remove_client_colour(/datum/client_colour/monochrome)
+		zombie.remove_language(/datum/language/undead)
+		var/datum/language_holder/language_holder = zombie.get_language_holder()
+		language_holder.selected_default_language = null
 
 		if(has_turned && become_rotman)
 			zombie.STACON = max(zombie.STACON - 2, 1) //ur rotting bro
@@ -224,7 +236,7 @@
 		return
 
 	revived = TRUE //so we can die for real later
-	
+
 	for(var/trait_applied in traits_zombie)
 		ADD_TRAIT(zombie, trait_applied, "[type]")
 	if(zombie.mind)
@@ -244,8 +256,8 @@
 	ambushable = zombie.ambushable
 	zombie.ambushable = FALSE
 
-	if(zombie.charflaw)
-		zombie.charflaw.ephemeral = TRUE
+	for(var/datum/charflaw/cf in zombie.charflaws)
+		cf.ephemeral = TRUE
 	zombie.mob_biotypes |= MOB_UNDEAD
 	zombie.faction += "undead"
 	zombie.faction += "zombie"
@@ -310,7 +322,7 @@
 	if(istype(zombie.loc, /obj/structure/closet/dirthole) || istype(zombie.loc, /obj/structure/closet/crate/coffin))
 		qdel(src)
 		return
-	
+
 	zombie.can_do_sex = FALSE	//no fuck off
 
 	zombie.blood_volume = BLOOD_VOLUME_NORMAL
@@ -335,47 +347,13 @@
 	return ..()
 
 /*
-	Check for zombie infection post bite
-		Bite chance is checked here
-		Wound chance is checked in zombie_wound_infection.dm
-*/
-/mob/living/carbon/human/proc/attempt_zombie_infection(mob/living/carbon/human/source, infection_type, wake_delay = 0)
-	var/mob/living/carbon/human/victim = src
-	if (QDELETED(src) || stat >= DEAD)
-		return FALSE
-
-	var/datum/antagonist/zombie/victim_zombie = victim.mind?.has_antag_datum(/datum/antagonist/zombie)
-	if (victim_zombie) //Check that the victim isn't already a zombie or on the way to becoming one
-		return FALSE
-
-	var/datum/antagonist/zombie/zombie_antag = source.mind?.has_antag_datum(/datum/antagonist/zombie)
-	if (!zombie_antag || !zombie_antag.has_turned) //Check that the zombie who bit us is real
-		return FALSE
-
-	//How did the victim get infected
-	switch (infection_type)
-		if ("bite")
-			if (!prob(ZOMBIE_FIRST_BITE_CHANCE)) // Chance to infect via first bite (rare)
-				return FALSE
-			to_chat(victim, span_danger("A growing cold seeps into my body. I feel horrible... REALLY horrible..."))
-			mob_timers["puke"] = world.time
-			vomit(1, blood = TRUE, stun = FALSE)
-
-		if ("wound")	//Chance to infect via chewing to open wound
-			flash_fullscreen("redflash3")
-			to_chat(victim, span_danger("Ow! It hurts. I feel horrible... REALLY horrible..."))
-
-	victim.zombie_check_can_convert() //They are given zombie antag mind here unless they're already an antag.
-
-//Delay on waking up as a zombie. /proc/wake_zombie(mob/living/carbon/zombie, infected_wake = FALSE, converted = FALSE)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wake_zombie), victim, FALSE, TRUE), wake_delay, TIMER_STOPPABLE)
-	return zombie_antag
-
-/*
 	Proc for our newly infected to wake up as a zombie
 */
 /proc/wake_zombie(mob/living/carbon/zombie, infected_wake = FALSE, converted = FALSE)
-	if (!zombie || QDELETED(zombie)) 
+	if(!zombie.infected) //Ensure they werent cured
+		return
+
+	if (!zombie || QDELETED(zombie))
 		return
 
 	if (!istype(zombie, /mob/living/carbon/human)) // Ensure the zombie is human
@@ -394,7 +372,7 @@
 		qdel(zombie)
 		return
 
-	GLOB.azure_round_stats[STATS_DEADITES_WOKEN_UP]++
+	record_round_statistic(STATS_DEADITES_WOKEN_UP)
 	// Heal the zombie
 	zombie.blood_volume = BLOOD_VOLUME_NORMAL
 	zombie.setOxyLoss(0, updating_health = FALSE, forced = TRUE) // Zombies don't breathe
@@ -411,6 +389,7 @@
 	zombie.update_mobility()
 	zombie.update_sight()
 	zombie.reload_fullscreen()
+	zombie.infected = FALSE //The infection has finished and they are now a zombie
 
 	var/datum/antagonist/zombie/zombie_antag = zombie.mind?.has_antag_datum(/datum/antagonist/zombie)
 	if(zombie_antag)
@@ -427,12 +406,13 @@
 		zombie.flash_fullscreen("redflash3")
 		zombie.emote("scream") // Warning for nearby players
 		zombie.Knockdown(1)
+		zombie.drop_all_held_items()
 
 ///Making sure they're not any other antag as well as adding the zombie datum to their mind
 /mob/living/carbon/human/proc/zombie_check_can_convert()
 	if(!mind)
 		return
-	if(mind.has_antag_datum(/datum/antagonist/vampirelord))
+	if(mind.has_antag_datum(/datum/antagonist/vampire))
 		return
 	if(mind.has_antag_datum(/datum/antagonist/werewolf))
 		return
@@ -440,7 +420,12 @@
 		return
 	if(mind.has_antag_datum(/datum/antagonist/skeleton))
 		return
+	if(mind.has_antag_datum(/datum/antagonist/gnoll))
+		return FALSE
 	if(HAS_TRAIT(src, TRAIT_ZOMBIE_IMMUNE))
 		return
 	return mind.add_antag_datum(/datum/antagonist/zombie)
+
+#undef ZOMBIE_FIRST_BITE_CHANCE
+#undef ZOMBIE_BITE_CONVERSION_TIME
 

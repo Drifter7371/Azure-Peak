@@ -51,6 +51,7 @@
 	var/species_icon = ""
 
 	var/animal_origin = null //for nonhuman bodypart (e.g. monkey)
+	var/prosthetic_prefix = "pr" // for unique prosthetic icons on mob
 	var/dismemberable = 1 //whether it can be dismembered with a weapon.
 	var/disableable = 1
 
@@ -85,6 +86,7 @@
 	var/skeletonized = FALSE
 
 	var/fingers = TRUE
+	var/organ_slowdown = 0 // Its here because this is first shared definition between two leg organ paths
 	var/is_prosthetic = FALSE
 
 	/// Visaul markings to be rendered alongside the bodypart
@@ -93,10 +95,24 @@
 	/// Visual features of the bodypart, such as hair and accessories
 	var/list/bodypart_features
 
+	/// Whether the bodypart has unlimited bleeding.
+	var/unlimited_bleeding = FALSE
+	
+	/// Cached variable that reflects how much bleeding our wounds are applying to the limb. Handled inside each individual wound.
+	var/bleeding = 0
+
+	/// Is the limb flagged for two-stage death handling? (aka, decaps will instantly kill first, THEN remove the head on second apply)
+	var/two_stage_death = FALSE
+	/// Has the limb been marked as having suffered a two-stage death flag?
+	var/grievously_wounded = FALSE
+
 	grid_width = 32
 	grid_height = 64
 
 	resistance_flags = FLAMMABLE
+
+/obj/item/bodypart/proc/operator""()
+	return "\proper"+name
 
 /obj/item/bodypart/proc/adjust_marking_overlays(var/list/appearance_list)
 	return
@@ -138,6 +154,20 @@
 /obj/item/bodypart/grabbedintents(mob/living/user, precise)
 	return list(/datum/intent/grab/move, /datum/intent/grab/twist, /datum/intent/grab/smash)
 
+/obj/item/bodypart/l_arm/grabbedintents(mob/living/user, precise)
+	var/used_limb = precise
+	if(used_limb == BODY_ZONE_PRECISE_L_HAND)
+		return list(/datum/intent/grab/move, /datum/intent/grab/twist, /datum/intent/grab/smash, /datum/intent/grab/disarm)
+	else
+		return list(/datum/intent/grab/move, /datum/intent/grab/twist, /datum/intent/grab/smash)
+
+/obj/item/bodypart/r_arm/grabbedintents(mob/living/user, precise)
+	var/used_limb = precise
+	if(used_limb == BODY_ZONE_PRECISE_R_HAND)
+		return list(/datum/intent/grab/move, /datum/intent/grab/twist, /datum/intent/grab/smash, /datum/intent/grab/disarm)
+	else
+		return list(/datum/intent/grab/move, /datum/intent/grab/twist, /datum/intent/grab/smash)
+
 /obj/item/bodypart/chest/grabbedintents(mob/living/user, precise)
 	if(precise == BODY_ZONE_PRECISE_GROIN)
 		return list(/datum/intent/grab/move, /datum/intent/grab/twist, /datum/intent/grab/shove)
@@ -151,11 +181,17 @@
 		QDEL_NULL(bandage)
 	for(var/datum/wound/wound as anything in wounds)
 		qdel(wound)
+	if(embedded_objects && length(embedded_objects))
+		for(var/obj/item/embedded as anything in embedded_objects)
+			embedded_objects -= embedded
+			if(!QDELETED(embedded))
+				qdel(embedded)
+		embedded_objects = null
 	return ..()
 
 /obj/item/bodypart/onbite(mob/living/carbon/human/user)
 	if((user.mind && user.mind.has_antag_datum(/datum/antagonist/zombie)) || istype(user.dna.species, /datum/species/werewolf))
-		if(user.has_status_effect(/datum/status_effect/debuff/silver_curse))
+		if(owner.has_status_effect(/datum/status_effect/fire_handler/fire_stacks/sunder) || owner.has_status_effect(/datum/status_effect/fire_handler/fire_stacks/sunder/blessed))
 			to_chat(user, span_notice("My power is weakened, I cannot heal!"))
 			return
 		if(do_after(user, 50, target = src))
@@ -237,7 +273,7 @@
 		playsound(get_turf(src), 'sound/blank.ogg', 50, TRUE, -1)
 	pixel_x = rand(-3, 3)
 	pixel_y = rand(-3, 3)
-	if(!skeletonized)
+	if(!skeletonized && owner && !(NOBLOOD in owner.dna?.species?.species_traits))
 		new /obj/effect/decal/cleanable/blood/splatter(get_turf(src))
 
 //empties the bodypart from its organs and other things inside it
@@ -336,12 +372,13 @@
 	stamina_dam += round(CLAMP(stamina, 0, max_stamina_damage - stamina_dam), DAMAGE_PRECISION)
 
 	if(owner)
-		if((brute + burn) < 10)
-			owner.flash_fullscreen("redflash1")
-		else if((brute + burn) < 20)
-			owner.flash_fullscreen("redflash2")
-		else if((brute + burn) >= 20)
-			owner.flash_fullscreen("redflash3")
+		if(owner.show_redflash())
+			if((brute + burn) < 10)
+				owner.flash_fullscreen("redflash1")
+			else if((brute + burn) < 20)
+				owner.flash_fullscreen("redflash2")
+			else if((brute + burn) >= 20)
+				owner.flash_fullscreen("redflash3")
 
 	if(owner && updating_health)
 		owner.updatehealth()
@@ -357,6 +394,8 @@
 //Damage cannot go below zero.
 //Cannot remove negative damage (i.e. apply damage)
 /obj/item/bodypart/proc/heal_damage(brute, burn, stamina, required_status, updating_health = TRUE)
+	if((HAS_TRAIT(owner, TRAIT_SILVER_WEAK) && !owner.has_status_effect(STATUS_EFFECT_ANTIMAGIC)) && owner.has_status_effect(/datum/status_effect/fire_handler/fire_stacks/sunder) || owner.has_status_effect(/datum/status_effect/fire_handler/fire_stacks/sunder/blessed))
+		return
 	update_HP()
 	if(required_status && (status != required_status)) //So we can only heal certain kinds of limbs, ie robotic vs organic.
 		return
@@ -547,6 +586,17 @@
 
 	return bodypart_organs
 
+/obj/item/bodypart/proc/get_visible_organs()
+	if(!owner)
+		return FALSE
+
+	var/list/bodypart_organs
+	for(var/obj/item/organ/organ_check as anything in owner.visible_organs) //internal organs inside the dismembered limb are dropped.
+		if(check_zone(organ_check.zone) == body_zone)
+			LAZYADD(bodypart_organs, organ_check) // this way if we don't have any, it'll just return null
+
+	return bodypart_organs
+
 //Gives you a proper icon appearance for the dismembered limb
 /obj/item/bodypart/proc/get_limb_icon(dropped, hideaux = FALSE)
 	icon_state = "" //to erase the default sprite, we're building the visual aspects of the bodypart through overlays alone.
@@ -614,7 +664,7 @@
 
 	else
 		limb.icon = species_icon
-		limb.icon_state = "pr_[body_zone]"
+		limb.icon_state = "[prosthetic_prefix]_[body_zone]"
 		if(aux_zone)
 			if(!hideaux)
 				aux = image(limb.icon, "pr_[aux_zone]", -aux_layer, image_dir)
@@ -626,7 +676,7 @@
 		override_color = SKIN_COLOR_ROT
 	if(is_organic_limb && should_draw_greyscale && !skeletonized)
 		var/draw_color =  mutation_color || species_color || skin_tone
-		if(rotted || (owner && HAS_TRAIT(owner, TRAIT_ROTMAN)))
+		if(rotted || (owner && HAS_TRAIT(owner, TRAIT_ROTMAN) && !owner.mind))
 			draw_color = SKIN_COLOR_ROT
 		if(draw_color)
 			limb.color = "#[draw_color]"
@@ -643,16 +693,14 @@
 			draw_bodypart_features = FALSE
 	
 	// Markings overlays
-	if(!skeletonized)
+	if(!skeletonized && draw_bodypart_features)
 		var/list/marking_overlays = get_markings_overlays(override_color)
 		if(marking_overlays)
 			. += marking_overlays
 	
 	// Organ overlays
 	if(!skeletonized && draw_organ_features)
-		for(var/obj/item/organ/organ as anything in get_organs())
-			if(!organ.is_visible())
-				continue
+		for(var/obj/item/organ/organ as anything in get_visible_organs())
 			var/mutable_appearance/organ_appearance = organ.get_bodypart_overlay(src)
 			if(organ_appearance)
 				. += organ_appearance

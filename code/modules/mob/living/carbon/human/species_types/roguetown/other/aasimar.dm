@@ -4,6 +4,9 @@
 /datum/species/aasimar
 	name = "Aasimar"
 	id = "aasimar"
+	origin_default = /datum/virtue/origin/otava
+	origin = "Otava"
+	base_name = "Godtouched"
 	desc = "<b>Aasimar</b><br>\
 	Aasimar are born of a rare union between Humens and Angels. \
 	They bear the mark of their celestial touch through their many varying physical features. \
@@ -13,14 +16,14 @@
 	Because of their upbringing, they make for natural conduits for godly powers. \
 	Azure Peak's populace holds them with a mixture of uneasy mixture of fear and respect. \
 	Due to their celestial nature, it is widely believed that an Aasimar's death is a bad omen...<br>\
-	(+1 Fortune)"
+	(+1 FOR, +1 Stat of their choice, or Lack of Hunger & Thirst)"
 
-	skin_tone_wording = "Craft"
+	max_age = "???"
 
 	species_traits = list(EYECOLOR,HAIR,FACEHAIR,LIPS,STUBBLE,OLDGREY)
 	inherent_traits = list(TRAIT_NOMOBSWAP)
 	default_features = MANDATORY_FEATURE_LIST
-	use_skintones = 1
+	use_skintones = TRUE
 	disliked_food = NONE
 	liked_food = NONE
 	possible_ages = ALL_AGES_LIST
@@ -52,6 +55,8 @@
 		/datum/customizer/bodypart_feature/accessory,
 		/datum/customizer/bodypart_feature/face_detail,
 		/datum/customizer/bodypart_feature/underwear,
+		/datum/customizer/bodypart_feature/legwear,
+		/datum/customizer/bodypart_feature/piercing,
 		/datum/customizer/organ/testicles/anthro,
 		/datum/customizer/organ/penis/anthro,
 		/datum/customizer/organ/breasts/human,
@@ -65,6 +70,7 @@
 		/datum/body_marking_set/bellysocks,
 		/datum/body_marking_set/tiger,
 		/datum/body_marking_set/tiger_dark,
+		/datum/body_marking_set/gradient,
 	)
 	body_markings = list(
 		/datum/body_marking/flushed_cheeks, //Azure > Hearth
@@ -74,6 +80,15 @@
 	languages = list(
 		/datum/language/common,
 		/datum/language/celestial
+	)
+
+	custom_selection = list(
+		"+1 FOR" = STATKEY_LCK,
+		"+1 INT" = STATKEY_INT,
+		"+1 CON" = STATKEY_CON,
+		"+1 WIL" = STATKEY_WIL,
+		"+1 PER" = STATKEY_PER,
+		"No Hunger & Thirst" = TRAIT_NOHUNGER
 	)
 
 /datum/species/aasimar/on_species_gain(mob/living/carbon/C, datum/species/old_species)

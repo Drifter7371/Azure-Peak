@@ -57,23 +57,33 @@
 #define SPAN_CLOWN "clown"
 #define SPAN_SINGING "singing"
 
+
 #define SPAN_GEN "say"
+#define SPAN_ORATOR "orator"
 #define SPAN_DWARF "dwarf"
+#define SPAN_ABYSS "abyssal"
 #define SPAN_ELF "elf"
-#define SPAN_SAND "sandspeak"
+#define SPAN_CELESTIAL "celestial"
+#define SPAN_RANESHI "raneshi"
 #define SPAN_DELF "delf"
 #define SPAN_HELL "hellspeak"
 #define SPAN_GRENZELHOFTIAN "grenzelhoftian"
 #define SPAN_OTAVAN "otavan"
 #define SPAN_ETRUSCAN "etruscan"
 #define SPAN_GRONNIC "gronnic"
+#define SPAN_OLDAZURE "oldazure"
 #define SPAN_BEAST "beast"
 #define SPAN_ORC "orc"
 #define SPAN_DRACONIC "reptile"
 #define SPAN_KAZENGUNESE "kazengunese"
+#define SPAN_LINGYUESE "lingyuese"
 #define SPAN_AAVNIC "aavnic"
-#define SPAN_UNDEAD "undead" //nyi but file found
+#define SPAN_UNDERCOMMON "undercommon"
+#define SPAN_UNDEAD "undead"
 #define SPAN_CAT "cat"		 //nyi but file found
+#define SPAN_PULSEDEATH "pulsedeath"
+
+#define LANGUAGE_SPANS list(SPAN_GEN,SPAN_ORATOR, SPAN_DWARF, SPAN_ABYSS, SPAN_ELF, SPAN_CELESTIAL, SPAN_RANESHI, SPAN_DELF, SPAN_HELL, SPAN_GRENZELHOFTIAN, SPAN_OTAVAN, SPAN_ETRUSCAN, SPAN_GRONNIC, SPAN_BEAST, SPAN_ORC, SPAN_DRACONIC, SPAN_KAZENGUNESE, SPAN_LINGYUESE, SPAN_AAVNIC, SPAN_UNDEAD, SPAN_CAT, SPAN_PULSEDEATH, SPAN_OLDAZURE, SPAN_UNDERCOMMON)
 
 //bitflag #defines for return value of the radio() proc.
 #define ITALICS 1
@@ -111,3 +121,7 @@
 #define SANITIZE_FILENAME(text) (GLOB.filename_forbidden_chars.Replace(text, ""))
 /// Simply removes the < and > characters, and limits the length of the message.
 #define STRIP_HTML_SIMPLE(text, limit) (GLOB.angular_brackets.Replace(copytext(text, 1, limit), ""))
+
+GLOBAL_LIST_INIT(correct_punctuation, list("!" = TRUE, "." = TRUE, "?" = TRUE, "-" = TRUE, "~" = TRUE, \
+											"*" = TRUE, "/" = TRUE, ">" = TRUE, "'" = TRUE, "|" = TRUE, \
+											"," = TRUE, ":" = TRUE, ";" = TRUE, "\"" = TRUE, "+" = TRUE))

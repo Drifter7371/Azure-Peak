@@ -1,6 +1,7 @@
 /mob/living/simple_animal/hostile/rogue/deepone
 	name = "Deep One"
-	desc = ""
+	desc = "It is said that, when the world was young and Abyssor did not yet dream, he took a mass of humenity \
+	in his hand and brought them to the abyss, sculpting from them speechless men in his own image."
 	icon = 'icons/roguetown/mob/monster/fishman.dmi'
 	icon_state = "deep1"
 	icon_living = "deep1"
@@ -33,6 +34,8 @@
 	defprob = 50
 	speak_emote = list("burbles")
 	faction = list("deepone")
+	threat_point = THREAT_HIGH
+	ambush_faction = "deepones"
 	footstep_type = FOOTSTEP_MOB_BAREFOOT
 
 	can_have_ai = FALSE 
@@ -43,7 +46,6 @@
 
 /mob/living/simple_animal/hostile/rogue/deepone/arm
 	name = "Deep One"
-	desc = ""
 	icon = 'icons/roguetown/mob/monster/fishman.dmi'
 	icon_state = "deep1_arm"
 	health = DEEPONE_HEALTH * 1.4
@@ -55,8 +57,8 @@
 	attack_verb_simple = "maul"
 
 /mob/living/simple_animal/hostile/rogue/deepone/spit
+	threat_point = THREAT_TOUGH
 	name = "Deep One"
-	desc = ""
 	icon = 'icons/roguetown/mob/monster/fishman.dmi'
 	icon_state = "deep1_spit"
 	icon_living = "deep1_spit"
@@ -71,8 +73,8 @@
 	ai_controller = /datum/ai_controller/deepone_ranged
 
 /mob/living/simple_animal/hostile/rogue/deepone/wiz
+	threat_point = THREAT_TOUGH
 	name = "Deep One Devout"
-	desc = ""
 	icon = 'icons/roguetown/mob/monster/fishman.dmi'
 	icon_state = "deep1_wiz"
 	icon_living = "deep1_wiz"
@@ -105,7 +107,7 @@
 	animname = "cut"
 	hitsound = 'sound/combat/hits/bladed/smallslash (1).ogg'
 	clickcd = DEEPONE_ATTACK_SPEED
-	penfactor = 5
+	penfactor = PEN_NONE
 	chargetime = 2
 /datum/intent/simple/claw/deepone_boss
 	attack_verb = list("smashes", "slams")
@@ -113,5 +115,5 @@
 	animname = "cut"
 	hitsound = 'sound/combat/hits/blunt/metalblunt (1).ogg'
 	clickcd = DEEPONE_ATTACK_SPEED
-	penfactor = 5
+	penfactor = PEN_NONE
 	chargetime = 2

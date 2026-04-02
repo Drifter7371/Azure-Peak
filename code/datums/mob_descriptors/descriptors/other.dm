@@ -1,7 +1,7 @@
 /datum/mob_descriptor/age
 	name = "Age"
 	slot = MOB_DESCRIPTOR_SLOT_AGE
-	verbage = "looks"
+	verbage = "%LOOK%"
 
 /datum/mob_descriptor/age/can_describe(mob/living/described)
 	if(!ishuman(described))
@@ -20,7 +20,7 @@
 /datum/mob_descriptor/penis
 	name = "penis"
 	slot = MOB_DESCRIPTOR_SLOT_PENIS
-	verbage = "has"
+	verbage = "%HAVE%"
 	show_obscured = TRUE
 
 /datum/mob_descriptor/penis/can_describe(mob/living/described)
@@ -48,7 +48,9 @@
 			adjective = "an average"
 		if(3)
 			adjective = "a large"
-	switch(H.sexcon.arousal)
+	var/list/arousal_data = list()
+	SEND_SIGNAL(H, COMSIG_SEX_GET_AROUSAL, arousal_data)
+	switch(arousal_data["arousal"])
 		if(80 to INFINITY)
 			arousal_modifier = ", throbbing violently"
 		if(50 to 80)
@@ -74,7 +76,7 @@
 /datum/mob_descriptor/testicles
 	name = "balls"
 	slot = MOB_DESCRIPTOR_SLOT_TESTICLES
-	verbage = "has"
+	verbage = "%HAVE%"
 	show_obscured = TRUE
 
 /datum/mob_descriptor/testicles/can_describe(mob/living/described)
@@ -109,7 +111,7 @@
 /datum/mob_descriptor/vagina
 	name = "vagina"
 	slot = MOB_DESCRIPTOR_SLOT_VAGINA
-	verbage = "has"
+	verbage = "%HAVE%"
 	show_obscured = TRUE
 
 /datum/mob_descriptor/vagina/can_describe(mob/living/described)
@@ -143,7 +145,9 @@
 			vagina_type = "gaping vagina"
 		if(/datum/sprite_accessory/vagina/cloaca)
 			vagina_type = "cloaca"
-	switch(H.sexcon.arousal)
+	var/list/arousal_data = list()
+	SEND_SIGNAL(H, COMSIG_SEX_GET_AROUSAL, arousal_data)
+	switch(arousal_data["arousal"])
 		if(80 to INFINITY)
 			arousal_modifier = ", gushing with arousal"
 		if(50 to 80)
@@ -155,7 +159,7 @@
 /datum/mob_descriptor/breasts
 	name = "breasts"
 	slot = MOB_DESCRIPTOR_SLOT_BREASTS
-	verbage = "has"
+	verbage = "%HAVE%"
 	show_obscured = TRUE
 
 /datum/mob_descriptor/breasts/can_describe(mob/living/described)

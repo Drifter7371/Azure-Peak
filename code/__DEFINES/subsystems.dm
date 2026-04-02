@@ -57,6 +57,9 @@
 ///In most cases you want a subsystem instead, so don't use this unless you have a good reason
 #define TIMER_LOOP				(1<<5)
 
+/// Delete the timer on parent datum Destroy() and when deltimer'd
+#define TIMER_DELETE_ME (1<<6)
+
 ///Empty ID define
 #define TIMER_ID_NULL -1
 
@@ -118,8 +121,11 @@
 #define INIT_ORDER_AI_MOVEMENT 		56 //We need the movement setup
 #define INIT_ORDER_AI_CONTROLLERS 	55 //So the controller can get the ref
 #define INIT_ORDER_TICKER			55
+#define INIT_ORDER_WARDROBE			54
 #define INIT_ORDER_MAPPING			50
+#define INIT_ORDER_DUNGEON			49
 #define INIT_ORDER_NETWORKS			45
+#define INIT_ORDER_SPATIAL_GRID     43
 #define INIT_ORDER_ECONOMY			40
 #define INIT_ORDER_OUTPUTS			35
 #define INIT_ORDER_ATOMS			30
@@ -143,29 +149,52 @@
 #define INIT_ORDER_PERSISTENCE		-95
 #define INIT_ORDER_CHAT				-100 //Should be last to ensure chat remains smooth during init.
 
+//! ### SS initialization hints
+/**
+ * Negative values indicate a failure or warning of some kind, positive are good.
+ * 0 and 1 are unused so that TRUE and FALSE are guaranteed to be invalid values.
+ */
+
+/// Subsystem failed to initialize entirely. Print a warning, log, and disable firing.
+#define SS_INIT_FAILURE -2
+
+/// The default return value which must be overridden. Will succeed with a warning.
+#define SS_INIT_NONE -1
+
+/// Subsystem initialized successfully.
+#define SS_INIT_SUCCESS 2
+
+/// If your system doesn't need to be initialized (by being disabled or something)
+#define SS_INIT_NO_NEED 3
+
+/// Successfully initialized, BUT do not announce it to players (generally to hide game mechanics it would otherwise spoil)
+#define SS_INIT_NO_MESSAGE 4
+
 // Subsystem fire priority, from lowest to highest priority
 // If the subsystem isn't listed here it's either DEFAULT or PROCESS (if it's a processing subsystem child)
 
+#define FIRE_PRIORITY_IDLE_NPC		5
 #define FIRE_PRIORITY_ROLE_CLASS_HANDLER 10
 #define FIRE_PRIORITY_PING			10
+#define FIRE_PRIORITY_FARMING		10
 #define FIRE_PRIORITY_WET_FLOORS	10
 #define FIRE_PRIORITY_WATER_LEVEL	10
-#define FIRE_PRIORITY_IDLE_NPC		10
 #define FIRE_PRIORITY_SERVER_MAINT	10
 #define FIRE_PRIORITY_RESEARCH		10
 #define FIRE_PRIORITY_VIS			10
 #define FIRE_PRIORITY_AMBIENCE    10
+#define FIRE_PRIORITY_TRACKS		10
 #define FIRE_PRIORITY_GARBAGE		15
 #define FIRE_PRIORITY_INCONE		19
 #define FIRE_PRIORITY_MOUSECHARGE	20
 #define FIRE_PRIORITY_HOTSPOTS		20
 #define FIRE_PRIORITY_NPC			20
+#define FIRE_PRIORITY_ASSETS		20
 #define FIRE_PRIORITY_NPC_MOVEMENT 	21
 #define FIRE_PRIORITY_NPC_ACTIONS 	22
 #define FIRE_PRIORITY_PROCESS		25
 #define FIRE_PRIORITY_THROWING		25
 #define FIRE_PRIORITY_SPACEDRIFT	30
-#define FIRE_PRIORITY_FIELDS		30
 #define FIRE_PRIORITY_SMOOTHING		35
 #define FIRE_PRIORITY_HUDS			40
 #define FIRE_PRIORITY_NETWORKS		40
@@ -173,14 +202,16 @@
 #define FIRE_PRIORITY_ACID			40
 #define FIRE_PRIORITY_BURNING		40
 #define FIRE_PRIORITY_DEFAULT		50
-#define FIRE_PRIORITY_PARALLAX		65
+#define FIRE_PRIORITY_MOBS_DEAD		50
 #define FIRE_PRIORITY_MOBS			100
 #define FIRE_PRIORITY_TGUI			110
+#define FIRE_PRIORITY_MOUSE_ENTERED	160
 #define FIRE_PRIORITY_TICKER		200
 #define FIRE_PRIORITY_ATMOS_ADJACENCY	300
 #define FIRE_PRIORITY_CHAT			400
 #define FIRE_PRIORITY_RUNECHAT		410
 #define FIRE_PRIORITY_OVERLAYS		500
+#define FIRE_PRIORITY_TIMER 		700
 #define FIRE_PRIORITY_INPUT			1000 // This must always always be the max highest priority. Player input must never be lost.
 
 // SS runlevels
@@ -196,29 +227,51 @@
 
 
 //! ## Overlays subsystem
+// A reasonable number of maximum overlays an object needs
+// If you think you need more, rethink it
+// On TGStation this is 100. Roguecode / Vanderlin uses 200 - so let's stick to this.
+#define MAX_ATOM_OVERLAYS 200
 
 ///Compile all the overlays for an atom from the cache lists
-#define COMPILE_OVERLAYS(A)\
-	do {\
-		var/list/ad = A.add_overlays;\
-		var/list/rm = A.remove_overlays;\
-		var/list/po = A.priority_overlays;\
-		if(LAZYLEN(rm)){\
-			A.overlays -= rm;\
-			rm.Cut();\
-		}\
-		if(LAZYLEN(ad)){\
-			A.overlays |= ad;\
-			ad.Cut();\
-		}\
-		if(LAZYLEN(po)){\
-			A.overlays |= po;\
-		}\
-		for(var/I in A.alternate_appearances){\
-			var/datum/atom_hud/alternate_appearance/AA = A.alternate_appearances[I];\
+#define POST_OVERLAY_CHANGE(changed_on) \
+	if(length(changed_on.overlays) >= MAX_ATOM_OVERLAYS) { \
+		var/text_lays = overlays2text(changed_on.overlays); \
+		stack_trace("Too many overlays on [changed_on.type] - [length(changed_on.overlays)].\
+			\n What follows is a printout of all existing overlays at the time of the overflow \n[text_lays]"); \
+	} \
+	if(alternate_appearances) { \
+		for(var/I in changed_on.alternate_appearances){\
+			var/datum/atom_hud/alternate_appearance/AA = changed_on.alternate_appearances[I];\
 			if(AA.transfer_overlays){\
-				AA.copy_overlays(A, TRUE);\
+				AA.copy_overlays(changed_on, TRUE);\
 			}\
-		}\
-		A.flags_1 &= ~OVERLAY_QUEUED_1;\
-	} while (FALSE)
+		} \
+	}
+/**
+	Create a new timer and add it to the queue.
+	* Arguments:
+	* * callback the callback to call on timer finish
+	* * wait deciseconds to run the timer for
+	* * flags flags for this timer, see: code\__DEFINES\subsystems.dm
+	* * timer_subsystem the subsystem to insert this timer into
+*/
+#define addtimer(args...) _addtimer(args, file = __FILE__, line = __LINE__)
+
+// Wardrobe subsystem tasks
+#define SSWARDROBE_STOCK 1
+#define SSWARDROBE_INSPECT 2
+
+// Wardrobe cache metadata indexes
+#define WARDROBE_CACHE_COUNT 1
+#define WARDROBE_CACHE_LAST_INSPECT 2
+#define WARDROBE_CACHE_CALL_INSERT 3
+#define WARDROBE_CACHE_CALL_REMOVAL 4
+
+// Wardrobe preloaded stock indexes
+#define WARDROBE_STOCK_CONTENTS 1
+#define WARDROBE_STOCK_CALL_INSERT 2
+#define WARDROBE_STOCK_CALL_REMOVAL 3
+
+// Wardrobe callback master list indexes
+#define WARDROBE_CALLBACK_INSERT 1
+#define WARDROBE_CALLBACK_REMOVE 2

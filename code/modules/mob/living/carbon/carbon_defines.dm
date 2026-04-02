@@ -9,6 +9,8 @@
 	var/list/internal_organs = list()
 	///Same as above, but stores "slot ID" - "organ" pairs for easy access.
 	var/list/internal_organs_slot= list()
+	/// Organs that have visible overlays (eyes, ears, etc.) - tracked separately to avoid iterating all internal organs
+	var/list/visible_organs = list()
 	///Can't talk. Value goes down every life proc. //NOTE TO FUTURE CODERS: DO NOT INITIALIZE NUMERICAL VARS AS NULL OR I WILL MURDER YOU.
 	var/silent = FALSE
 	///How many dream images we have left to send
@@ -42,6 +44,7 @@
 	var/obj/item/clothing/ears = null
 
 	var/obj/item/undies/underwear = null	//Underwear item
+	var/obj/item/legwears/legwear_socks = null	//legwear item
 
 
 	var/datum/dna/dna = null //Carbon
@@ -85,8 +88,5 @@
 	var/stam_regen_start_time = 0
 	///knocks you down
 	var/stam_paralyzed = FALSE
-
-/// Amount of remaining vitae that can be drained from this mob
-	var/vitae_pool = 8000
 
 	var/next_smell = 0

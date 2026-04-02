@@ -12,6 +12,7 @@
 	var/cookonme = FALSE
 	var/crossfire = TRUE
 	var/can_damage = FALSE
+	var/roundstart_forbid = FALSE
 
 /obj/machinery/light/rogue/Initialize()
 	if(soundloop)
@@ -21,7 +22,8 @@
 	if(fueluse > 0)
 		fueluse = fueluse - (rand(fueluse*0.1,fueluse*0.3))
 	update_icon()
-	seton(TRUE)
+	if(!roundstart_forbid)
+		seton(TRUE)
 	. = ..()
 
 /obj/machinery/light/rogue/weather_trigger(W)
@@ -43,7 +45,7 @@
 				minsleft = "less than a minute"
 			else
 				minsleft = "[round(minsleft)] minutes"
-			. += span_info("The fire will last for [minsleft].")
+			. += span_info("The fire will last for <b>[minsleft]</b>.")
 		else
 			if(initial(fueluse) > 0)
 				. += span_warning("The fire is burned out and hungry...")
@@ -110,7 +112,7 @@
 /obj/machinery/light/rogue/attackby(obj/item/W, mob/living/user, params)
 	var/datum/skill/craft/cooking/cs = user?.get_skill_level(/datum/skill/craft/cooking)
 	var/cooktime_divisor = get_cooktime_divisor(cs)
-	if(cookonme)
+	if(cookonme && on)
 		if(istype(W, /obj/item/reagent_containers/food/snacks))
 			if(istype(W, /obj/item/reagent_containers/food/snacks/egg))
 				to_chat(user, "<span class='warning'>I wouldn't be able to cook this over the fire...</span>")
@@ -120,24 +122,26 @@
 				var/foundstab = FALSE
 				for(var/X in A.possible_item_intents)
 					var/datum/intent/D = new X
-					if(D.blade_class == BCLASS_STAB)
+					if(D.blade_class in GLOB.stab_bclasses)
 						foundstab = TRUE
 						break
 				if(foundstab)
 					var/prob2spoil = 33
 					if(user.get_skill_level(/datum/skill/craft/cooking))
 						prob2spoil = 1
+					var/already_rolled = FALSE
 					user.visible_message("<span class='notice'>[user] starts to cook [W] over [src].</span>")
 					for(var/i in 1 to 6)
 						if(do_after(user, 30 / cooktime_divisor, target = src))
 							var/obj/item/reagent_containers/food/snacks/S = W
 							var/obj/item/C
-							if(prob(prob2spoil))
+							if(prob(prob2spoil) && !already_rolled)
 								user.visible_message("<span class='warning'>[user] burns [S].</span>")
 								if(user.client?.prefs.showrolls)
 									to_chat(user, "<span class='warning'>Critfail... [prob2spoil]%.</span>")
 								C = S.cooking(1000, 1000, null)
 							else
+								already_rolled = TRUE
 								C = S.cooking(S.cooktime/4, S.cooktime/4, src)
 							if(C)
 								user.dropItemToGround(S, TRUE)

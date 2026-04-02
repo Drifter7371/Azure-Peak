@@ -1,5 +1,5 @@
 /client/proc/play_sound(S as sound)
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 	set name = "Sound - Global"
 	if(!check_rights(R_SOUND))
 		return
@@ -61,9 +61,9 @@
 		prefs.musicvol = vol
 		prefs.save_preferences()
 
-		mob.update_music_volume(CHANNEL_MUSIC, prefs.musicvol)
-		mob.update_music_volume(CHANNEL_LOBBYMUSIC, prefs.musicvol)
 		mob.update_music_volume(CHANNEL_ADMIN, prefs.musicvol)
+		mob.update_music_volume(CHANNEL_BUZZ, prefs.musicvol)
+		mob.update_music_volume(CHANNEL_CMUSIC, prefs.musicvol)
 
 
 /client/verb/show_rolls()
@@ -83,7 +83,7 @@
 	set name = "ChangeVolPower"
 
 	if(prefs)
-		var/vol = input(usr, "Current volume power: [prefs.mastervol]",, 100) as null|num
+		var/vol = input(usr, "Current master volume power (affects all sounds except music and ambience): [prefs.mastervol]",, 100) as null|num
 		if(!vol)
 			if(vol != 0)
 				return
@@ -91,7 +91,38 @@
 		prefs.mastervol = vol
 		prefs.save_preferences()
 
-		mob.update_channel_volume(CHANNEL_AMBIENCE, prefs.mastervol)
+/client/verb/change_ambience_vol()
+	set category = "Options"
+	set name = "ChangeAmbiencePower"
+
+	if(prefs)
+		var/vol = input(usr, "Current ambience power: [prefs.ambiencevol]",, 100) as null|num
+		if(!vol)
+			if(vol != 0)
+				return
+		vol = min(vol, 100)
+		prefs.ambiencevol = vol
+		prefs.save_preferences()
+
+		mob.update_channel_volume(CHANNEL_AMBIENCE, prefs.ambiencevol)
+		mob.update_channel_volume(CHANNEL_MUSIC, prefs.ambiencevol)
+		mob.update_channel_volume(CHANNEL_RAIN, prefs.ambiencevol)
+
+/client/verb/change_lobby_music_vol()
+	set category = "Options"
+	set name = "ChangeLobbyMusicPower"
+
+	if(prefs)
+		var/vol = input(usr, "Current lobby music power: [prefs.lobbymusicvol]",, 100) as null|num
+		if(!vol)
+			if(vol != 0)
+				return
+		vol = min(vol, 100)
+		prefs.lobbymusicvol = vol
+		prefs.save_preferences()
+
+		if(isnewplayer(mob))
+			mob.update_music_volume(CHANNEL_LOBBYMUSIC, prefs.lobbymusicvol)
 /*
 /client/verb/help_rpguide()
 	set category = "Options"
@@ -107,7 +138,7 @@
 */
 
 /client/proc/play_local_sound(S as sound)
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 	set name = "Sound - Local"
 	if(!check_rights(R_SOUND))
 		return
@@ -118,7 +149,7 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Play Local Sound") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/play_local_sound_variable(S as sound)
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 	set name = "Sound - Variable Dist"
 	if(!check_rights(R_SOUND))
 		return
@@ -134,7 +165,7 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Play Local Sound") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/play_web_sound()
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 	set name = "Sound - Internet"
 	if(!check_rights(R_SOUND))
 		return
@@ -207,16 +238,19 @@
 			for(var/m in GLOB.player_list)
 				var/mob/M = m
 				var/client/C = M.client
-				if((C.prefs.toggles & SOUND_MIDI) && C.chatOutput && !C.chatOutput.broken && C.chatOutput.loaded)
+				if(C.prefs.toggles & SOUND_MIDI)
+					// Stops playing lobby music and admin loaded music automatically.
+					SEND_SOUND(C, sound(null, channel = CHANNEL_LOBBYMUSIC))
+					SEND_SOUND(C, sound(null, channel = CHANNEL_ADMIN))
 					if(!stop_web_sounds)
-						C.chatOutput.sendMusic(web_sound_url, music_extra_data)
+						C.tgui_panel?.play_music(web_sound_url, music_extra_data)
 					else
-						C.chatOutput.stopMusic()
+						C.tgui_panel?.stop_music()
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Play Internet Sound")
 
 /client/proc/set_round_end_sound(S as sound)
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 	set name = "Sound - Round End"
 	if(!check_rights(R_SOUND))
 		return
@@ -228,7 +262,7 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Round End Sound") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/stop_sounds()
-	set category = "-Fun-"
+	set category = "-GameMaster-"
 	set name = "Sound - Stop All Playing"
 	if(!src.holder)
 		return
@@ -238,8 +272,7 @@
 	for(var/mob/M in GLOB.player_list)
 		SEND_SOUND(M, sound(null))
 		var/client/C = M.client
-		if(C && C.chatOutput && !C.chatOutput.broken && C.chatOutput.loaded)
-			C.chatOutput.stopMusic()
+		C?.tgui_panel?.stop_music()
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Stop All Playing Sounds") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 GLOBAL_LIST_INIT(ambience_files, list(
@@ -263,11 +296,3 @@ GLOBAL_LIST_INIT(ambience_files, list(
 	'sound/music/area/towngen.ogg',
 	'sound/music/area/townstreets.ogg'
 	))
-
-/client/verb/preload_sounds()
-	set category = "Options"
-	set name = "Preload Ambience"
-
-	for(var/music in GLOB.ambience_files)
-		mob.playsound_local(mob, music, 0.1)
-		sleep(10)

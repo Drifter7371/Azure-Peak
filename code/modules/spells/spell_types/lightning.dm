@@ -4,7 +4,7 @@
 	charge_type = "recharge"
 	recharge_time	= 300
 	clothes_req = TRUE
-	invocation = "UN'LTD P'WAH!"
+	invocations = list("UN'LTD P'WAH!")
 	invocation_type = "shout"
 	range = 7
 	cooldown_min = 30
@@ -29,7 +29,7 @@
 	user.add_overlay(halo)
 	playsound(get_turf(user), Snd, 50, FALSE)
 	if(do_mob(user,user,100,1))
-		if(ready && cast_check(skipcharge=1))
+		if(ready && cast_check(skipcharge = 1))
 			choose_targets()
 		else
 			revert_cast(user, 0)

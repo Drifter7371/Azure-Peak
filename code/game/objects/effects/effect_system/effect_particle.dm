@@ -1,5 +1,5 @@
 /atom
-	var/list/particle_emitters = list()
+	var/list/particle_emitters
 
 /atom/Destroy()
 	. = ..()
@@ -27,11 +27,12 @@
 	pe = new /obj/particle_emitter(loc, time)
 	pe.host = src
 	pe.AddParticles(type, create_new)
+	LAZYINITLIST(particle_emitters)
 	particle_emitters |= pe
 	return pe
 
 /atom/movable/proc/RemoveEmitter(obj/particle_emitter/emitter)
-	particle_emitters -= emitter
+	LAZYREMOVE(particle_emitters, emitter)
 	qdel(emitter)
 
 /atom/movable/proc/RemoveParticles(delete = FALSE)
@@ -55,7 +56,7 @@
 	if (!(type in list("vector", "box", "circle", "sphere", "square", "cube")))											// Valid types for generator(), sans color
 		return
 
-	if (target in list("width", "height", "count", "spawning", "bound1", "bound2", "gravity", "gradient", "transform"))	// These vars cannot be generators, per reference doc, and changing some breaks things anyways
+	if (target in list("width", "height", "count", "spawning", "bound1", "bound2", "gradient", "transform"))	// These vars cannot be generators, per reference doc, and changing some breaks things anyways
 		return
 
 	if (target in vars)
@@ -92,7 +93,7 @@
 
 /obj/particle_emitter/Destroy(force)
 	. = ..()
-	host.particle_emitters -= src
+	LAZYREMOVE(host.particle_emitters, src)
 	host = null
 
 /obj/particle_emitter/smoke

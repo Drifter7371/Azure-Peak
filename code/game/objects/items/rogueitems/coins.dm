@@ -1,12 +1,13 @@
 #define CTYPE_GOLD "g"
 #define CTYPE_SILV "s"
 #define CTYPE_COPP "c"
+#define CTYPE_ICOIN "i"
 #define CTYPE_ANCIENT "a"
 #define MAX_COIN_STACK_SIZE 20
 
 /obj/item/roguecoin
-	name = ""
-	desc = ""
+	name = "coin"
+	desc = "Alloyed value, fitting in the palm of your hand."
 	icon = 'icons/roguetown/items/valuable.dmi'
 	icon_state = ""
 	lefthand_file = 'icons/mob/inhands/misc/food_lefthand.dmi'
@@ -32,32 +33,19 @@
 	if(coin_amount >= 1)
 		set_quantity(floor(coin_amount))
 
+/obj/item/roguecoin/get_mechanics_examine(mob/user)
+    . = ..()
+    . += span_info("Coinage can be exchanged for goods and services.")
+
 /obj/item/roguecoin/getonmobprop(tag)
-	. = ..()
-	if(tag != "gen")
-		return
-	return list("shrink" = 0.10, "sx" = -6, "sy" = 6, "nx" = 6, "ny" = 7, "wx" = 0, "wy" = 5, "ex" = -1, "ey" = 7, "northabove" = 0, "southabove" = 1, "eastabove" = 1, "westabove" = 0, "nturn" = -50, "sturn" = 40, "wturn" = 50, "eturn" = -50, "nflip" = 0, "sflip" = 8, "wflip" = 8, "eflip" = 0)
+	if(tag)
+		switch(tag)
+			if("gen")
+				return list("shrink" = 0.2,"sx" = -7,"sy" = -4,"nx" = 7,"ny" = -4,"wx" = -4,"wy" = -4,"ex" = 2,"ey" = -4,"nturn" = 0,"sturn" = 0,"wturn" = 0,"eturn" = 0,"nflip" = 0,"sflip" = 0,"wflip" = 0,"eflip" = 0,"northabove" = 0,"southabove" = 1,"eastabove" = 1,"westabove" = 0)
 
 /obj/item/roguecoin/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	playsound(loc, 'sound/foley/coins1.ogg', 100, TRUE, -2)
-	scatter(get_turf(src))
 	..() 
-
-/obj/item/roguecoin/proc/scatter(turf/T)
-	if(istransparentturf(T))
-		scatter(GET_TURF_BELOW(T))
-		return
-	pixel_x = rand(-8, 8)
-	pixel_y = rand(-5, 5)
-	if(isturf(T) && quantity > 1)
-		var/obj/structure/table/TA = locate() in T
-		if(!TA) //no table
-			for(var/i in 2 to quantity)
-				var/obj/item/roguecoin/new_coin = new type(T)
-				new_coin.set_quantity(1) // prevent exploits with coin piles
-				new_coin.pixel_x = rand(-8, 8)
-				new_coin.pixel_y = rand(-5, 5)
-				set_quantity(quantity - 1)
 
 /obj/item/roguecoin/get_real_price()
 	return sellprice * quantity
@@ -87,10 +75,11 @@
 	G.set_quantity(G.quantity - amt_to_merge)
 	rigged_outcome = 0
 	G.rigged_outcome = 0
-	if(G.quantity <= 0)
+	if(user && G.quantity <= 0)
 		user.doUnEquip(G)
+		user.update_inv_hands()
+	if(G.quantity <= 0)
 		qdel(G)
-	user.update_inv_hands()
 	playsound(loc, 'sound/foley/coins1.ogg', 100, TRUE, -2)
 
 /obj/item/roguecoin/attack_right(mob/user)
@@ -151,6 +140,22 @@
 		heads_tails = FALSE
 	update_icon()
 
+
+/obj/item/roguecoin/inqcoin/attack_self(mob/living/user)
+	if(quantity > 1 || !base_type)
+		return
+	if(world.time < flip_cd + 30)
+		return
+	flip_cd = world.time
+	playsound(user, 'sound/foley/coinphy (1).ogg', 100, FALSE)	
+	if(prob(50))
+		user.visible_message(span_info("[user] flips the coin. ENDVRE!"))
+		heads_tails = TRUE
+	else
+		user.visible_message(span_info("[user] flips the coin. LYVE!"))
+		heads_tails = FALSE
+	update_icon()
+
 /obj/item/roguecoin/update_icon()
 	..()
 	if(quantity > 1)
@@ -187,7 +192,6 @@
 		if(16 to INFINITY)
 			icon_state = "[base_type]15"
 
-
 /obj/item/roguecoin/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/roguecoin))
 		var/obj/item/roguecoin/G = I
@@ -197,6 +201,21 @@
 			G.merge(src, user)
 		return
 	return ..()
+
+//OTAVAN MARQUE - WORTHLESS TO ANYONE BUT INQ.
+/obj/item/roguecoin/inqcoin
+	name = "otavan marque"
+	desc = "A blessed silver coin finished with a unique wash of black dye, bearing the post-kingdom Psycross. Kingsfield has denied the existence of such a coin when queried, as such coinage is rumoured to be used internally by Otava's inquisitorial sects."
+	icon_state = "i1"
+	sellprice = 0
+	base_type = CTYPE_ICOIN
+	plural_name = "otavan marques"	
+
+/obj/item/roguecoin/inqcoin/get_mechanics_examine(mob/user)
+    . = ..()
+    . += span_info("By loading these coins into a HERMES, I can access the MARQUETTE; a discrete variant of the GOLDFACE, capable of supplying the Inquisition with whatever's needed.")
+    . += span_info("The MARQUETTE exclusively accepts these coins as payment. Purchased supplies are dropped off inside the Inquisition's abode.")
+    . += span_info("More coins can be obtained by filling INDEXERS, pairing them with signed ACCUSATIONS or CONFESSIONS, and sending them through the HERMES.")
 
 //GOLD
 /obj/item/roguecoin/gold
@@ -226,14 +245,18 @@
 	base_type = CTYPE_COPP
 	plural_name = "zennies"
 
-// Ancient - Valueless
+// ANCIENT
 /obj/item/roguecoin/aalloy
 	name = "psilen"
-	desc = "Withered empires can never endure."
+	desc = "A coin of polished gilbranze, beheld to a fallen kingdom that hadn't endured the passage of tyme. </br>Most sophisticated machines won't recognize its value, but keen-eyed Merchants and Stewards might still pay a fair sum for such a relic."
 	icon_state = "a1"
-	sellprice = 0
+	sellprice = 3 //Dungeon-specific coinage - valued by historians, collectors, and smelters. 
 	base_type = CTYPE_ANCIENT
 	plural_name = "psila"
+
+/obj/item/roguecoin/inqcoin/pile/Initialize()
+	. = ..()
+	set_quantity(rand(4,19))
 
 /obj/item/roguecoin/aalloy/pile/Initialize()
 	. = ..()
@@ -245,7 +268,11 @@
 
 /obj/item/roguecoin/silver/pile/Initialize()
 	. = ..()
-	set_quantity(rand(4,19))
+	set_quantity(rand(4,19))	
+
+/obj/item/roguecoin/silver/pile/readyuppile/Initialize()
+	. = ..()
+	set_quantity(4) // 20 mammons combine with starting pouch to buy something
 
 /obj/item/roguecoin/gold/pile/Initialize()
 	. = ..()
@@ -255,7 +282,14 @@
 	. = ..()
 	set_quantity(rand(8,12))
 
+/obj/item/roguecoin/gold/aspirantpile/Initialize()
+	. = ..()
+	set_quantity(20) // Fixed 200 mammons for aspirants which is a good psychological number to buy 1 merc's service
+
+
 #undef CTYPE_GOLD
 #undef CTYPE_SILV
 #undef CTYPE_COPP
+#undef CTYPE_ANCIENT
+#undef CTYPE_ICOIN
 #undef MAX_COIN_STACK_SIZE

@@ -40,6 +40,12 @@ GLOBAL_LIST_INIT(stress_messages, world.file2list("strings/rt/stress_messages.tx
 		event = new event_type()
 		if(!event.can_apply(src))
 			return
+
+		// If the event is sufficiently severe, show regardless of the message toggle!
+		if(((event.stressadd >= 2 || -2) || src.client?.prefs.chat_toggles & CHAT_MOODMESSAGES) && mind && !stressors[event_type])
+			var/text = ((islist(event.desc)) ? (pick(event.desc)) : (event.desc))
+			to_chat(src, text)
+
 		stressors[event_type] = event
 	event.time_added = world.time
 	if(event.stacks >= event.max_stacks)
@@ -62,14 +68,35 @@ GLOBAL_LIST_INIT(stress_messages, world.file2list("strings/rt/stress_messages.tx
 		remove_stress(event_type)
 
 /mob/living/carbon/update_stress()
-	// Handle expiration
+	// Handle expiration and accumulate our new stress status in the same operation
+	if (!client) // no reason to fire stress at all on npcs
+		return
+	if (stat != CONSCIOUS) // oblivion preserves our stress, for better or worse. (read: life optimizations weewoo)
+		return
+	var/new_stress = 0
 	for(var/stressor_type in stressors)
 		var/datum/stressevent/event = stressors[stressor_type]
+		var/stress_amt = event.get_stress(src)
 		if(event.time_added + event.timer > world.time)
+			new_stress += stress_amt
 			continue
 		remove_stress(stressor_type)
-	// Update stress status and prompts
-	var/new_stress = get_stress_amount()
+
+	// move bleeding stress handling here
+	if (bleed_rate)
+		add_stress(/datum/stressevent/bleeding)
+	else
+		remove_stress(/datum/stressevent/bleeding)
+
+	// pallid outdoor stress
+	if(HAS_TRAIT(src, TRAIT_PALLID))
+		var/area/A = get_area(src)
+		if(A?.outdoors)
+			add_stress(/datum/stressevent/pallid_outdoors)
+		else
+			remove_stress(/datum/stressevent/pallid_outdoors)
+	else
+		remove_stress(/datum/stressevent/pallid_outdoors)
 
 	var/ascending = (new_stress > oldstress)
 
@@ -225,6 +252,8 @@ GLOBAL_LIST_INIT(stress_messages, world.file2list("strings/rt/stress_messages.tx
 
 
 /mob/living/carbon/get_stress_amount()
+	var/willpowerresistance = CLAMP((STAWIL - 10), 0, 10)
+	var/wpmodifier = willpowerresistance / 3
 	if(HAS_TRAIT(src, TRAIT_NOMOOD))
 		return 0
 	var/total_stress = 0
@@ -235,6 +264,8 @@ GLOBAL_LIST_INIT(stress_messages, world.file2list("strings/rt/stress_messages.tx
 			stress_amt *= 2
 		if(stress_amt > 0 && HAS_TRAIT(src, TRAIT_EORAN_SERENE))
 			stress_amt = (stress_amt * -1)	//We make the bad things feel good.
+		if((stress_amt >= 0) && (wpmodifier > 0))
+			stress_amt = CLAMP((stress_amt -= wpmodifier), 0, INFINITY)
 		total_stress += stress_amt
 	return total_stress
 

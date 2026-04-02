@@ -13,8 +13,10 @@
 /obj/effect/proc_holder/spell/aimed/update_icon()
 	if(!action)
 		return
-	action.button_icon_state = "[base_icon_state][active]"
-	action.UpdateButtonIcon()
+	action.background_icon_state = "[base_icon_state][active]"
+	if(overlay_state)
+		action.button_icon_state = overlay_state
+	action.build_all_button_icons(force = TRUE)
 
 /obj/effect/proc_holder/spell/aimed/Click()
 	var/mob/living/user = usr
@@ -73,7 +75,6 @@
 	if(!isturf(U) || !isturf(T))
 		return FALSE
 	fire_projectile(user, target)
-	user.newtonian_move(get_dir(U, T))
 	if(current_amount <= 0)
 		charge_counter = 0
 		start_recharge()
@@ -102,7 +103,7 @@
 	school = "evocation"
 	recharge_time = 60
 	clothes_req = FALSE
-	invocation = "ONI SOMA"
+	invocations = list("ONI SOMA")
 	invocation_type = "shout"
 	range = 20
 	cooldown_min = 20 //10 deciseconds reduction per rank

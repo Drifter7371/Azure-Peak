@@ -14,18 +14,19 @@ GLOBAL_LIST_INIT(dwarfskeleton_aggro, world.file2list("strings/rt/dskeletonaggro
 	a_intent = INTENT_HELP
 	d_intent = INTENT_PARRY //even in undeath dwarves parry. Dodging aint proper dorf behavior
 	selected_default_language = /datum/language/dwarvish
-	possible_mmb_intents = list(INTENT_BITE, INTENT_JUMP, INTENT_KICK, INTENT_STEAL) //intents given in case of player controlled
+	possible_mmb_intents = list(INTENT_BITE, INTENT_JUMP, INTENT_KICK, INTENT_SPECIAL) //intents given in case of player controlled
 	possible_rmb_intents = list(/datum/rmb_intent/feint, /datum/rmb_intent/aimed, /datum/rmb_intent/strong, /datum/rmb_intent/weak)
 
 /mob/living/carbon/human/species/dwarfskeleton/ambush
+	threat_point = THREAT_ELITE
+	ambush_faction = "undead"
 	aggressive=1
 	wander = TRUE
 
 /mob/living/carbon/human/species/dwarfskeleton/retaliate(mob/living/L)
 	.=..()
-	if(prob(5))
-		say(pick(GLOB.dwarfskeleton_aggro))
-		linepoint(target)
+	if(npc_combat_dialogue(GLOB.dwarfskeleton_aggro, prob_chance = 5, cooldown = 0))
+		pointed(target)
 
 /mob/living/carbon/human/species/dwarfskeleton/Initialize()
 	. = ..()
@@ -38,8 +39,9 @@ GLOBAL_LIST_INIT(dwarfskeleton_aggro, world.file2list("strings/rt/dskeletonaggro
 	if(src.dna && src.dna.species)
 		src.dna.species.species_traits |= NOBLOOD
 		src.dna.species.soundpack_m = new /datum/voicepack/skeleton()
-	if(src.charflaw)
-		QDEL_NULL(src.charflaw)
+	for(var/datum/charflaw/cf in charflaws)
+		charflaws.Remove(cf)
+		QDEL_NULL(cf)
 	mob_biotypes = MOB_UNDEAD
 	job = "Dwarf Skeleton"
 	real_name = "Dwarven Skeleton"
@@ -47,9 +49,10 @@ GLOBAL_LIST_INIT(dwarfskeleton_aggro, world.file2list("strings/rt/dskeletonaggro
 	ADD_TRAIT(src, TRAIT_NOHUNGER, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_EASYDISMEMBER, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_NOBREATH, TRAIT_GENERIC)
-	ADD_TRAIT(src, TRAIT_INFINITE_ENERGY, TRAIT_GENERIC) // We're moving away from infinite green, even on skeletons.
+	ADD_TRAIT(src, TRAIT_BREADY, TRAIT_GENERIC) // We're moving away from infinite green, even on skeletons.
 	ADD_TRAIT(src, TRAIT_NOPAIN, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_TOXIMMUNE, TRAIT_GENERIC)
+	ADD_TRAIT(src, TRAIT_LEECHIMMUNE, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_LIMBATTACHMENT, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_MEDIUMARMOR, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_HEAVYARMOR, TRAIT_GENERIC)
@@ -74,7 +77,7 @@ GLOBAL_LIST_INIT(dwarfskeleton_aggro, world.file2list("strings/rt/dskeletonaggro
 	if(prob(50))
 		cloak = /obj/item/clothing/cloak/raincloak/mortus
 	wrists = /obj/item/clothing/wrists/roguetown/bracers/copper
-	armor = /obj/item/clothing/suit/roguetown/armor/plate/half/copper
+	armor = /obj/item/clothing/suit/roguetown/armor/plate/cuirass/copper
 	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
 	if(prob(60))
 		shirt = /obj/item/clothing/suit/roguetown/armor/gambeson
@@ -96,15 +99,15 @@ GLOBAL_LIST_INIT(dwarfskeleton_aggro, world.file2list("strings/rt/dskeletonaggro
 	gloves = /obj/item/clothing/gloves/roguetown/chain/iron
 	l_hand = /obj/item/rogueweapon/spear/bronze
 	if(prob(50))
-		l_hand = /obj/item/rogueweapon/sword/iron/short/gladius
+		l_hand = /obj/item/rogueweapon/sword/short/gladius
 		r_hand = /obj/item/rogueweapon/shield/wood
 		if(prob(20))
-			l_hand = /obj/item/rogueweapon/knuckles/bronzeknuckles
+			gloves = /obj/item/clothing/gloves/roguetown/knuckles/bronze
 
 	H.STASTR = 12
 	H.STASPD = 11
 	H.STACON = 12
-	H.STAEND = 12
+	H.STAWIL = 12
 	H.STAPER = 14
 	H.STAINT = 11
 	H.adjust_skillrank(/datum/skill/combat/polearms, 3, TRUE)
@@ -126,7 +129,7 @@ GLOBAL_LIST_INIT(dwarfskeleton_aggro, world.file2list("strings/rt/dskeletonaggro
 	gloves = /obj/item/clothing/gloves/roguetown/plate
 	wrists = /obj/item/clothing/wrists/roguetown/bracers
 	pants = /obj/item/clothing/under/roguetown/platelegs
-	cloak = /obj/item/clothing/cloak/stabard/dungeon
+	cloak = /obj/item/clothing/cloak/tabard/stabard/dungeon
 	neck = /obj/item/clothing/neck/roguetown/chaincoif
 	shirt = /obj/item/clothing/suit/roguetown/armor/gambeson/heavy
 	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale
@@ -138,7 +141,7 @@ GLOBAL_LIST_INIT(dwarfskeleton_aggro, world.file2list("strings/rt/dskeletonaggro
 	H.STASTR = 16
 	H.STASPD = 11
 	H.STACON = 14
-	H.STAEND = 14
+	H.STAWIL = 14
 	H.STAPER = 14
 	H.STAINT = 11
 	H.adjust_skillrank(/datum/skill/combat/polearms, 4, TRUE)

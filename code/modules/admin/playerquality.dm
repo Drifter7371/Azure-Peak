@@ -1,3 +1,5 @@
+#define RCP_CONTRIBUTION_CAP 20 // How much RCP can contribute to PQ gain total.
+
 /proc/get_playerquality(key, text)
 	if(!key)
 		return
@@ -189,7 +191,7 @@
 	if(!check_rights(R_ADMIN,0))
 		amt2change = CLAMP(amt2change, -20, 20)
 	var/raisin = stripped_input("State a short reason for this change", "Game Master", "", null)
-	if(!amt2change && !raisin)
+	if((!isnull(amt2change) && amt2change != 0) && !raisin)
 		return
 	adjust_playerquality(amt2change, theykey, src.ckey, raisin)
 	for(var/client/C in GLOB.clients) // I hate this, but I'm not refactoring the cancer above this point.
@@ -248,7 +250,7 @@
 	fdel(json_file)
 	WRITE_FILE(json_file, json_encode(json))
 
-	if(curcomm < 100 || get_playerquality(key) < 10)
+	if(curcomm < 100 || get_playerquality(key) < RCP_CONTRIBUTION_CAP)
 		adjust_playerquality(round(amt/10,0.1), ckey(key))
 
 /proc/get_roundpoints(key)
@@ -265,4 +267,6 @@
 	if(!curcomm)
 		curcomm = 0
 	return curcomm
+
+#undef RCP_CONTRIBUTION_CAP
 

@@ -84,6 +84,7 @@
 	name = "Fyritius"
 	valid_input = /obj/item/reagent_containers/food/snacks/grown/rogue/fyritius
 	valid_outputs = list(/obj/item/alch/firedust = 1)
+	bonus_chance_outputs = list(/obj/item/alch/solardust = 50)
 
 /datum/alch_grind_recipe/poppy
 	name = "Poppy"
@@ -110,6 +111,18 @@
 	valid_input = /obj/item/reagent_containers/powder/ozium
 	valid_outputs = list(/obj/item/alch/ozium = 1)
 	bonus_chance_outputs = list(/obj/item/alch/airdust =25,/obj/item/alch/ozium = 25)
+
+/datum/alch_grind_recipe/sunflower
+	name = "Sunflower"
+	valid_input = /obj/item/reagent_containers/food/snacks/grown/sunflower
+	valid_outputs = list(/obj/item/alch/solardust = 1)
+	bonus_chance_outputs = list(/obj/item/alch/firedust = 25)
+
+/datum/alch_grind_recipe/scrap
+	name = "Scrap"
+	valid_input = /obj/item/scrap
+	valid_outputs = list(/obj/item/alch/irondust = 1)
+	bonus_chance_outputs = list(/obj/item/alch/runedust = 10)
 
 //Ores -> dust
 /datum/alch_grind_recipe/gold_ore
@@ -148,6 +161,12 @@
 	valid_outputs = list(/obj/item/alch/silverdust = 1)
 	bonus_chance_outputs = list(/obj/item/alch/silverdust = 33, /obj/item/alch/firedust = 25)
 
+/datum/alch_grind_recipe/blessed_silver_bar
+	name = "Blessed Silver Bar"
+	valid_input = /obj/item/ingot/silverblessed
+	valid_outputs = list(/obj/item/alch/silverdust = 1)
+	bonus_chance_outputs = list(/obj/item/alch/silverdust = 33, /obj/item/alch/firedust = 25)
+
 /datum/alch_grind_recipe/iron_bar
 	name = "Iron Bar"
 	valid_input = /obj/item/ingot/iron
@@ -164,6 +183,18 @@
 	valid_input = /obj/item/reagent_containers/food/snacks/grown/berries/rogue
 	valid_outputs = list(/obj/item/alch/berrypowder = 1)
 	bonus_chance_outputs = list(/obj/item/alch/waterdust = 25)
+
+/datum/alch_grind_recipe/manabloompowder
+	name = "Manabloom Powder"
+	valid_input = /obj/item/reagent_containers/food/snacks/grown/manabloom
+	valid_outputs = list(/obj/item/alch/manabloompowder = 1)
+	bonus_chance_outputs = list(/obj/item/alch/manabloompowder = 25)
+
+/datum/alch_grind_recipe/infernaldust
+	name = "Infernal Dust"
+	valid_input = /obj/item/magic/infernal/fang
+	valid_outputs = list(/obj/item/alch/infernaldust = 1)
+	bonus_chance_outputs = list(/obj/item/alch/firedust = 25)
 
 // Start of gem dust section - I've included gold dust as an additional product because of lesser alchemy, grinding up a gem should give you a bit extra (I mean come on it's a gem)
 
@@ -192,7 +223,7 @@
 	bonus_chance_outputs = list(/obj/item/alch/waterdust = 66)
 
 /datum/alch_grind_recipe/mineraldustdiamond // costs a whopping 18 gold to make, why are you doing this
-	name = "Mineral Dust (Diamond)"
+	name = "Mineral Dust (Dorpel)"
 	valid_input = /obj/item/roguegem/diamond
 	valid_outputs = list(/obj/item/alch/mineraldust = 1, /obj/item/alch/golddust = 6)
 	bonus_chance_outputs = list(/obj/item/alch/golddust = 66)

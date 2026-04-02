@@ -103,8 +103,6 @@
 	var/total_transfered = 0
 	var/current_list_element = 1
 
-	//testing("removeany called")
-
 	current_list_element = rand(1, cached_reagents.len)
 
 	while(total_transfered != amount)
@@ -174,7 +172,7 @@
 
 	return master
 
-/datum/reagents/proc/trans_to(obj/target, amount = 1, multiplier = 1, preserve_data = TRUE, no_react = FALSE, mob/transfered_by, remove_blacklisted = FALSE, method = null, show_message = TRUE, round_robin = FALSE)
+/datum/reagents/proc/trans_to(obj/target, amount = 1, multiplier = 1, preserve_data = TRUE, no_react = FALSE, mob/transfered_by, remove_blacklisted = FALSE, method = null, show_message = TRUE, round_robin = FALSE, consume_source = TRUE)
 	//if preserve_data=0, the reagents data will be lost. Usefull if you use data for some strange stuff and don't want it to be transferred.
 	//if round_robin=TRUE, so transfer 5 from 15 water, 15 sugar and 15 plasma becomes 10, 15, 15 instead of 13.3333, 13.3333 13.3333. Good if you hate floating point errors
 	var/list/cached_reagents = reagent_list
@@ -194,8 +192,6 @@
 		R = target.reagents
 		target_atom = target
 
-	//testing("trans to [target_atom]")
-
 	amount = min(min(amount, src.total_volume), R.maximum_volume-R.total_volume)
 	var/trans_data = null
 	var/transfer_log = list()
@@ -212,7 +208,8 @@
 			if(method)
 				R.react_single(T, target_atom, method, part, show_message)
 				T.on_transfer(target_atom, method, transfer_amount * multiplier)
-			remove_reagent(T.type, transfer_amount)
+			if(consume_source)
+				remove_reagent(T.type, transfer_amount)
 			transfer_log[T.type] = transfer_amount
 	else
 		var/to_transfer = amount
@@ -232,7 +229,8 @@
 			if(method)
 				R.react_single(T, target_atom, method, transfer_amount, show_message)
 				T.on_transfer(target_atom, method, transfer_amount * multiplier)
-			remove_reagent(T.type, transfer_amount)
+			if(consume_source)
+				remove_reagent(T.type, transfer_amount)
 			transfer_log[T.type] = transfer_amount
 
 	if(transfered_by && target_atom)
@@ -285,8 +283,6 @@
 		return
 	if(amount < 0)
 		return
-
-	//testing("transidto")
 
 	var/datum/reagents/R = target.reagents
 	if(src.get_reagent_amount(reagent)<amount)
@@ -368,8 +364,6 @@
 							need_mob_update += R.addiction_act_stage4(C)
 						if(40 to INFINITY)
 							remove_addiction(R)
-						else
-							SEND_SIGNAL(C, COMSIG_CLEAR_MOOD_EVENT, "[R.type]_overdose")
 		addiction_tick++
 	if(C && need_mob_update) //some of the metabolized reagents had effects on the mob that requires some updates.
 		C.updatehealth()
@@ -379,7 +373,6 @@
 
 /datum/reagents/proc/remove_addiction(datum/reagent/R)
 	to_chat(my_atom, "<span class='notice'>I feel like you've gotten over your need for [R.name].</span>")
-	SEND_SIGNAL(my_atom, COMSIG_CLEAR_MOOD_EVENT, "[R.type]_overdose")
 	addiction_list.Remove(R)
 	qdel(R)
 
@@ -563,7 +556,6 @@
 		var/datum/reagent/R = reagent
 		del_reagent(R.type)
 	if(my_atom)
-		//testing("[src]  clear reagents [my_atom]")
 		my_atom.on_reagent_change(CLEAR_REAGENTS)
 	return 0
 
@@ -826,6 +818,53 @@
 	var/list/cached_reagents = reagent_list
 	. = locate(type) in cached_reagents
 
+/datum/reagents/proc/generate_scent_message(minimum_percent=15)
+	// the lower the minimum percent, the more sensitive the message is.
+	var/list/out = list()
+	var/list/scents = list() //descriptor = strength
+	if(minimum_percent <= 100)
+		for(var/datum/reagent/R in reagent_list)
+			if(!R.taste_mult)
+				continue
+			if(istype(R, /datum/reagent/consumable/nutriment))
+				var/list/scent_data = R.data
+				for(var/scent in scent_data)
+					var/ratio = scent_data[scent]
+					var/amount = ratio * R.taste_mult * R.volume
+					if(scent in scents)
+						scents[scent] += amount
+					else
+						scents[scent] = amount
+			else
+				var/scent_desc
+				if (R.scent_description != "")
+					scent_desc = R.scent_description
+				else
+					scent_desc = R.taste_description
+				var/scent_amount = R.volume * R.taste_mult
+				if(scent_desc in scents)
+					scents[scent_desc] += scent_amount
+				else
+					scents[scent_desc] = scent_amount
+		//deal with percentages
+		// TODO it would be great if we could sort these from strong to weak
+		var/total_scent = counterlist_sum(scents)
+		if(total_scent > 0)
+			for(var/scent_desc in scents)
+				var/percent = scents[scent_desc]/total_scent * 100
+				if(percent < minimum_percent)
+					continue
+				var/intensity_desc = ""
+				if(percent > minimum_percent * 2 || percent == 100)
+					intensity_desc = ""
+				else if(percent > minimum_percent * 3)
+					intensity_desc = ""
+				if(intensity_desc != "")
+					out += "[intensity_desc] [scent_desc]"
+				else
+					out += "[scent_desc]"
+	return english_list(out, "something")
+
 /datum/reagents/proc/generate_taste_message(minimum_percent=15)
 	// the lower the minimum percent, the more sensitive the message is.
 	var/list/out = list()
@@ -913,3 +952,5 @@
 		var/datum/reagent/R = GLOB.chemical_reagents_list[X]
 		if(ckey(chem_name) == ckey(lowertext(R.name)))
 			return X
+
+#undef CHEMICAL_QUANTISATION_LEVEL

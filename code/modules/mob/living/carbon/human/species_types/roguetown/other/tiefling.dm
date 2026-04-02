@@ -4,6 +4,10 @@
 /datum/species/tieberian
 	name = "Tiefling"
 	id = "tiefling"
+	origin_default = /datum/virtue/origin/etrusca
+	origin = "Etrusca"
+	base_name = "Godtouched"
+	is_subrace = TRUE
 	desc = "<b>Tiefling</b><br>\
 	The offspring of demons with mortal races, a consequence of demonic incursions into the mortal realm and dark pacts. \
 	Their origins dating back to the demonic invasion of Archdevil Vheslyn who pillaged and ravaged the mortal lands and its people before being stopped by Psydon. \
@@ -13,14 +17,15 @@
 	The taint of their very being going back generations, and no amount of cleansing can be rid of it. \
 	As over a millennium a simple handful of Tieflings have created extended bloodlines linking back to their infernal progenitors. Some Tieflings embrace their demonic origin, while other shun it. \
 	No matter if they embrace their demonic ancestors or not, Tieflings have formed an importance upon their bloodline and family due to often being shunned and hunted through out time in which only those of their blood and kin they could truly trust. <br>\
-	(+1 Constitution, +1 Intelligence)"
+	<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>+1 CON | +1 INT </b></span><br>"
 
 	skin_tone_wording = "Progenitor"
+	use_skin_tone_wording_for_examine = FALSE
 
 	species_traits = list(EYECOLOR,HAIR,FACEHAIR,LIPS,STUBBLE,OLDGREY)
 	inherent_traits = list(TRAIT_NOMOBSWAP)
 	default_features = MANDATORY_FEATURE_LIST
-	use_skintones = 1
+	use_skintones = TRUE
 	disliked_food = NONE
 	liked_food = NONE
 	possible_ages = ALL_AGES_LIST
@@ -69,6 +74,8 @@
 		/datum/customizer/bodypart_feature/accessory,
 		/datum/customizer/bodypart_feature/face_detail,
 		/datum/customizer/bodypart_feature/underwear,
+		/datum/customizer/bodypart_feature/legwear,
+		/datum/customizer/bodypart_feature/piercing,
 		/datum/customizer/organ/horns/anthro,
 		/datum/customizer/organ/tail/tiefling,
 		/datum/customizer/organ/testicles/anthro,
@@ -83,13 +90,27 @@
 		/datum/body_marking_set/bellysocks,
 		/datum/body_marking_set/tiger,
 		/datum/body_marking_set/tiger_dark,
+		/datum/body_marking_set/gradient,
 	)
 	body_markings = list(
 		/datum/body_marking/flushed_cheeks,
 		/datum/body_marking/eyeliner,
+		/datum/body_marking/plain,
+		/datum/body_marking/belly,
+		/datum/body_marking/bellyslim,
+		/datum/body_marking/butt,
+		/datum/body_marking/sock,
+		/datum/body_marking/socklonger,
+		/datum/body_marking/tips,
+		/datum/body_marking/backspots,
+		/datum/body_marking/front,
 		/datum/body_marking/tonage,
+		/datum/body_marking/nose,
+		/datum/body_marking/harlequin,
+		/datum/body_marking/harlequinreversed,
 		/datum/body_marking/bangs,
 		/datum/body_marking/bun,
+		/datum/body_marking/gradient,
 	)
 	languages = list(
 		/datum/language/common,
@@ -126,7 +147,17 @@
 		"Vodyanev" = SKIN_COLOR_ABYSS,
 		"Calvus" = SKIN_COLOR_CALVUS,
 		"Voibion" = SKIN_COLOR_VOIBION,
-		"Chyerno" = SKIN_COLOR_CHYERNO
+		"Chyerno" = SKIN_COLOR_CHYERNO,
+		"Drema"	= SKIN_COLOR_DREMA,
+		"Chir"	= SKIN_COLOR_CHIR,
+		"Vesyl"	= SKIN_COLOR_VESYL,
+		"Krosec" = SKIN_COLOR_KROSEC,
+		"Asza" = SKIN_COLOR_ASZA,
+		"Krizzsha" = SKIN_COLOR_KRIZZSHA,
+		"Tosiz" = SKIN_COLOR_TOSIZ,
+		"Velothel" = SKIN_COLOR_VELOTHEL,
+		"Xir" = SKIN_COLOR_XIR,
+		"Esse" = SKIN_COLOR_ESSE
 	)
 
 /datum/species/tieberian/get_hairc_list()

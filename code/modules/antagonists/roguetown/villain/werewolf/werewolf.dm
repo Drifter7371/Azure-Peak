@@ -3,7 +3,38 @@
 	roundend_category = "Werewolves"
 	antagpanel_category = "Werewolf"
 	job_rank = ROLE_WEREWOLF
-	var/list/inherent_traits = list(TRAIT_NOPAIN, TRAIT_NOPAINSTUN, TRAIT_CRITICAL_RESISTANCE, TRAIT_NOFALLDAMAGE1, TRAIT_KNEESTINGER_IMMUNITY, TRAIT_SHOCKIMMUNE)
+	var/list/inherent_traits = list(
+		TRAIT_IGNORESLOWDOWN,
+		TRAIT_IGNOREDAMAGESLOWDOWN,
+		TRAIT_NOPAIN, 
+		TRAIT_NOPAINSTUN, 
+		TRAIT_CRITICAL_RESISTANCE, 
+		TRAIT_NOFALLDAMAGE1, 
+		TRAIT_KNEESTINGER_IMMUNITY, 
+		TRAIT_SHOCKIMMUNE,
+		TRAIT_SILVER_WEAK,
+		TRAIT_STRENGTH_UNCAPPED,
+		TRAIT_LONGSTRIDER,
+		TRAIT_SPELLCOCKBLOCK,
+		TRAIT_PIERCEIMMUNE,
+		TRAIT_HARDDISMEMBER,
+		TRAIT_NOSTINK,
+		TRAIT_NASTY_EATER,
+		TRAIT_ORGAN_EATER,
+		TRAIT_TOXIMMUNE,
+		TRAIT_BREADY,
+		TRAIT_STEELHEARTED,
+		TRAIT_BASHDOORS,
+		TRAIT_INFINITE_STAMINA,
+		TRAIT_ZJUMP,
+		TRAIT_NOSLEEP,
+		TRAIT_GRABIMMUNE,
+		TRAIT_STRONGBITE,
+		TRAIT_LYCANRESILENCE,
+		TRAIT_CHUNKYFINGERS, //So they can no longer use weapons at all.
+		TRAIT_UNLYCKERABLE, //Literal archenemy
+		TRAIT_ZOMBIE_IMMUNE
+	)
 	confess_lines = list(
 		"THE BEAST INSIDE ME!",
 		"BEWARE THE BEAST!",
@@ -15,6 +46,12 @@
 	var/transforming
 	var/untransforming
 	var/wolfname = "Verewolf"
+	has_tempo = TRUE
+	var/static/list/dendor_cries = list('sound/effects/werewolf_sounds/wscream1.ogg',
+								'sound/effects/werewolf_sounds/wscream2.ogg',
+								'sound/effects/werewolf_sounds/wscream3.ogg',
+								'sound/effects/werewolf_sounds/wscream4.ogg',
+								'sound/effects/werewolf_sounds/wscream5.ogg')
 
 /datum/antagonist/werewolf/lesser
 	name = "Lesser Verewolf"
@@ -28,19 +65,27 @@
 		return span_boldnotice("A young lupine kin.")
 	if(istype(examined_datum, /datum/antagonist/werewolf))
 		return span_boldnotice("An elder lupine kin.")
+	if(istype(examined_datum, /datum/antagonist/maniac))
+		return span_boldnotice("A fool.")
+	if(istype(examined_datum, /datum/antagonist/dreamwalker))
+		return span_boldnotice("The dreamer has this one in his grasp.")
+	if(istype(examined_datum, /datum/antagonist/gnoll))
+		return span_boldnotice("An abomination.")
 	if(examiner.Adjacent(examined))
-		if(istype(examined_datum, /datum/antagonist/vampirelord/lesser))
+		if(istype(examined_datum, /datum/antagonist/lich))
+			return span_boldnotice("A deadite freek.")
+		if(istype(examined_datum, /datum/antagonist/vampire))
+			return span_boldnotice("A putrid vampyr, I should watch my back.")
+		if(istype(examined_datum, /datum/antagonist/vampire/lord))
 			if(transformed)
-				return span_boldwarning("A lesser Vampire.")
-		if(istype(examined_datum, /datum/antagonist/vampirelord))
-			if(transformed)
-				return span_boldwarning("An Ancient Vampire. I must be careful!")
+				return span_boldwarning("An ancient vampyr. I must be careful!")
 
 /datum/antagonist/werewolf/on_gain()
+	greet()
 	owner.special_role = name
 	if(increase_votepwr)
 		forge_werewolf_objectives()
-
+	
 	wolfname = "[pick(GLOB.wolf_prefixes)] [pick(GLOB.wolf_suffixes)]"
 	return ..()
 
@@ -64,18 +109,30 @@
 		return
 
 /datum/antagonist/werewolf/greet()
-	to_chat(owner.current, span_userdanger("Ever since that bite, I have been a [name]."))
-	owner.announce_objectives()
+	to_chat(owner.current, span_userdanger("Since a bite long, long ago, Dendor's Madness has welled within me. Before the Moonlight, I will sate my hallowed Hunger."))
+	var/picked_sound = pick(dendor_cries)
+	owner.current.playsound_local(get_turf(owner.current), picked_sound, 100)
 	return ..()
+
+/datum/antagonist/werewolf/lesser/greet()
+	// DO NOT call parent. 
+	// lesser verevolfs should always be created by alpha bites, which have their own way of informing the user
+	// they are a werewolf. despite this, i still want to provide a new audio cue in the form of [THE CRY].
+	// remove it if it's obstructive. thx.
+	var/picked_sound = pick(dendor_cries)
+	owner.current.playsound_local(get_turf(owner.current), picked_sound, 100)
 
 /mob/living/carbon/human/proc/can_werewolf()
 	if(!mind)
 		return FALSE
-	if(mind.has_antag_datum(/datum/antagonist/vampirelord))
+	if(mind.has_antag_datum(/datum/antagonist/vampire))
 		return FALSE
 	if(mind.has_antag_datum(/datum/antagonist/werewolf))
 		return FALSE
 	if(mind.has_antag_datum(/datum/antagonist/skeleton))
+		return FALSE
+	//No cross species pollination!!!
+	if(mind.has_antag_datum(/datum/antagonist/gnoll))
 		return FALSE
 	if(HAS_TRAIT(src, TRAIT_SILVER_BLESSED))
 		return FALSE
@@ -105,14 +162,14 @@
 /mob/living/carbon/human/proc/werewolf_feed(mob/living/carbon/human/target, healing_amount = 10)
 	if(!istype(target))
 		return
-	if(src.has_status_effect(/datum/status_effect/debuff/silver_curse))
+	if(has_status_effect(/datum/status_effect/fire_handler/fire_stacks/sunder) || has_status_effect(/datum/status_effect/fire_handler/fire_stacks/sunder/blessed))
 		to_chat(src, span_notice("My power is weakened, I cannot heal!"))
 		return
 	if(target.mind)
 		if(target.mind.has_antag_datum(/datum/antagonist/zombie))
 			to_chat(src, span_warning("I should not feed on rotten flesh."))
 			return
-		if(target.mind.has_antag_datum(/datum/antagonist/vampirelord))
+		if(target.mind.has_antag_datum(/datum/antagonist/vampire))
 			to_chat(src, span_warning("I should not feed on corrupted flesh."))
 			return
 		if(target.mind.has_antag_datum(/datum/antagonist/werewolf))
@@ -122,20 +179,21 @@
 	to_chat(src, span_warning("I feed on succulent flesh. I feel reinvigorated."))
 	return src.reagents.add_reagent(/datum/reagent/medicine/healthpot, healing_amount)
 
-/obj/item/clothing/suit/roguetown/armor/skin_armor/werewolf_skin
+/obj/item/clothing/suit/roguetown/armor/regenerating/skin/werewolf_skin
 	slot_flags = null
 	name = "verewolf's skin"
-	desc = ""
+	desc = "an impenetrable hide of dendor's fury"
 	icon_state = null
 	body_parts_covered = FULL_BODY
 	body_parts_inherent = FULL_BODY
 	armor = ARMOR_WWOLF
-	prevent_crits = list(BCLASS_CUT, BCLASS_CHOP, BCLASS_STAB, BCLASS_BLUNT, BCLASS_TWIST)
 	blocksound = SOFTHIT
 	blade_dulling = DULLING_BASHCHOP
 	sewrepair = FALSE
 	max_integrity = 550
 	item_flags = DROPDEL
+	repair_time = 15 SECONDS
+	interrupt_damount = 35
 
 /datum/intent/simple/werewolf
 	name = "claw"
@@ -144,12 +202,20 @@
 	attack_verb = list("claws", "mauls", "eviscerates")
 	animname = "chop"
 	hitsound = "genslash"
-	penfactor = 50
+	penfactor = PEN_HEAVY
 	candodge = TRUE
 	canparry = TRUE
 	miss_text = "slashes the air!"
 	miss_sound = "bluntwooshlarge"
 	item_d_type = "slash"
+
+/datum/intent/mace/smash/werewolf
+	name = "thrash"
+	desc = "A powerful, smash of lycan muscle that deals normal damage but can throw a standing opponent back and slow them down, based on your strength. Ineffective below 10 strength. Slowdown & Knockback scales to your Strength up to 15 (1 - 5 tiles). Cannot be used consecutively more than every 5 seconds on the same target. Prone targets halve the knockback distance."
+	icon_state = "insmash"
+	maxrange = 5
+	chargetime = 1
+	penfactor = PEN_HEAVY
 
 /obj/item/rogueweapon/werewolf_claw
 	name = "Verevolf Claw"
@@ -157,14 +223,12 @@
 	item_state = null
 	lefthand_file = null
 	righthand_file = null
-	icon = 'icons/roguetown/weapons/32.dmi'
+	icon = 'icons/roguetown/weapons/unarmed32.dmi'
 	max_blade_int = 900
 	max_integrity = 900
 	force = 25
 	block_chance = 0
 	wdefense = 2
-	blade_dulling = DULLING_SHAFT_GRAND
-	armor_penetration = 15
 	associated_skill = /datum/skill/combat/unarmed
 	wlength = WLENGTH_NORMAL
 	wbalance = WBALANCE_HEAVY
@@ -173,10 +237,12 @@
 	sharpness = IS_SHARP
 	parrysound = "bladedmedium"
 	swingsound = BLADEWOOSH_MED
-	possible_item_intents = list(/datum/intent/simple/werewolf)
+	possible_item_intents = list(/datum/intent/simple/werewolf, /datum/intent/mace/smash/werewolf)
 	parrysound = list('sound/combat/parry/parrygen.ogg')
 	embedding = list("embedded_pain_multiplier" = 0, "embed_chance" = 0, "embedded_fall_chance" = 0)
 	item_flags = DROPDEL
+	special = /datum/special_intent/axe_swing	//Good pairing for area denial for WW's.
+	experimental_inhand = FALSE
 
 /obj/item/rogueweapon/werewolf_claw/right
 	icon_state = "claw_r"
@@ -186,5 +252,4 @@
 
 /obj/item/rogueweapon/werewolf_claw/Initialize()
 	. = ..()
-	ADD_TRAIT(src, TRAIT_NODROP, TRAIT_GENERIC)
 	ADD_TRAIT(src, TRAIT_NOEMBED, TRAIT_GENERIC)

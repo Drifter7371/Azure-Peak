@@ -1,3 +1,5 @@
+#define ATTACK_OVERRIDE_NODEFENSE 2
+
 /**
   *This is the proc that handles the order of an item_attack.
   *The order of procs called is:
@@ -14,10 +16,15 @@
 	if(!user.has_hand_for_held_index(user.active_hand_index, TRUE)) //we obviously have a hadn, but we need to check for fingers/prosthetics
 		to_chat(user, span_warning("I can't move the fingers."))
 		return
-	if(!istype(src, /obj/item/grabbing))
+	if(!istype(src, /obj/item/grabbing) && !istype(src, /obj/item/rogueweapon/werewolf_claw))
 		if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
 			to_chat(user, span_warning("...What?"))
 			return
+		// FAR less aggressive version of chunkyfingers, designed to be used with nudist. Shrimply lets the user still use neat stuff like orison without letting them weaponize.
+		if(HAS_TRAIT(user, TRAIT_GNARLYDIGITS))
+			if(istype(src, /obj/item/rogueweapon) && !istype(src, /obj/item/rogueweapon/werewolf_claw))
+				to_chat(user, span_warning("My fingers are too misshapen to use this puny implement."))
+				return
 	if(tool_behaviour && target.tool_act(user, src, tool_behaviour))
 		return
 	if(pre_attack(target, user, params))
@@ -69,17 +76,50 @@
 	if(istype(user.rmb_intent, /datum/rmb_intent/swift))
 		adf = max(round(adf * CLICK_CD_MOD_SWIFT), CLICK_CD_INTENTCAP)
 	user.changeNext_move(adf)
+	for(var/obj/item/clothing/worn_thing in get_equipped_items(include_pockets = TRUE))//checks clothing worn by src.
+	// Things that are supposed to be worn, being held = cannot block
+		if(isclothing(worn_thing))
+			if(worn_thing in held_items)
+				continue
+		// Things that are supposed to be held, being worn = cannot block
+		else if(!(worn_thing in held_items))
+			continue
+		worn_thing.hit_response(src, user) //checks if clothing has hit response. Refer to Items.dm
 	return I.attack(src, user)
 
 /mob/living
 	var/tempatarget = null
 	var/pegleg = 0			//Handles check & slowdown for peglegs. Fuckin' bootleg, literally, but hey it at least works.
 	var/construct = 0
+	var/burialrited = FALSE
 
 /obj/item/proc/attack(mob/living/M, mob/living/user)
+	var/override_status
+	//Item signal for override
 	if(SEND_SIGNAL(src, COMSIG_ITEM_ATTACK, M, user) & COMPONENT_ITEM_NO_ATTACK)
 		return FALSE
-	SEND_SIGNAL(user, COMSIG_MOB_ITEM_ATTACK, M, user)
+
+	//Receiver signal for overrides
+	var/_receiver_signal = SEND_SIGNAL(M, COMSIG_MOB_ITEM_BEING_ATTACKED, M, user, src)
+	if(_receiver_signal & COMPONENT_ITEM_NO_ATTACK)
+		return FALSE
+	else if(_receiver_signal & COMPONENT_ITEM_NO_DEFENSE)
+		override_status = ATTACK_OVERRIDE_NODEFENSE
+
+	//Attacker signal generic + override for no defense
+	var/_attacker_signal = SEND_SIGNAL(user, COMSIG_MOB_ITEM_ATTACK, M, user, src)
+	if(_attacker_signal & COMPONENT_ITEM_NO_ATTACK)
+		return FALSE
+	else if(_attacker_signal & COMPONENT_ITEM_NO_DEFENSE)
+		override_status = ATTACK_OVERRIDE_NODEFENSE
+
+
+	if(HAS_TRAIT(M, TRAIT_TEMPO))
+		if(ishuman(M) && ishuman(user) && user.mind)
+			var/mob/living/carbon/human/H = M
+			H.process_tempo_attack(user)
+
+
 	if(item_flags & NOBLUDGEON)
 		return FALSE	
 
@@ -87,8 +127,13 @@
 		to_chat(user, span_warning("I don't want to harm other living beings!"))
 		return
 
+	if(force && user.rogue_sneaking)
+		user.mob_timers[MT_FOUNDSNEAK] = world.time
+		user.update_sneak_invis(reset = TRUE)
+
 	M.lastattacker = user.real_name
 	M.lastattackerckey = user.ckey
+	M.lastattacker_weakref = WEAKREF(user)
 	if(M.mind)
 		M.mind.attackedme[user.real_name] = world.time
 	if(force)
@@ -102,25 +147,31 @@
 
 //	if(force)
 //		user.emote("attackgrunt")
+
+	var/swingdelay = user.used_intent.swingdelay
+	var/_swingdelay_mod = SEND_SIGNAL(src, COMSIG_LIVING_SWINGDELAY_MOD)
+	if(_swingdelay_mod)
+		swingdelay += _swingdelay_mod
+
 	var/datum/intent/cached_intent = user.used_intent
-	if(user.used_intent.swingdelay)
-		if(!user.used_intent.noaa && isnull(user.mind))
+	if(swingdelay)
+		if(!user.used_intent.noaa && isnull(user.mind) && !user.used_intent.cleave)
 			if(get_dist(get_turf(user), get_turf(M)) <= user.used_intent.reach)
 				user.do_attack_animation(M, user.used_intent.animname, user.used_intent.masteritem, used_intent = user.used_intent, simplified = TRUE)
-		sleep(user.used_intent.swingdelay)
+		sleep(swingdelay)
 	if(user.a_intent != cached_intent)
 		return
 	if(QDELETED(src) || QDELETED(M))
 		return
 	if(!user.CanReach(M,src))
 		return
-	if(user.get_active_held_item() != src)
+	if(user.get_active_held_item() != src && !HAS_TRAIT(user, TRAIT_DUALWIELDER))
 		return
 	if(user.incapacitated())
 		return
 	if((M.mobility_flags & MOBILITY_STAND))
 		if(M.checkmiss(user))
-			if(!user.used_intent.swingdelay)
+			if(!swingdelay && !user.used_intent?.cleave)
 				if(get_dist(get_turf(user), get_turf(M)) <= user.used_intent.reach)
 					user.do_attack_animation(M, user.used_intent.animname, used_item = src, used_intent = user.used_intent, simplified = TRUE)
 			return
@@ -133,38 +184,42 @@
 	// Release drain on attacks besides unarmed attacks/grabs is 1, so it'll just be whatever the penalty is + 1.
 	// Unarmed attacks are the only ones right now that have differing releasedrain, see unarmed attacks for their calc.
 	user.stamina_add(user.used_intent.releasedrain + rmb_stam_penalty)
-	var/bad_guard = FALSE
-	//We have Guard / Clash active, and are hitting someone who doesn't. Cheesing a 'free' hit with a defensive buff is a no-no. You get punished.
-	if(user.has_status_effect(/datum/status_effect/buff/clash) && !M.has_status_effect(/datum/status_effect/buff/clash))
-		bad_guard = TRUE
-	if(M.has_status_effect(/datum/status_effect/buff/clash) && M.get_active_held_item() && ishuman(M) && !bad_guard)
-		var/mob/living/carbon/human/HM = M
-		var/obj/item/IM = M.get_active_held_item()
-		var/obj/item/IU 
-		if(user.used_intent.masteritem)
-			IU = user.used_intent.masteritem
-		HM.process_clash(user, IM, IU)
-		return
-	if(bad_guard)
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.bad_guard(span_suicide("I switched stances too quickly! It drains me!"), cheesy = TRUE)
 	if(user.mob_biotypes & MOB_UNDEAD)
 		if(M.has_status_effect(/datum/status_effect/buff/necras_vow))
 			if(isnull(user.mind))
 				user.adjust_fire_stacks(5)
-				user.IgniteMob()
+				user.ignite_mob()
 			else
 				if(prob(30))
 					to_chat(M, span_warning("The foul blessing of the Undermaiden hurts us!"))
 			user.adjust_blurriness(3)
 			user.adjustBruteLoss(5)
 			user.apply_status_effect(/datum/status_effect/churned, M)
-	if(M.checkdefense(user.used_intent, user))
-		return
+	
+	//Niche signal for post-swingdelay attacks when we want to care about those.
+	_attacker_signal = null
+	_attacker_signal = SEND_SIGNAL(user, COMSIG_MOB_ITEM_ATTACK_POST_SWINGDELAY, M, user, src)
+	var/_defender_signal = SEND_SIGNAL(M, COMSIG_MOB_ITEM_POST_SWINGDELAY_ATTACKED, M, user, src)
+	if(_attacker_signal & COMPONENT_ITEM_NO_ATTACK || _defender_signal & COMPONENT_ITEM_NO_ATTACK)
+		return FALSE
+	else if(_attacker_signal & COMPONENT_ITEM_NO_DEFENSE || _defender_signal & ATTACK_OVERRIDE_NODEFENSE)
+		override_status = ATTACK_OVERRIDE_NODEFENSE
 
+	if(override_status != ATTACK_OVERRIDE_NODEFENSE)
+		if(M.checkdefense(user.used_intent, user))
+			return
 
+	if(user.mind)
+		if(user.client?.prefs?.attack_blip_frequency != ATTACK_BLIP_PREF_NEVER)
+			var/blip_prob = user.client?.prefs?.attack_blip_frequency
+			if(prob(blip_prob))
+				user.emote("attack", forced = TRUE)
+	else
+		if(prob(PROB_ATTACK_EMOTE_NPC))
+			user.emote("attack", forced = TRUE)
 
+	SEND_SIGNAL(src, COMSIG_ITEM_ATTACK_SUCCESS, M, user)
+	SEND_SIGNAL(M, COMSIG_ITEM_ATTACKED_SUCCESS, src, user)
 	if(user.zone_selected == BODY_ZONE_PRECISE_R_INHAND)
 		var/offh = 0
 		var/obj/item/W = M.held_items[1]
@@ -197,7 +252,20 @@
 			else
 				playsound(M.loc,  "nodmg", 100, FALSE, -1)
 
+		if(M.has_flaw(/datum/charflaw/addiction/thrillseeker))
+			var/datum/component/arousal/CAR = M.GetComponent(/datum/component/arousal)
+			if(CAR)
+				CAR.adjust_arousal_special(src, 2)
+
+		if(user.has_flaw(/datum/charflaw/addiction/thrillseeker))
+			var/datum/component/arousal/CAR = user.GetComponent(/datum/component/arousal)
+			if(CAR)
+				CAR.adjust_arousal_special(src, 2)
+				
 	log_combat(user, M, "attacked", src.name, "(INTENT: [uppertext(user.used_intent.name)]) (DAMTYPE: [uppertext(damtype)])")
+
+	execute_cleave(user, get_turf(M), M)
+
 	add_fingerprint(user)
 
 
@@ -212,10 +280,47 @@
 		return TRUE
 
 /obj/item/proc/attack_turf(turf/T, mob/living/user, multiplier)
+	if(SEND_SIGNAL(src, COMSIG_ITEM_ATTACK_TURF, T, user) & COMPONENT_NO_ATTACK_OBJ)
+		return
+	execute_cleave(user, T)
 	if(T.max_integrity)
 		if(T.attacked_by(src, user, multiplier))
 			user.do_attack_animation(T, simplified = TRUE)
 			return TRUE
+
+/// Executes cleave secondary attacks around an origin turf. Primary is excluded from targets (if any).
+/obj/item/proc/execute_cleave(mob/living/user, turf/origin, mob/living/primary)
+	var/datum/cleave_pattern/cleave = user.used_intent?.cleave
+	if(!cleave)
+		return
+	if(primary && QDELETED(primary))
+		return
+	var/list/cleave_turfs = cleave.get_cleave_turfs(user, origin)
+	cleave_sharpness_mult = 0.5
+	// Collect targets, living first then dead
+	var/list/living_targets = list()
+	var/list/dead_targets = list()
+	for(var/turf/T in cleave_turfs)
+		for(var/mob/living/L in T)
+			if(L == primary || L == user)
+				continue
+			if(L.stat == DEAD)
+				dead_targets += L
+			else
+				living_targets += L
+	var/cleave_targets_hit = 0
+	for(var/mob/living/L in living_targets + dead_targets)
+		if(cleave.max_targets && cleave_targets_hit >= cleave.max_targets)
+			break
+		if(L.checkdefense(user.used_intent, user))
+			continue
+		if(L.attacked_by(src, user))
+			cleave_targets_hit++
+			var/tempsound = user.used_intent?.hitsound
+			if(tempsound)
+				playsound(L.loc, tempsound, 100, FALSE, -1)
+			log_combat(user, L, "cleaved", src.name, "(INTENT: [uppertext(user.used_intent.name)])")
+	cleave_sharpness_mult = 1
 
 /atom/movable/proc/attacked_by()
 	return FALSE
@@ -226,19 +331,23 @@
 	if(!I?.force)
 		return 0
 	var/newforce = I.force_dynamic
-	testing("startforce [newforce]")
+
 	if(!istype(user))
 		return newforce
+	
+	var/dullness_ratio
+	if(I.max_blade_int && I.sharpness != IS_BLUNT)
+		dullness_ratio = I.blade_int / I.max_blade_int
 	var/cont = FALSE
 	var/used_str = user.STASTR
 	if(iscarbon(user))
 		var/mob/living/carbon/C = user
 		if(C.domhand)
 			used_str = C.get_str_arms(C.used_hand)
-	if(istype(user.rmb_intent, /datum/rmb_intent/strong))
-		used_str++
-	if(istype(user.rmb_intent, /datum/rmb_intent/weak))
-		used_str--
+	if(ishuman(user))
+		var/mob/living/carbon/human/user_human = user
+		if(user_human.clan) // For each level of potence user gains 0.5 STR, at 5 Potence their STR buff is 2.5
+			used_str += floor(0.5 * user_human.potence_weapon_buff)
 	if(used_str >= 11)
 		var/strmod
 		if(used_str > STRENGTH_SOFTCAP && !HAS_TRAIT(user, TRAIT_STRENGTH_UNCAPPED))
@@ -247,6 +356,12 @@
 			strmod += strcappedmod
 		else
 			strmod = ((used_str - 10) * STRENGTH_MULT)
+		if(dullness_ratio && I.sharpness != IS_BLUNT)
+			if(dullness_ratio <= SHARPNESS_TIER1_FLOOR)
+				strmod = 0
+			else if(dullness_ratio < SHARPNESS_TIER1_THRESHOLD)
+				var/strlerp = (dullness_ratio - SHARPNESS_TIER1_FLOOR) / (SHARPNESS_TIER1_THRESHOLD - SHARPNESS_TIER1_FLOOR)
+				strmod *= strlerp
 		newforce = newforce + (newforce * strmod)
 	else if(used_str <= 9)
 		newforce = newforce - (newforce * ((10 - used_str) * 0.1))
@@ -273,6 +388,8 @@
 						dullfactor = 0.2
 					else
 						dullfactor = 0.45 + (lumberskill * 0.15)
+						if(HAS_TRAIT(user, TRAIT_WYRD_LABOURER))
+							dullfactor *= 1.5
 						lumberjacker.mind.add_sleep_experience(/datum/skill/labor/lumberjacking, (lumberjacker.STAINT*0.2))
 					cont = TRUE
 				if(BCLASS_CHOP)
@@ -291,6 +408,9 @@
 				if(BCLASS_BLUNT)
 					cont = TRUE
 				if(BCLASS_SMASH)
+					dullfactor = 1.5
+					cont = TRUE
+				if(BCLASS_DRILL)
 					dullfactor = 1.5
 					cont = TRUE
 				if(BCLASS_PICK)
@@ -315,6 +435,15 @@
 					cont = TRUE
 				if(BCLASS_BLUNT)
 					cont = TRUE
+				if(BCLASS_DRILL)
+					var/mob/living/driller = user
+					var/mineskill = driller.get_skill_level(/datum/skill/labor/mining)
+					var/engineeringskill = driller.get_skill_level(/datum/skill/craft/engineering)
+					if (engineeringskill > mineskill)
+						dullfactor = 1.5 * (engineeringskill * 0.1)
+					else
+						dullfactor = 1.5 * (mineskill * 0.1)
+					cont = TRUE
 				if(BCLASS_PICK)
 					var/mob/living/miner = user
 					var/mineskill = miner.get_skill_level(/datum/skill/labor/mining)
@@ -326,96 +455,26 @@
 			if(!(user.mobility_flags & MOBILITY_STAND))
 				to_chat(user, span_warning("I need to stand up to get a proper swing."))
 				return 0
-			if(user.used_intent.blade_class != BCLASS_PICK)
+			if(user.used_intent.blade_class != BCLASS_PICK && user.used_intent.blade_class != BCLASS_DRILL)
 				return 0
 			var/mob/living/miner = user
 			var/mineskill = miner.get_skill_level(/datum/skill/labor/mining)
 			newforce = newforce * (8+(mineskill*1.5))
+			if(HAS_TRAIT(user, TRAIT_WYRD_LABOURER))
+				newforce *= 1.5
 			shake_camera(user, 1, 1)
 			miner.mind.add_sleep_experience(/datum/skill/labor/mining, (miner.STAINT*0.2))
 		if(DULLING_SHAFT_CONJURED)
-			dullfactor = 1.2
-		if(DULLING_SHAFT_WOOD)	//Weak to cut / chop. No changes vs stab, resistant to blunt
-			switch(user.used_intent.blade_class)
-				if(BCLASS_CUT)
-					if(!I.remove_bintegrity(1))
-						dullfactor = 0.5
-					else
-						dullfactor = 1.3
-				if(BCLASS_CHOP)
-					if(!I.remove_bintegrity(1))
-						dullfactor = 0.5
-					else
-						dullfactor = 1.5
-				if(BCLASS_STAB)
-					dullfactor = 1
-				if(BCLASS_BLUNT)
-					dullfactor = 0.7
-				if(BCLASS_SMASH)
-					dullfactor = 0.5
-				if(BCLASS_PICK)
-					dullfactor = 0.5
-		if(DULLING_SHAFT_REINFORCED)	//Weak to stab. No changes vs blunt, resistant to cut / chop
-			switch(user.used_intent.blade_class)
-				if(BCLASS_CUT)
-					if(!I.remove_bintegrity(1))
-						dullfactor = 0
-					else
-						dullfactor = 0.5
-				if(BCLASS_CHOP)
-					if(!I.remove_bintegrity(1))
-						dullfactor = 0
-					else
-						dullfactor = 0.7
-				if(BCLASS_STAB)
-					dullfactor = 1.5
-				if(BCLASS_BLUNT)
-					dullfactor = 1
-				if(BCLASS_SMASH)
-					dullfactor = 1
-				if(BCLASS_PICK)
-					dullfactor = 0.7
-		if(DULLING_SHAFT_METAL)	//Very weak to blunt. No changes vs stab, highly resistant to cut / chop. Pick can actually damage it.
-			switch(user.used_intent.blade_class)
-				if(BCLASS_CUT)
-					if(!I.remove_bintegrity(1))
-						dullfactor = 0
-					else
-						dullfactor = 0.25
-				if(BCLASS_CHOP)
-					if(!I.remove_bintegrity(1))
-						dullfactor = 0
-					else
-						dullfactor = 0.4
-				if(BCLASS_STAB)
-					dullfactor = 0.75
-				if(BCLASS_BLUNT)
-					dullfactor = 1.3
-				if(BCLASS_SMASH)
-					dullfactor = 1.5
-				if(BCLASS_PICK)
-					dullfactor = 1
-		if(DULLING_SHAFT_GRAND)	//Resistant to all
-			switch(user.used_intent.blade_class)
-				if(BCLASS_CUT)
-					if(!I.remove_bintegrity(1))
-						dullfactor = 0
-					else
-						dullfactor = 0.5
-				if(BCLASS_CHOP)
-					if(!I.remove_bintegrity(1))
-						dullfactor = 0
-					else
-						dullfactor = 0.5
-				if(BCLASS_STAB)
-					dullfactor = 0.5
-				if(BCLASS_BLUNT)
-					dullfactor = 0.5
-				if(BCLASS_SMASH)
-					dullfactor = 1
-				if(BCLASS_PICK)
-					dullfactor = 0.5
+			dullfactor = DULLFACTOR_COUNTERED_BY
+
 	var/newdam = (I.force_dynamic * user.used_intent.damfactor) - I.force_dynamic
+	if(user.used_intent.damfactor > 1 && I.sharpness != IS_BLUNT)	//Only relevant if damfactor actually adds damage.
+		if(dullness_ratio <= SHARPNESS_TIER1_FLOOR)
+			newdam = 0
+		else if(dullness_ratio <= SHARPNESS_TIER1_THRESHOLD)
+			var/damflerp = (dullness_ratio - SHARPNESS_TIER1_FLOOR) / (SHARPNESS_TIER1_THRESHOLD - SHARPNESS_TIER1_FLOOR)
+			newdam *= damflerp
+			newdam = round(newdam)	//floors it, making the scaling harsher
 	newforce = (newforce + newdam) * dullfactor
 	if(user.used_intent.get_chargetime() && user.client?.chargedprog < 100)
 		newforce = newforce * 0.5
@@ -423,17 +482,29 @@
 		newforce *= 0.5
 	newforce = round(newforce,1)
 	newforce = max(newforce, 1)
-	testing("endforce [newforce]")
+	if(dullness_ratio && I.sharpness != IS_BLUNT)
+		if(dullness_ratio < SHARPNESS_TIER2_THRESHOLD)
+			var/lerpratio = LERP(0, SHARPNESS_TIER2_THRESHOLD, (dullness_ratio / SHARPNESS_TIER2_THRESHOLD))	//Yes, it's meant to LERP between 0 and 0.x using ratio / tier2. The damage falls off a cliff. Intended!
+			if(prob(33))
+				to_chat(user, span_info("The blade is dull..."))
+			newforce *= (lerpratio * 2)
+
+	if(istype(user.rmb_intent, /datum/rmb_intent/strong))
+		newforce += (I.force_dynamic * STRONG_STANCE_DMG_BONUS)
+
+	if(istype(user.rmb_intent, /datum/rmb_intent/weak))
+		newforce = (newforce * 0.2)
+
+	newforce = CLAMP(newforce, user.used_intent.min_intent_damage, user.used_intent.max_intent_damage)
+
 	return newforce
 
 /obj/attacked_by(obj/item/I, mob/living/user)
 	user.changeNext_move(CLICK_CD_INTENTCAP)
-	var/newforce = (get_complex_damage(I, user, blade_dulling) * I.demolition_mod)
+	var/newforce = get_complex_damage(I, user, blade_dulling) * user.used_intent.demolition_mod
 	if(!newforce)
-		testing("dam33")
 		return 0
 	if(newforce < damage_deflection)
-		testing("dam44")
 		return 0
 	if(user.used_intent.no_attack)
 		return 0
@@ -451,15 +522,16 @@
 	take_damage(newforce, I.damtype, I.d_type, 1)
 	if(newforce > 1)
 		I.take_damage(1, BRUTE, I.d_type)
+	SEND_SIGNAL(src, COMSIG_ITEM_ATTACK_OBJ, I, user)
 	return TRUE
 
 /turf/proc/attacked_by(obj/item/I, mob/living/user, multiplier)
 	var/newforce = get_complex_damage(I, user, blade_dulling)
 	if(!newforce)
-		testing("attack6")
+
 		return 0
 	if(newforce < damage_deflection)
-		testing("attack7")
+
 		return 0
 	if(user.used_intent.no_attack)
 		return 0
@@ -482,6 +554,7 @@
 	take_damage(newforce, I.damtype, I.d_type, 1)
 	if(newforce > 1)
 		I.take_damage(1, BRUTE, I.d_type)
+	SEND_SIGNAL(src, COMSIG_ITEM_ATTACK_TURF, I, user)
 	return TRUE
 
 /mob/living/proc/simple_limb_hit(zone)
@@ -533,54 +606,39 @@
 	return "body"
 
 /obj/item/proc/funny_attack_effects(mob/living/target, mob/living/user, nodmg)
-	if(is_silver)
-		if(world.time < src.last_used + 120)
-			to_chat(user, span_notice("The silver effect is on cooldown."))
-			return
+	pass()
 
-		if(ishuman(target) && target.mind)
-			var/mob/living/carbon/human/s_user = user
-			var/mob/living/carbon/human/H = target
-			var/datum/antagonist/werewolf/W = H.mind.has_antag_datum(/datum/antagonist/werewolf/)
-			var/datum/antagonist/vampirelord/lesser/V = H.mind.has_antag_datum(/datum/antagonist/vampirelord/lesser)
-			var/datum/antagonist/vampirelord/V_lord = H.mind.has_antag_datum(/datum/antagonist/vampirelord/)
-			if(V)
-				if(V.disguised)
-					H.visible_message("<font color='white'>The silver weapon weakens the curse temporarily!</font>")
-					to_chat(H, span_userdanger("I'm hit by my BANE!"))
-					H.apply_status_effect(/datum/status_effect/debuff/silver_curse)
-					src.last_used = world.time
-				else
-					H.visible_message("<font color='white'>The silver weapon weakens the curse temporarily!</font>")
-					to_chat(H, span_userdanger("I'm hit by my BANE!"))
-					H.apply_status_effect(/datum/status_effect/debuff/silver_curse)
-					src.last_used = world.time
-			if(V_lord)
-				if(V_lord.vamplevel < 4 && !V)
-					H.visible_message("<font color='white'>The silver weapon weakens the curse temporarily!</font>")
-					to_chat(H, span_userdanger("I'm hit by my BANE!"))
-					H.apply_status_effect(/datum/status_effect/debuff/silver_curse)
-					src.last_used = world.time
-				if(V_lord.vamplevel == 4 && !V)
-					to_chat(s_user, "<font color='red'> The silver weapon fails!</font>")
-					H.visible_message(H, span_userdanger("This feeble metal can't hurt me, I AM ANCIENT!"))
-			if(W && W.transformed == TRUE)
-				H.visible_message("<font color='white'>The silver weapon weakens the curse temporarily!</font>")
-				to_chat(H, span_userdanger("I'm hit by my BANE!"))
-				H.apply_status_effect(/datum/status_effect/debuff/silver_curse)
-				src.last_used = world.time
-	return
+/obj/item/proc/do_special_attack_effect(user, obj/item/bodypart/affecting, intent, mob/living/victim, selzone, thrown = FALSE)
+	SHOULD_CALL_PARENT(TRUE)
+	SEND_SIGNAL(victim, COMSIG_ITEM_ATTACK_EFFECT, user, affecting, intent, selzone, src)
+	SEND_SIGNAL(src, COMSIG_ITEM_ATTACK_EFFECT_SELF, user, affecting, intent, victim, selzone)
+
+	if(is_silver && HAS_TRAIT(victim, TRAIT_SILVER_WEAK))
+		SEND_SIGNAL(victim, COMSIG_FORCE_UNDISGUISE)
+		var/datum/component/silverbless/blesscomp = GetComponent(/datum/component/silverbless)
+		if(blesscomp?.is_blessed)
+			if(!victim.has_status_effect(/datum/status_effect/fire_handler/fire_stacks/sunder))
+				to_chat(victim, span_danger("Silver rebukes my presence! My vitae smolders, and my powers wane!"))
+			victim.adjust_fire_stacks(thrown ? 1 : 3, /datum/status_effect/fire_handler/fire_stacks/sunder/blessed)
+		else
+			if(!victim.has_status_effect(/datum/status_effect/fire_handler/fire_stacks/sunder/blessed))
+				to_chat(victim, span_danger("Blessed silver rebukes my presence! These fires are lashing at my very soul!"))
+			victim.adjust_fire_stacks(thrown ? 1 : 3, /datum/status_effect/fire_handler/fire_stacks/sunder)
+		victim.ignite_mob()
 
 /mob/living/attacked_by(obj/item/I, mob/living/user)
 	var/hitlim = simple_limb_hit(user.zone_selected)
-	testing("[src] attacked_by")
+
 	I.funny_attack_effects(src, user)
 	if(I.force_dynamic)
 		var/newforce = get_complex_damage(I, user)
 		apply_damage(newforce, I.damtype, def_zone = hitlim)
+		I.remove_bintegrity(1)
 		if(I.damtype == BRUTE)
 			next_attack_msg.Cut()
 			if(HAS_TRAIT(src, TRAIT_SIMPLE_WOUNDS))
+				if(I.is_silver && HAS_TRAIT(src, TRAIT_SILVER_WEAK))
+					newforce *= SILVER_SIMPLEMOB_DAM_MULT
 				simple_woundcritroll(user.used_intent.blade_class, newforce, user, hitlim)
 				/* No embedding on simple mobs, thank you!
 				var/datum/wound/crit_wound  = simple_woundcritroll(user.used_intent.blade_class, newforce, user, hitlim)
@@ -595,6 +653,7 @@
 					I.add_mob_blood(src)
 					var/turf/location = get_turf(src)
 					add_splatter_floor(location)
+					add_splatter_wall(location, force = newforce)
 					if(get_dist(user, src) <= 1)	//people with TK won't get smeared with blood
 						user.add_mob_blood(src)
 			if(newforce > 15)
@@ -602,6 +661,7 @@
 					I.add_mob_blood(src)
 					var/turf/location = get_turf(src)
 					add_splatter_floor(location)
+					add_splatter_wall(location, force = newforce)
 					if(get_dist(user, src) <= 1)	//people with TK won't get smeared with blood
 						user.add_mob_blood(src)
 	send_item_attack_message(I, user, hitlim)
@@ -612,13 +672,14 @@
 	if(I.force_dynamic < force_threshold || I.damtype == STAMINA)
 		playsound(loc, 'sound/blank.ogg', I.get_clamped_volume(), TRUE, -1)
 	else
-		return ..()
+		. = ..()
+		I.do_special_attack_effect(user, null, null, src, null)
 
 // Proximity_flag is 1 if this afterattack was called on something adjacent, in your square, or on your person.
 // Click parameters is the params string from byond Click() code, see that documentation.
 /obj/item/proc/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	SEND_SIGNAL(src, COMSIG_ITEM_AFTERATTACK, target, user, proximity_flag, click_parameters)
-	SEND_SIGNAL(user, COMSIG_MOB_ITEM_AFTERATTACK, target, user, proximity_flag, click_parameters)
+	SEND_SIGNAL(user, COMSIG_MOB_ITEM_AFTERATTACK, target, src, proximity_flag, click_parameters)
 	if(force_dynamic && !user.used_intent.tranged && !user.used_intent.tshield)
 		if(proximity_flag && isopenturf(target) && !user.used_intent?.noaa)
 			var/adf = user.used_intent.clickcd
@@ -651,21 +712,37 @@
 		else
 			return CLAMP(w_class * 6, 10, 100) // Multiply the item's weight class by 6, then clamp the value between 10 and 100
 
-/mob/living/proc/send_item_attack_message(obj/item/I, mob/living/user, hit_area)
+/mob/living/proc/send_item_attack_message(obj/item/I, mob/living/user, hit_area, obj/item/bodypart/BP, bladec)
 	var/message_verb = "attacked"
-	if(user.used_intent)
-		message_verb = "[pick(user.used_intent.attack_verb)]"
-	else if(!I.force_dynamic)
+	var/static/list/verb_override = list("hits", "strikes")
+	var/use_override = FALSE
+	var/verb_appendix
+	if(!I.force_dynamic)
 		return
 	var/message_hit_area = ""
+	hit_area = parse_zone(hit_area, BP)
+	if(user.used_intent)
+		if(!use_override)
+			message_verb = "[pick(user.used_intent.attack_verb)]"
+		else
+			message_verb = "[pick(verb_override)]"
+	if(verb_appendix)
+		message_verb += verb_appendix
 	if(hit_area)
-		message_hit_area = " in the [hit_area]"
-	var/attack_message = "[src] is [message_verb][message_hit_area] with [I]!"
-	var/attack_message_local = "I'm [message_verb][message_hit_area] with [I]!"
+		message_hit_area = "[hit_area]"
+	var/attack_message = span_combatsecondary("[src] is [message_verb] in the [span_combatsecondarybp(message_hit_area)] with [I]!")
+	var/attack_message_local = span_danger("I'm [message_verb] in the [span_userdanger(message_hit_area)] with [I]!")
 	if(user in viewers(src, null))
-		attack_message = "[user] [message_verb] [src][message_hit_area] with [I]!"
-		attack_message_local = "[user] [message_verb] me[message_hit_area] with [I]!"
-	visible_message(span_danger("[attack_message][next_attack_msg.Join()]"),\
-		span_danger("[attack_message_local][next_attack_msg.Join()]"), null, COMBAT_MESSAGE_RANGE)
+		attack_message = span_combatsecondary("[user] [message_verb] [src] in the [span_combatsecondarybp(message_hit_area)] with [I]!")
+		attack_message_local = span_danger("[user] [message_verb] me in the [span_userdanger(message_hit_area)] with [I]!")
+
+	//Janky, but you'll see BIG TEXT for both the hits you make and take.
+	if(src != user)
+		var/attack_message_self = span_combatprimary("[user] [message_verb] [src] in the [span_combatsecondarybp(message_hit_area)] with [I]!")
+		to_chat(user, "[attack_message_self][next_attack_msg.Join()]")
+	visible_message("[attack_message][span_combatsecondarysmall(next_attack_msg.Join())]",\
+		"[attack_message_local][next_attack_msg.Join()]", null, COMBAT_MESSAGE_RANGE, user)	//We try not to show this to the user (attacker)
 	next_attack_msg.Cut()
 	return 1
+
+#undef ATTACK_OVERRIDE_NODEFENSE

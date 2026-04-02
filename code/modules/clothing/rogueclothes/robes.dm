@@ -12,7 +12,31 @@
 	color = "#7c6d5c"
 	r_sleeve_status = SLEEVE_NORMAL
 	l_sleeve_status = SLEEVE_NORMAL
-	experimental_inhand = FALSE
+	experimental_inhand = TRUE
+
+/obj/item/clothing/suit/roguetown/shirt/robe/unholy
+	name = "foreboding robes"
+	desc = "Burlap, silk, cloth; it is none of this. The fabric itself is a paradox - lighter than a cloud, but heavier than blacksteel. Do not ponder the implication, lest you go inzane."
+	max_integrity = ARMOR_INT_CHEST_LIGHT_BASE
+	allowed_race = NON_DWARVEN_RACE_TYPES
+	armor = ARMOR_PADDED
+	color = null
+	boobed = null
+	item_state = "warlock"
+	icon_state = "warlock"
+
+/obj/item/clothing/suit/roguetown/shirt/robe/unholy/lich
+	name = "ominous robes"
+	desc = "An otherworldly veil, whispering a hundred paradoxical answers to the ultimate question. Her hand guides your grandest missive; to bring forth progress, no matter the cost."
+	max_integrity = ARMOR_INT_CHEST_PLATE_ANTAG
+
+/obj/item/clothing/suit/roguetown/shirt/robe/unholy/enchanted
+	name = "ominously enchanted robes"
+	desc = "An otherworldly veil, amythortz-woven and crackling with the constant ponderance of a runic enigma. Her hand guides your grandest missive; to bring forth progress, no matter the cost."
+	armor = ARMOR_LEATHER
+	allowed_race = ALL_RACES_TYPES
+	item_state = "ewarlock"
+	icon_state = "ewarlock"
 
 /obj/item/clothing/suit/roguetown/shirt/robe/astrata
 	slot_flags = ITEM_SLOT_ARMOR|ITEM_SLOT_SHIRT|ITEM_SLOT_CLOAK
@@ -25,13 +49,15 @@
 	sleeved = null
 	boobed = TRUE
 	color = null
+	resistance_flags = FIRE_PROOF
 	r_sleeve_status = SLEEVE_NORMAL
 	l_sleeve_status = SLEEVE_NORMAL
 
 /obj/item/clothing/suit/roguetown/shirt/robe/abyssor //thanks to cre for abyssor clothing sprites
 	slot_flags = ITEM_SLOT_ARMOR|ITEM_SLOT_SHIRT|ITEM_SLOT_CLOAK
 	name = "depths robe"
-	desc = ""
+	desc = "A long robe formed of many layers of thin, light fabric; designed not to become over-heavy \
+	while waterlogged."
 	body_parts_covered = CHEST|GROIN|ARMS|LEGS|VITALS
 	icon_state = "abyssorrobe"
 	icon = 'icons/roguetown/clothing/armor.dmi'
@@ -73,7 +99,8 @@
 /obj/item/clothing/suit/roguetown/shirt/robe/dendor
 	slot_flags = ITEM_SLOT_ARMOR|ITEM_SLOT_SHIRT|ITEM_SLOT_CLOAK
 	name = "briar robe"
-	desc = ""
+	desc = "A coarse, rough robe worn often by devout worshippers of Dendor, the Mad God, lord of all \
+	the wild places of the world. It's quite terribly itchy."
 	body_parts_covered = CHEST|GROIN|ARMS|LEGS|VITALS
 	icon_state = "dendorrobe"
 	icon = 'icons/roguetown/clothing/armor.dmi'
@@ -109,17 +136,13 @@
 	desc = "Holy vestments sanctified by divine hands. Caution is advised if not a faithful."
 	icon_state = "priestrobe"
 	slot_flags = ITEM_SLOT_ARMOR|ITEM_SLOT_SHIRT
+	resistance_flags = FIRE_PROOF // astratan
 	armor = ARMOR_PADDED	//Equal to gamby
 	color = null
 
-/obj/item/clothing/suit/roguetown/shirt/robe/priest/pickup(mob/living/user)
-	if(!HAS_TRAIT(user, TRAIT_CHOSEN))
-		to_chat(user, "<font color='yellow'>UNWORTHY HANDS TOUCH THE VESTMENTS, CEASE OR BE PUNISHED</font>")
-		spawn(30)
-			if(loc == user)
-				user.adjust_fire_stacks(5)
-				user.IgniteMob()
-	..()
+/obj/item/clothing/suit/roguetown/shirt/robe/priest/Initialize()
+	. = ..()
+	AddComponent(/datum/component/cursed_item, TRAIT_CHOSEN, "VESTMENTS")
 
 /obj/item/clothing/suit/roguetown/shirt/robe/priest/equipped(mob/living/user, slot)
 	..()
@@ -128,32 +151,50 @@
 	if(!HAS_TRAIT(user, TRAIT_CHOSEN))	//Requires this cus it's a priest-only thing.
 		return
 	ADD_TRAIT(user, TRAIT_MONK_ROBE, TRAIT_GENERIC)
-	to_chat(user, span_notice("With my vows to poverty and my vestments, I feel vigerous - empowered by the gods!"))
+	to_chat(user, span_notice("With my vows to poverty and my vestments, I feel vigorous - empowered by my God!"))
 
 /obj/item/clothing/suit/roguetown/shirt/robe/priest/dropped(mob/living/user)
 	..()
 	REMOVE_TRAIT(user, TRAIT_MONK_ROBE, TRAIT_GENERIC)
-	to_chat(user, span_notice("I must lay down my robes and rest; even god's chosen must rest.."))
+	to_chat(user, span_notice("I must lay down my robes and rest; even God's chosen must rest.."))
 
+//This for adventurers. Base type, same armor. No holy-bonus.
 /obj/item/clothing/suit/roguetown/shirt/robe/monk
-	name = "monk vestments"
-	desc = "Holy vestments worn by the most faithful."
-	icon_state = "monkvestments"
-	item_state = "monkvestments"
-	armor = ARMOR_PADDED	//Equal to gamby
+	name = "nomadic monk vestments"
+	desc = "Nomadic vestments, worn by those who pursue faith above all else. The burlap is thickly-woven and padded, in order to ward off whatever threats may arise during one's pilgrimage: be it a biting chill or a volley of arrows."
+	icon_state = "priestunder"
+	item_state = "priestunder"
+	color = null
+	icon = 'icons/roguetown/clothing/shirts.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/shirts.dmi'
+	sleeved = 'icons/roguetown/clothing/onmob/helpers/sleeves_shirts.dmi'
+	armor = ARMOR_PADDED	//Equal to a padded gambeson, like before.
+	max_integrity = ARMOR_INT_CHEST_LIGHT_MASTER
 	slot_flags = ITEM_SLOT_ARMOR|ITEM_SLOT_SHIRT
 
-/obj/item/clothing/suit/roguetown/shirt/robe/monk/equipped(mob/living/user, slot)
+//This is for templars/psydonites. Gives a boon for wearing it to counter-act giving up plate and such.
+/obj/item/clothing/suit/roguetown/shirt/robe/monk/holy
+	name = "holy monk vestments"
+	desc = "Holy vestments, worn by those who pursue faith above all else. Hundreds of heavy leather strips have been meticulously sheared-and-stitched onto the cloth, resulting in unparalleled comfort and protection. It's said that those who 'don the cloth' will never tire; a boon of unbreakable faith."
+	icon_state = "monkvestments"
+	item_state = "monkvestments"
+	icon = 'icons/roguetown/clothing/armor.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/armor.dmi'
+	sleeved = 'icons/roguetown/clothing/onmob/helpers/sleeves_armor.dmi'
+	salvage_result = /obj/item/natural/hide/cured
+	salvage_amount = 1
+
+/obj/item/clothing/suit/roguetown/shirt/robe/monk/holy/equipped(mob/living/user, slot)
 	..()
 	if(!HAS_TRAIT(user, TRAIT_CIVILIZEDBARBARIAN))	//Requires this cus it's a monk-only thing.
 		return
 	ADD_TRAIT(user, TRAIT_MONK_ROBE, TRAIT_GENERIC)
-	to_chat(user, span_notice("With my vows to poverty and my vestments, I feel vigerous - empowered by the gods!"))
+	to_chat(user, span_notice("With my vows to poverty and my vestments, I feel vigorous - empowered by my God!"))
 
-/obj/item/clothing/suit/roguetown/shirt/robe/monk/dropped(mob/living/user)
+/obj/item/clothing/suit/roguetown/shirt/robe/monk/holy/dropped(mob/living/user)
 	..()
 	REMOVE_TRAIT(user, TRAIT_MONK_ROBE, TRAIT_GENERIC)
-	to_chat(user, span_notice("I must lay down my robes and rest; even god's chosen must rest.."))
+	to_chat(user, span_notice("I must lay down my robes and rest; even God's chosen must rest.."))
 
 /obj/item/clothing/suit/roguetown/shirt/robe/courtmage
 	color = "#6c6c6c"
@@ -228,6 +269,7 @@
 	desc = "Holy robes, intended for use by followers of Eora"
 	body_parts_covered = CHEST|GROIN|ARMS|LEGS|VITALS
 	icon_state = "eorarobes"
+	item_state = "eorarobes"
 	icon = 'icons/roguetown/clothing/armor.dmi'
 	mob_overlay_icon = 'icons/roguetown/clothing/onmob/armor.dmi'
 	sleeved = 'icons/roguetown/clothing/onmob/helpers/sleeves_armor.dmi'
@@ -241,8 +283,10 @@
 /obj/item/clothing/suit/roguetown/shirt/robe/eora/alt
 	name = "open eoran robe"
 	desc = "Used by more radical followers of the Eoran Church"
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/armor.dmi'
 	body_parts_covered = null
 	icon_state = "eorastraps"
+	item_state = "eorastraps"
 	flags_inv = HIDEBOOB
 	fanatic_wear = TRUE
 
@@ -253,27 +297,30 @@
 			desc = "Used by more radical followers of the Eoran Church"
 			body_parts_covered = null
 			icon_state = "eorastraps"
+			item_state = "eorastraps"
 			fanatic_wear = TRUE
-			flags_inv = HIDEBOOB
+			flags_inv = HIDECROTCH
 			to_chat(usr, span_warning("Now wearing radically!"))
 		if(TRUE)
 			name = "eoran robe"
 			desc = "Holy robes, intended for use by followers of Eora"
 			body_parts_covered = CHEST|GROIN|ARMS|LEGS|VITALS
 			icon_state = "eorarobes"
+			item_state = "eorarobes"
 			fanatic_wear = FALSE
 			flags_inv = HIDEBOOB|HIDECROTCH
 			to_chat(usr, span_warning("Now wearing normally!"))
 	update_icon()
-	if(ismob(loc))
-		var/mob/L = loc
-		L.update_inv_armor()
+	if(user)
+		if(ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_cloak()
+			H.update_inv_armor()
 
 /obj/item/clothing/suit/roguetown/shirt/robe/hierophant
 	name = "hierophant's kandys"
 	desc = "A thin piece of fabric worn under a robe to stop chafing and keep ones dignity if a harsh blow of wind comes through. Despite the light fabric, it offers decent protection."
-	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_CHOP)
-	armor = ARMOR_PADDED_GOOD
+	armor = ARMOR_PADDED
 	icon_state = "desertgown"
 	item_state = "desertgown"
 	color = null
@@ -281,8 +328,7 @@
 /obj/item/clothing/suit/roguetown/shirt/robe/pointfex
 	name = "pointfex's qaba"
 	desc = "A slimmed down, tighter fitting robe made of fine silks and fabrics. Somehow you feel more mobile in it than in the nude. Despite the light fabric, it offers decent protection."
-	prevent_crits = list(BCLASS_CUT, BCLASS_BLUNT, BCLASS_CHOP)
-	armor = ARMOR_PADDED_GOOD
+	armor = ARMOR_PADDED
 	icon_state = "monkcloth"
 	item_state = "monkcloth"
 	color = null
@@ -300,3 +346,41 @@
 	desc = "Part robe, part butcher's apron."
 	icon_state = "surgrobe"
 	item_state = "surgrobe"
+
+// Agnostic versions of the unused robes, for use in the Loadout.
+
+/obj/item/clothing/suit/roguetown/shirt/robe/tabardscarlet
+	name = "scarlet tabard"
+	desc = "Sleeveless robes, hued like rosas."
+	color = null
+	icon_state = "feldrobe"
+	item_state = "feldrobe"
+
+/obj/item/clothing/suit/roguetown/shirt/robe/tabardblack
+	name = "black tabard"
+	desc = "Sleeveless robes, tinged like charcoal."
+	color = null
+	icon_state = "surgrobe"
+	item_state = "surgrobe"
+
+/obj/item/clothing/suit/roguetown/shirt/robe/tabardwhite
+	name = "robed tabard"
+	desc = "Sleeveless robes, billowing in the breeze."
+	color = null
+	icon_state = "whiterobe"
+	item_state = "whiterobe"
+
+/obj/item/clothing/suit/roguetown/shirt/robe/tabardwhite/evil_ah_ah
+	color = CLOTHING_SCARLET
+
+/obj/item/clothing/suit/roguetown/shirt/robe/bared
+	name = "Bared Robe"
+	desc = "A robe of basic cloth, it's chest bared open to expose what lay underneath."
+	icon_state = "openrobe"
+	item_state = "openrobe"
+	icon = 'icons/roguetown/clothing/armor.dmi'
+	mob_overlay_icon = 'icons/roguetown/clothing/onmob/armor.dmi'
+	color = CLOTHING_WHITE
+
+	
+	

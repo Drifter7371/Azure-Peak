@@ -2,6 +2,7 @@
 	name = "bog troll"
 	desc = "Elven legends say these monsters were servants of Dendor tasked to guard his realm; nowadays they are sometimes found in the company of orcs. It's said that fire curbs their almost magical regeneration."
 	pixel_x = -16
+	threat_point = THREAT_DANGEROUS
 
 	wander = FALSE		// bog trolls are ambush predators
 	turns_per_move = 4
@@ -14,7 +15,7 @@
 	STACON = 16
 	STASTR = 16
 	STASPD = 3
-	STAEND = 15
+	STAWIL = 15
 
 	defprob = 30
 	dodgetime = 15

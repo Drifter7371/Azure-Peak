@@ -21,6 +21,13 @@
 	var/numberofhits = 0 // Increased every time you hit the bar, the more you have to hit the bar the less quality of the product.
 	var/numberofbreakthroughs = 0 // How many good hits we got on the metal, advances recipes 50% faster, reduces number of hits total, and restores bar_health
 	var/datum/parent
+	// Whether this recipe will be hidden from recipe books
+	var/hides_from_books = FALSE
+	// Whether this recipe bypasses the no-dupe-smeltresult test
+	var/bypass_dupe_test = FALSE
+	var/required_tech_node = null // String ID of required tech node, or null if no tech required
+	var/tech_unlocked = TRUE // Set to TRUE when the required tech is unlocked
+	var/rotations_required = 1
 
 /datum/anvil_recipe/New(datum/P, ...)
 	parent = P
@@ -145,7 +152,7 @@
 			modifier = 1.3
 			I.polished = 4
 			I.AddComponent(/datum/component/metal_glint)
-			GLOB.azure_round_stats[STATS_MASTERWORKS_FORGED]++
+			record_round_statistic(STATS_MASTERWORKS_FORGED)
 
 	if(!modifier) // Sanity.
 		return
@@ -171,13 +178,81 @@
 		<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
 		<body>
 		  <div>
-		    <h1>[name]</h1>
+		    <h1>[icon2html(new created_item, user)][name]</h1>
+			<h4>DESCRIPTION: [initial(created_item.desc)]</h4>
+			<div>
 		"}
+	var/obj/item/clothing/suit/roguetown/armor/bookarmor = initial(new created_item)
+	var/obj/item/rogueweapon/bookweapon = initial(created_item)
+
+	if(!(bookarmor.armor == "")&&!isnull(bookarmor.armor) )
+		var/obj/item/clothing/C = initial(new created_item)
+		if(C.body_parts_covered)
+			html += "\n<b>COVERAGE: </b>"
+			html += " | "
+			for(var/zone in body_parts_covered2organ_names(C.body_parts_covered))
+				html += "<b>[capitalize(zone)]</b> | "
+			html += "<br>"
+		html += "INTEGRITY: [bookarmor.max_integrity]<br>"
+		if(bookarmor.armor_class == ARMOR_CLASS_HEAVY)
+			html += "<b>AC: </b>HEAVY<br>"
+		if(bookarmor.armor_class == ARMOR_CLASS_MEDIUM)
+			html += "<b>AC: </b>MEDIUM<br>"
+		if(bookarmor.armor_class == ARMOR_CLASS_LIGHT)
+			html += "<b>AC: </b> LIGHT<br>"
+	else if (!isnull(bookweapon) && bookweapon.force>1)
+		html += "Combat Properties<br>"
+		if(bookweapon.minstr)
+			html += "\n<b>MIN.STR:</b> [bookweapon.minstr]<br>"
+
+		if(bookweapon.force)
+			html += "\n<b>FORCE:</b> [bookweapon.force]<br>"
+		if(bookweapon.gripped_intents && !bookweapon.wielded)
+			if(bookweapon.force_wielded)
+				html += "\n<b>WIELDED FORCE:</b> [bookweapon.force_wielded]<br>"
+
+		if(bookweapon.wbalance)
+			html += "\n<b>BALANCE: </b>"
+			if(bookweapon.wbalance == WBALANCE_HEAVY)
+				html += "Heavy<br>"
+			if(bookweapon.wbalance == WBALANCE_SWIFT)
+				html += "Swift<br>"
+
+
+		if(bookweapon.wlength != WLENGTH_NORMAL)
+			html += "\n<b>LENGTH:</b> "
+			switch(bookweapon.wlength)
+				if(WLENGTH_SHORT)
+					html += "Short<br>"
+				if(WLENGTH_LONG)
+					html += "Long<br>"
+				if(WLENGTH_GREAT)
+					html += "Great<br>"
+
+		if(bookweapon.alt_intents)
+			html += "\n<b>GRIP: ALT-GRIP (right click while in hand)</b><br>"
+		if(bookweapon.gripped_intents)
+			html += "\n<b>TWO-HANDED: Yes</b><br>"
+
+		var/shafttext = get_blade_dulling_text(bookweapon, verbose = TRUE)
+		if(shafttext)
+			html += "\n<b>SHAFT:</b> [shafttext] <br>"
+
+		if(bookweapon.twohands_required)
+			html += "\n<b>BULKY</b><br>"
+		if(bookweapon.can_parry)
+			html += "\n<b>DEFENSE:</b> [bookweapon.wdefense]<br>"
+		if(bookweapon.associated_skill && bookweapon.associated_skill.name)
+			html += "\n<b>SKILL:</b> [bookweapon.associated_skill.name]<br>"
+
+		if(bookweapon.intdamage_factor != 1 && bookweapon.force >= 5)
+			html += "\n<b>INTEGRITY DAMAGE:</b> [bookweapon.intdamage_factor * 100]%<br>"
+
 
 	if(craftdiff > 0)
-		html += "For those of [SSskills.level_names_plain[craftdiff]] skills<br>"
+		html += "<h1></h1>For those of [SSskills.level_names_plain[craftdiff]] skills<br>"
 	else
-		html += "Suitable for all skills<br>"
+		html += "<h1></h1>Suitable for all skills<br>"
 
 	if(appro_skill == /datum/skill/craft/engineering) // SNOWFLAKE!!!
 		html += "in Engineering<br>"
@@ -191,7 +266,6 @@
 	for(var/atom/path as anything in additional_items)
 		html += "[icon2html(new path, user)] then add [initial(path.name)]<br>"
 		html += "Hammer the material.<br>"
-	html += "<br>"
 
 	html += {"
 		</div>
@@ -199,9 +273,9 @@
 		"}
 
 	if(createditem_num > 1)
-		html += "<strong class=class='scroll'>and then you get</strong> <br> [createditem_num] [icon2html(new created_item, user)] <br> [initial(created_item.name)]<br>"
+		html += "<strong class=class='scroll'>and then you get</strong> <br> [createditem_num] [icon2html(new created_item, user)]  [initial(created_item.name)]<br>"
 	else
-		html += "<strong class=class='scroll'>and then you get</strong> <br> [icon2html(new created_item, user)] <br> [initial(created_item.name)]<br>"
+		html += "<strong class=class='scroll'>and then you get</strong> <br> [icon2html(new created_item, user)]   [initial(created_item.name)]<br>"
 
 	if(created_item.sellprice)
 		html += "<strong class=class='scroll'>You can sell this for [created_item.sellprice] mammons at a normal quality</strong> <br>"

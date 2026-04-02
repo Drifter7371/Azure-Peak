@@ -44,7 +44,7 @@
 /obj/item/reagent_containers/food/snacks/butter
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	name = "stick of butter"
-	desc = ""
+	desc = "Delicious fattiness, fit for elevating meals-a-plenty."
 	icon_state = "butter6"
 	list_reagents = list(/datum/reagent/consumable/nutriment = BUTTER_NUTRITION)
 	foodtype = DAIRY
@@ -66,7 +66,6 @@
 			qdel(src)
 			return
 	return ..()
-
 
 /obj/item/reagent_containers/food/snacks/butter/update_icon()
 	if(slices_num)
@@ -92,10 +91,26 @@
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	icon_state = "butter_slice"
 	name = "butter"
-	desc = ""
+	desc = "A portion of milky paradise. Kneading it into dough is necessary to prepare many of Psydonia's pastries, though the more humble-hearted prefer to simply doll up a slice of toast with it."
 	faretype = FARE_IMPOVERISHED
 	foodtype = DAIRY
 	list_reagents = list(/datum/reagent/consumable/nutriment = 2)
+
+/obj/item/reagent_containers/food/snacks/butterslice/attackby(obj/item/I, mob/living/user, params)
+	var/found_table = locate(/obj/structure/table) in (loc)
+	update_cooktime(user)
+	if(istype(I, /obj/item/reagent_containers/food/snacks/sugar))
+		if(isturf(loc)&& (found_table))
+			to_chat(user, span_notice("Mixing in sugar to make frosting..."))
+			if(do_after(user, long_cooktime, target = src))
+				playsound(get_turf(user), 'sound/foley/dropsound/food_drop.ogg', 30, TRUE, -1)
+				new /obj/item/reagent_containers/food/snacks/rogue/frosting(drop_location())
+				qdel(I)
+				qdel(src)
+			return
+		else
+			to_chat(user, span_warning("You need to put [src] on a table to work on it."))
+	return ..()
 
 
 /*	............   Making fresh cheese   ................ */
@@ -109,22 +124,6 @@
 				add_sleep_experience(user, /datum/skill/craft/cooking, user.STAINT)
 				reagents.remove_reagent(/datum/reagent/consumable/milk/salted, 5)
 				new /obj/item/reagent_containers/food/snacks/rogue/cheese(drop_location())
-			return
-
-		var/obj/item/natural/cloth/T = I
-		if(T.wet && !T.return_blood_DNA())
-			return
-		else
-			var/removereg = /datum/reagent/water
-			if(!reagents.has_reagent(/datum/reagent/water, 5))
-				removereg = /datum/reagent/water/gross
-				if(!reagents.has_reagent(/datum/reagent/water/gross, 5))
-					to_chat(user, span_warning("No water to soak in."))
-					return
-			wash_atom(T)
-			playsound(src, pick('sound/foley/waterwash (1).ogg','sound/foley/waterwash (2).ogg'), 100, FALSE)
-			reagents.remove_reagent(removereg, 5)
-			user.visible_message(span_info("[user] soaks [T] in [src]."))
 			return
 	..()
 
@@ -191,6 +190,7 @@
 // -------------- CHEESE -----------------
 /obj/item/reagent_containers/food/snacks/rogue/cheese
 	name = "fresh cheese"
+	desc = "Clotted and salted milk, eager to be cocooned in cloth so that it may realize its fullest potential."
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	icon_state = "freshcheese"
 	bitesize = 1
@@ -204,11 +204,17 @@
 	become_rot_type = null
 	slice_path = null
 
+/obj/item/reagent_containers/food/snacks/rogue/cheese/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Left-click a piece of cloth with the fresh cheese to begin packing it together. For the best results, ensure the piece of cloth is placed atop a table beforehand.")
+	. += span_info("Repeating this process until four clumps of fresh cheese are used will result in a tied-together package. This package will eventually blossom into a cheese wheel, once enough time has passed.")
+
 /obj/item/reagent_containers/food/snacks/rogue/cheddar
 	name = "wheel of cheese"
+	desc = "A hunk of burning love, aching to age."
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	icon_state = "cheesewheel"
-	bitesize = 6
+	bitesize = 10
 	list_reagents = list(/datum/reagent/consumable/nutriment = FRESHCHEESE_NUTRITION*4)
 	w_class = WEIGHT_CLASS_NORMAL
 	tastes = list("cheese" = 1)
@@ -221,8 +227,13 @@
 	become_rot_type = /obj/item/reagent_containers/food/snacks/rogue/cheddar/aged
 	slice_sound = TRUE
 
+/obj/item/reagent_containers/food/snacks/rogue/cheddar/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("If left undisturbed for long enough, cheese wheels will eventually age into a more decadant and delicious result.")
+
 /obj/item/reagent_containers/food/snacks/rogue/cheddar/aged
 	name = "wheel of aged cheese"
+	desc = "A hunk of smoldering love, aged to perfection."
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	icon_state = "blue_cheese"
 	slice_path = /obj/item/reagent_containers/food/snacks/rogue/cheddarwedge/aged
@@ -232,12 +243,13 @@
 
 /obj/item/reagent_containers/food/snacks/rogue/cheddarwedge
 	name = "wedge of cheese"
+	desc = "Talk about a chunk of cheddar!"
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	icon_state = "cheese_wedge"
 	bitesize = 3
 	list_reagents = list(/datum/reagent/consumable/nutriment = SNACK_DECENT)
 	w_class = WEIGHT_CLASS_TINY
-	faretype = FARE_FINE
+	faretype = FARE_POOR
 	tastes = list("cheese" = 1)
 	eat_effect = null
 	rotprocess = SHELFLIFE_LONG
@@ -245,14 +257,10 @@
 	slice_batch = TRUE
 	slice_path = /obj/item/reagent_containers/food/snacks/rogue/cheddarslice
 	become_rot_type = /obj/item/reagent_containers/food/snacks/rogue/cheddarwedge/aged
-	baitpenalty = 0
-	isbait = TRUE
-	fishloot = list(/obj/item/reagent_containers/food/snacks/fish/carp = 10,
-					/obj/item/reagent_containers/food/snacks/fish/eel = 5,
-					/obj/item/reagent_containers/food/snacks/fish/angler = 1)
 
 /obj/item/reagent_containers/food/snacks/rogue/cheddarwedge/aged
 	name = "wedge of aged cheese"
+	desc = "Fit for a king, or a particularly deserving mouse."
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	icon_state = "blue_cheese_wedge"
 	slice_path = /obj/item/reagent_containers/food/snacks/rogue/cheddarslice/aged
@@ -262,6 +270,7 @@
 
 /obj/item/reagent_containers/food/snacks/rogue/cheddarslice
 	name = "slice of cheese"
+	desc = "A sliver of savoriness." 
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	icon_state = "cheese_slice"
 	bitesize = 1
@@ -269,23 +278,51 @@
 	w_class = WEIGHT_CLASS_TINY
 	tastes = list("cheese" = 1)
 	eat_effect = null
-	faretype = FARE_FINE
-	rotprocess = 20 MINUTES
+	faretype = FARE_POOR
+	rotprocess = SHELFLIFE_SHORT
 	slices_num = null
 	slice_path = null
 	become_rot_type = null
-	baitpenalty = 0
+	baitpenalty = 10
 	isbait = TRUE
-	fishloot = list(/obj/item/reagent_containers/food/snacks/fish/carp = 10,
-					/obj/item/reagent_containers/food/snacks/fish/eel = 5)
+	fishingMods=list(
+		"commonFishingMod" = 0.8,
+		"rareFishingMod" = 0,
+		"treasureFishingMod" = 0,
+		"trashFishingMod" = 1,
+		"dangerFishingMod" = 0.5,
+		"ceruleanFishingMod" = 0, // 1 on cerulean aril, 0 on everything else
+		"cheeseFishingMod" = 1 // Just for the funny gimmick of a higher chance for rats and rouses.
+	)
 
 /obj/item/reagent_containers/food/snacks/rogue/cheddarslice/aged
 	name = "slice of aged cheese"
+	desc = "A piece of paradise."
 	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
 	icon_state = "blue_cheese_slice"
 	faretype = FARE_FINE
 	become_rot_type = null
 	rotprocess = null
+	fishingMods=list(
+		"commonFishingMod" = 1,
+		"rareFishingMod" = 0.5,
+		"treasureFishingMod" = 0,
+		"trashFishingMod" = 1,
+		"dangerFishingMod" = 0.5,
+		"ceruleanFishingMod" = 0, // 1 on cerulean aril, 0 on everything else
+		"cheeseFishingMod" = 1.5 // Just for the funny gimmick of a higher chance for rats and rouses.
+	)
 
-
-
+// -------------- FROSTING -----------------
+/obj/item/reagent_containers/food/snacks/rogue/frosting
+	name = "frosting"
+	desc = "Butter mixed with sugar and whipped into a delicious frosting."
+	icon = 'modular/Neu_Food/icons/others/dairy.dmi'
+	icon_state = "frosting"
+	bitesize = 1
+	list_reagents = list(/datum/reagent/consumable/nutriment = SNACK_POOR)
+	w_class = WEIGHT_CLASS_TINY
+	tastes = list("sugary frosting"=1)
+	faretype = FARE_NEUTRAL
+	foodtype = DAIRY | SUGAR
+	eat_effect = /datum/status_effect/buff/sweet

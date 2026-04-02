@@ -12,6 +12,11 @@
 	if(!length(mob_descriptors))
 		mob_descriptors = null
 
+/mob/living/proc/get_descriptor_type(var/desired_type)
+	for(var/datum/mob_descriptor/descriptor as anything in mob_descriptors)
+		if(ispath(descriptor, desired_type))
+			return MOB_DESCRIPTOR(descriptor)
+
 /mob/living/proc/clear_mob_descriptors()
 	mob_descriptors = null
 
@@ -27,6 +32,23 @@
 		var/datum/mob_descriptor/descriptor = MOB_DESCRIPTOR(desc_type)
 		if(is_obscured && !descriptor.show_obscured)
 			continue
+		if(!descriptor.can_describe(src))
+			continue
+		if(!descriptor.can_user_see(src, watcher))
+			continue
+		passed_descriptors += desc_type
+	return passed_descriptors
+
+/mob/living/proc/get_mob_descriptors_unknown(is_obscured, mob/watcher)
+	var/list/descriptors = list()
+	if(mob_descriptors)
+		descriptors += mob_descriptors
+	var/list/extras = get_extra_mob_descriptors()
+	if(extras)
+		descriptors += extras
+	var/list/passed_descriptors = list()
+	for(var/desc_type in descriptors)
+		var/datum/mob_descriptor/descriptor = MOB_DESCRIPTOR(desc_type)
 		if(!descriptor.can_describe(src))
 			continue
 		if(!descriptor.can_user_see(src, watcher))
@@ -68,7 +90,7 @@
 	var/list/lines = list()
 	var/list/desc_copy = descriptors.Copy()
 
-	var/first_line = build_coalesce_description(desc_copy, described, list(MOB_DESCRIPTOR_SLOT_HEIGHT, MOB_DESCRIPTOR_SLOT_BODY, MOB_DESCRIPTOR_SLOT_STATURE, MOB_DESCRIPTOR_SLOT_FACE_SHAPE, MOB_DESCRIPTOR_SLOT_FACE_EXPRESSION), "You see %DESC1%, %DESC2% %DESC3% with %DESC4%, %DESC5%")
+	var/first_line = build_coalesce_description(desc_copy, described, list(MOB_DESCRIPTOR_SLOT_HEIGHT, MOB_DESCRIPTOR_SLOT_BODY, MOB_DESCRIPTOR_SLOT_STATURE, MOB_DESCRIPTOR_SLOT_FACE_SHAPE, MOB_DESCRIPTOR_SLOT_FACE_EXPRESSION), "You see %DESC1%, %DESC2% %DESC3% with %DESC4%, %DESC5%.")
 	if(first_line)
 		lines += first_line
 
@@ -99,6 +121,28 @@
 
 	return lines
 
+/proc/build_cool_description_unknown(list/descriptors, mob/living/described)
+	var/list/lines = list()
+	var/list/desc_copy = descriptors.Copy()
+
+	var/first_line = build_coalesce_description(desc_copy, described, list(MOB_DESCRIPTOR_SLOT_HEIGHT, MOB_DESCRIPTOR_SLOT_BODY, MOB_DESCRIPTOR_SLOT_STATURE), "You see %DESC1%, %DESC2% %DESC3%.")
+	if(first_line)
+		lines += first_line
+
+	var/second_line = build_coalesce_description(desc_copy, described, list(MOB_DESCRIPTOR_SLOT_VOICE), "%THEY% %DESC1%.")
+	if(second_line)
+		lines += second_line
+
+	var/fifth = build_coalesce_description(desc_copy, described, list(MOB_DESCRIPTOR_SLOT_PENIS, MOB_DESCRIPTOR_SLOT_TESTICLES), "%THEY% %DESC1% and %DESC2%.")
+	if(fifth)
+		lines += fifth
+
+	var/sixth = build_coalesce_description(desc_copy, described, list(MOB_DESCRIPTOR_SLOT_BREASTS, MOB_DESCRIPTOR_SLOT_VAGINA), "%THEY% %DESC1% and %DESC2%.")
+	if(sixth)
+		lines += sixth
+
+	return lines
+
 /proc/build_coalesce_description(list/descriptors, mob/living/described, list/slots, string)
 	var/list/descs = described.get_descriptor_slot_list(slots, descriptors)
 	if(!descs)
@@ -109,6 +153,22 @@
 		var/desc_type = descs[i]
 		var/datum/mob_descriptor/descriptor = MOB_DESCRIPTOR(desc_type)
 		string = replacetext(string, "%DESC[i]%", descriptor.get_coalesce_text(described, used_verbage))
+		var/used_verb = descriptor.get_verbage(described)
+		if(used_verb)
+			used_verbage |= used_verb
+	string = treat_mob_descriptor_string(string, described)
+	return string
+
+/proc/build_coalesce_description_nofluff(list/descriptors, mob/living/described, list/slots, string)
+	var/list/descs = described.get_descriptor_slot_list(slots, descriptors)
+	if(!descs)
+		return
+	var/list/used_verbage = list()
+	descriptors -= descs
+	for(var/i in 1 to descs.len)
+		var/desc_type = descs[i]
+		var/datum/mob_descriptor/descriptor = MOB_DESCRIPTOR(desc_type)
+		string = replacetext(string, "%DESC[i]%", descriptor.get_coalesce_text_nofluff(described))
 		var/used_verb = descriptor.get_verbage(described)
 		if(used_verb)
 			used_verbage |= used_verb
@@ -138,15 +198,7 @@
 				they_replace = "he"
 				man_replace = "man"
 				him_replace = "him"
-			if (HE_HIM_F)
-				they_replace = "he"
-				man_replace = "man"
-				him_replace = "him"
 			if (SHE_HER)
-				they_replace = "she"
-				man_replace = "woman"
-				him_replace = "her"
-			if (SHE_HER_M)
 				they_replace = "she"
 				man_replace = "woman"
 				him_replace = "her"
@@ -154,20 +206,23 @@
 				they_replace = "they"
 				man_replace = "person"
 				him_replace = "them"
-			if (THEY_THEM_F)
-				they_replace = "they"
-				man_replace = "person"
-				him_replace = "them"
 			if (IT_ITS)
 				they_replace = "it"
 				man_replace = "creacher"
 				him_replace = "it"
+
 	// LETHALSTONE EDIT END
 	string = replacetext(string, "%THEY%", they_replace)
 	if(they_replace == "they")
 		string = replacetext(string, "%HAVE%", "have")
+		string = replacetext(string, "%ARE%", "are")
+		string = replacetext(string, "%LOOK%", "look")
+		string = replacetext(string, "%SPEAK%", "speak with")
 	else
 		string = replacetext(string, "%HAVE%", "has")
+		string = replacetext(string, "%ARE%", "is")
+		string = replacetext(string, "%LOOK%", "looks")
+		string = replacetext(string, "%SPEAK%", "speaks with")
 	string = replacetext(string, "%MAN%", man_replace)
 	string = replacetext(string, "%HIM%", him_replace)
 	string = capitalize(string)

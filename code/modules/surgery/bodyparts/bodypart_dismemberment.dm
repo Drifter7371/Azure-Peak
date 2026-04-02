@@ -20,50 +20,98 @@
 	)
 
 //Dismember a limb
-/obj/item/bodypart/proc/dismember(dam_type = BRUTE, bclass = BCLASS_CUT, mob/living/user, zone_precise = src.body_zone)
+/obj/item/bodypart/proc/dismember(dam_type = BRUTE, bclass = BCLASS_CUT, mob/living/user, zone_precise = src.body_zone, damage = 0, vorpal = FALSE, skip_checks = FALSE)
 	if(!owner)
 		return FALSE
 	var/mob/living/carbon/C = owner
 	if(!dismemberable)
 		return FALSE
-	if(user && (body_zone == BODY_ZONE_HEAD))
-		if(zone_precise != BODY_ZONE_PRECISE_NECK)
-			return FALSE
-		if(!HAS_TRAIT(C, TRAIT_CRITICAL_WEAKNESS) && !HAS_TRAIT(C, TRAIT_EASYDISMEMBER))	//People with these traits can be decapped standing, or buckled, or however.
-			if(!isnull(C.mind) && (C.mobility_flags & MOBILITY_STAND) && !C.buckled) //Only allows upright decapitations if it's not a player. Unless they're buckled.
+
+	if(!skip_checks)
+		if(user && (body_zone == BODY_ZONE_HEAD))
+			if(zone_precise != BODY_ZONE_PRECISE_NECK)
 				return FALSE
+			if(!HAS_TRAIT(C, TRAIT_CRITICAL_WEAKNESS) && !HAS_TRAIT(C, TRAIT_EASYDISMEMBER))	//People with these traits can be decapped standing, or buckled, or however.
+				var/has_mind = TRUE  // DEBUG: Temporarily forced to TRUE for testing
+				var/not_buckled = !C.buckled
+
+				// Check if currently standing OR within grace period after being knocked down
+				var/can_stand = (C.mobility_flags & MOBILITY_STAND)
+				if(!can_stand && C.mob_timers && C.mob_timers["last_standing"])
+					// Within 2 seconds of being knocked down? Still count as standing
+					if(world.time < C.mob_timers["last_standing"] + STANDING_DECAP_GRACE_PERIOD)
+						can_stand = TRUE
+
+				if(has_mind && can_stand && not_buckled) //Only allows upright decapitations if it's not a player. Unless they're buckled.
+					return FALSE
+
+		if(body_zone != BODY_ZONE_HEAD)
+			var/mob/living/carbon/human/victim = owner
+			var/d_type = "slash"
+			if(victim.run_armor_check(zone_precise, d_type, armor_penetration = PEN_NONE, damage = damage))
+				to_chat(victim, span_warning("My armour just saved me from losing my [C.get_bodypart(body_zone).name]!"))
+				return FALSE
+
 	if(C.status_flags & GODMODE)
 		return FALSE
 	if(HAS_TRAIT(C, TRAIT_NODISMEMBER))
 		return FALSE
+	if(user)
+		if(zone_precise in list(BODY_ZONE_PRECISE_L_FOOT, BODY_ZONE_PRECISE_R_FOOT, BODY_ZONE_PRECISE_R_HAND, BODY_ZONE_PRECISE_L_HAND) && C.mind)
+			return FALSE //No dismemberment on hand/feet on humans, but we do mobs.
 
-	if(ishuman(owner))
-		var/mob/living/carbon/human/H = owner
-		var/obj/item/clothing/checked_armor = H.checkcritarmorreference(src.body_zone, bclass)
-		if(checked_armor && checked_armor.max_integrity != 0)
-			var/int_percent = round(((checked_armor.obj_integrity / checked_armor.max_integrity) * 100), 1) //lifted from examine
-			if(int_percent > 80 && !HAS_TRAIT(H, TRAIT_CRITICAL_WEAKNESS) && !HAS_TRAIT(H, TRAIT_EASYDISMEMBER))
-				to_chat(H, span_warning("My [checked_armor.name] just saved me from losing my [src.name]!"))
-				checked_armor.obj_integrity -= checked_armor.max_integrity / 2 //Armor sundered
-				return FALSE
+	if(SEND_SIGNAL(src, COMSIG_MOB_DISMEMBER, src) & COMPONENT_CANCEL_DISMEMBER)
+		return FALSE //signal handled the dropping
+
+	if(!skip_checks)
+		if(C.try_resist_critical())
+			C.visible_message(span_danger("Critical resistance! [C]'s [src.name] hangs on by a thread!</span>"))
+			return FALSE
 
 	var/obj/item/bodypart/affecting = C.get_bodypart(BODY_ZONE_CHEST)
 	if(affecting && dismember_wound)
 		affecting.add_wound(dismember_wound)
 	playsound(C, pick(dismemsound), 50, FALSE, -1)
-	if(body_zone == BODY_ZONE_HEAD)
-		C.visible_message(span_danger("<B>[C] is [pick("BRUTALLY","VIOLENTLY","BLOODILY","MESSILY")] DECAPITATED!</B>"))
-	else
-		C.visible_message(span_danger("<B>The [src.name] is [pick("torn off", "sundered", "severed", "separated", "unsewn")]!</B>"))
-	C.emote("painscream")
-	src.add_mob_blood(C)
-	SEND_SIGNAL(C, COMSIG_ADD_MOOD_EVENT, "dismembered", /datum/mood_event/dismembered)
-	C.add_stress(/datum/stressevent/dismembered)
+
 	var/stress2give = /datum/stressevent/viewdismember
+	var/guillotine_execution = FALSE
 	if(C.buckled)
+		if(istype(C.buckled, /obj/structure/guillotine))
+			guillotine_execution = TRUE
 		if(istype(C.buckled, /obj/structure/fluff/psycross))
 			if(C.real_name in GLOB.excommunicated_players)
 				stress2give = /datum/stressevent/viewsinpunish
+
+	if(body_zone == BODY_ZONE_HEAD)
+		// decaps should happen in two phases: the first one inflicts a spinal column sever, killing them instantly.
+		// if they're already spinal-severed, THEN the head is removed.
+		// extra note: we only do this for mobs with a mind, aka not NPCS. npcs always get insta-decapped as before
+		if (owner?.client && !vorpal && !guillotine_execution && two_stage_death && !grievously_wounded)
+			if (owner?.construct)
+				C.visible_message(span_danger("<b>[C]'s wrought skull is <span class='crit'>CLEFT NIGH IN TWAIN</span> by a fearsome blow, crumbling into a <span class='crit'>CLOUD of DUST!</span></b>"))
+				C.death()
+				return
+			
+			if (skeletonized)
+				C.visible_message(span_danger("<b>[C]'s bony skull is <span class='crit'>MULCHED</span> by a fearsome blow, spalling into a <span class='crit'>CLOUD of SHARDS!</span></b>"))
+				C.death()
+				return
+			else
+				C.visible_message(span_danger("<B>[C] is <span class='crit'>[pick("ENDED", "SLAIN", "SLAUGHTERED","MURDERED","SNUFFED","BUTCHERED","FELLED","FINISHED","FRAGGED")]</span> as [C.p_their()] ravaged neck <span class='crit'>BLOSSOMS</span> into petals of <span class='crit'>GORE and BONE!</span></B>"))
+				add_wound(/datum/wound/grievous/pre_decapitation_sharp) // this causes a bigass wound, marks the limb as greviously wounded and instantly kills the affected user.
+				return
+		else
+			// we're greviously wounded OR we don't give a shit about two-stage death (guillotines, npcs, etc)
+			C.visible_message(span_danger("<B>[C] is [pick("BRUTALLY","VIOLENTLY","BLOODILY","MESSILY")] DECAPITATED!</B>"))
+	else
+		C.visible_message(span_danger("<B>The [src.name] is [pick("torn off", "sundered", "severed", "separated", "unsewn")]!</B>"))
+
+	if(!HAS_TRAIT(C, TRAIT_NOPAIN))
+		C.emote("painscream")
+
+	if(!(NOBLOOD in C.dna?.species?.species_traits))
+		add_mob_blood(C)
+
 	if(stress2give && C.mind) //Shouldn't be freaking out over a boglin getting their shit rocked.
 		for(var/mob/living/carbon/CA in hearers(world.view, C))
 			if(CA != C && !HAS_TRAIT(CA, TRAIT_BLIND))
@@ -71,9 +119,31 @@
 					if(HAS_TRAIT(CA, TRAIT_STEELHEARTED))
 						continue
 				CA.add_stress(stress2give)
+	// Ensure grabbedby is a list so it can be properly .Cut()'d
+	grabbedby = SANITIZE_LIST(grabbedby)
 	if(grabbedby)
-		qdel(grabbedby)
-		grabbedby = null
+		if(dam_type != BURN)
+			for(var/obj/item/grabbing/grab in grabbedby)
+				if(grab.grab_state != GRAB_AGGRESSIVE)
+					continue
+
+				var/mob/living/carbon/human = grab.grabbee
+				var/hand_index = human.get_held_index_of_item(grab)
+				human.dropItemToGround(grab)
+				drop_limb()
+				human.put_in_hand(src, hand_index)
+
+				if(grabbedby)
+					grabbedby.Cut()
+				return TRUE
+
+		if(grabbedby)
+			grabbedby.Cut()
+
+	if(length(wounds))
+		for(var/datum/wound/wound in wounds)
+			remove_wound(wound.type)
+
 
 	drop_limb()
 	if(dam_type == BURN)
@@ -83,6 +153,7 @@
 	var/turf/location = C.loc
 	if(istype(location))
 		C.add_splatter_floor(location)
+		C.add_splatter_wall(user, location, force = 2, spill_amount = 3) //Garunteed at least 2 tile distance of blood spattering on the walls, and up to 3 walls to splat.
 	var/direction = pick(GLOB.cardinals)
 	var/t_range = rand(2,max(throw_range/2, 2))
 	var/turf/target_turf = get_turf(src)
@@ -96,7 +167,7 @@
 	throw_at(target_turf, throw_range, throw_speed)
 	return TRUE
 
-/obj/item/bodypart/chest/dismember(dam_type = BRUTE, bclass = BCLASS_CUT, mob/living/user, zone_precise = src.body_zone)
+/obj/item/bodypart/chest/dismember(dam_type = BRUTE, bclass = BCLASS_CUT, mob/living/user, zone_precise = src.body_zone, damage = 0, vorpal = FALSE, skip_checks = FALSE)
 	if(!owner)
 		return FALSE
 	var/mob/living/carbon/C = owner
@@ -113,7 +184,7 @@
 /obj/item/bodypart/proc/drop_limb(special)
 	if(!owner)
 		return FALSE
-	testing("begin drop limb")
+
 	var/atom/drop_location = owner.drop_location()
 	var/mob/living/carbon/was_owner = owner
 	update_limb(dropping_limb = TRUE)
@@ -121,11 +192,12 @@
 	if(length(wounds))
 		var/list/stored_wounds = list()
 		for(var/datum/wound/wound as anything in wounds)
-			wound.remove_from_bodypart()
-			if(wound.qdel_on_droplimb)
-				qdel(wound)
-			else
-				stored_wounds += wound //store for later when the limb is reattached
+			if(wound)
+				wound.remove_from_bodypart()
+				if(wound.qdel_on_droplimb)
+					qdel(wound)
+				else
+					stored_wounds += wound //store for later when the limb is reattached
 		wounds = stored_wounds
 	//if we had an ongoing surgery on this limb, we stop it
 	for(var/body_zone in was_owner.surgeries)
@@ -151,6 +223,9 @@
 	if(held_index)
 		was_owner.dropItemToGround(owner.get_item_for_held_index(held_index), force = TRUE)
 		was_owner.hand_bodyparts[held_index] = null
+
+	if(organ_slowdown)
+		was_owner.remove_movespeed_modifier("[src.type]_slow", update = TRUE)
 	was_owner.bodyparts -= src
 	owner = null
 
@@ -277,13 +352,27 @@
 		C.update_inv_shoes()
 		C.update_inv_pants()
 
+/obj/item/bodypart/taur/drop_limb(special) //copypasta
+	var/mob/living/carbon/C = owner
+	. = ..()
+	if(C && !special)
+		if(C.legcuffed)
+			C.legcuffed.forceMove(C.drop_location())
+			C.legcuffed.dropped(C)
+			C.legcuffed = null
+			C.update_inv_legcuffed()
+		if(C.shoes && (C.get_num_legs(FALSE) < 1))
+			C.dropItemToGround(C.shoes, force = TRUE)
+		C.update_inv_shoes()
+		C.update_inv_pants()
+
 /obj/item/bodypart/head/drop_limb(special)
 	if(!special)
 		//Drop all worn head items
 		var/list/worn_items = list(
 			owner.get_item_by_slot(SLOT_HEAD),
 			owner.get_item_by_slot(SLOT_GLASSES),
-			owner.get_item_by_slot(SLOT_NECK),
+			// owner.get_item_by_slot(SLOT_NECK), // We can still equip things in the neck, don't drop it.
 			owner.get_item_by_slot(SLOT_WEAR_MASK),
 			owner.get_item_by_slot(SLOT_MOUTH),
 		)
@@ -346,8 +435,9 @@
 		stored_organ.Insert(C)
 
 	for(var/datum/wound/wound as anything in wounds)
-		wounds -= wound
-		wound.apply_to_bodypart(src, silent = TRUE, crit_message = FALSE)
+		if(wound)
+			wounds -= wound
+			wound.apply_to_bodypart(src, silent = TRUE, crit_message = FALSE)
 
 	var/obj/item/bodypart/affecting = C.get_bodypart(BODY_ZONE_CHEST)
 	if(affecting && dismember_wound)
@@ -355,6 +445,8 @@
 
 	update_bodypart_damage_state()
 
+	if(organ_slowdown)
+		C.add_movespeed_modifier("[src.type]_slow", update=TRUE, priority=100, flags=NONE, override=FALSE, multiplicative_slowdown=organ_slowdown, movetypes=GROUND, blacklisted_movetypes=NONE, conflict=FALSE)
 	C.updatehealth()
 	C.update_body()
 	C.update_hair()

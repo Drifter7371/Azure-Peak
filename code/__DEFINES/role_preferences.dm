@@ -11,12 +11,18 @@
 #define ROLE_VAMPIRE			"Vampire"
 #define ROLE_NBEAST				"Vampire Lord"
 #define ROLE_BANDIT				"Bandit"
+#define ROLE_ASSASSIN			"Assassin"
 #define ROLE_DELF				"Dark Elf"
 #define ROLE_PREBEL				"Peasant Rebel"
 #define ROLE_ASPIRANT			"Aspirant"
 #define ROLE_LICH				"Lich"
+#define ROLE_DREAMWALKER		"Dreamwalker"
+#define ROLE_GNOLL				"Gnoll"
+#define ROLE_HAG				"Hag"
 #define ROLE_ASCENDANT			"Ascendant"
 #define ROLE_WRETCH				"Wretch"
+#define ROLE_UNBOUND_DEATHKNIGHT "Unbound Death Knight"
+#define ROLE_DARK_ITINERANT "Dark Itinerant"
 
 #define ROLE_SYNDICATE			"Syndicate"
 #define ROLE_TRAITOR			"Traitor"
@@ -48,6 +54,8 @@
 #define ROLE_INTERNAL_AFFAIRS	"Internal Affairs Agent"
 #define ROLE_NECRO_SKELETON		"Necromancer Skeleton"
 #define ROLE_LICH_SKELETON		"Lich Skeleton"
+#define ROLE_CHOSEN				"Chosen"
+#define ROLE_VAMPIRE_SUMMON		"Vampire Summon"
 
 GLOBAL_LIST_INIT(special_roles_rogue, list(
 	ROLE_MANIAC = /datum/antagonist/maniac,
@@ -55,8 +63,13 @@ GLOBAL_LIST_INIT(special_roles_rogue, list(
 	ROLE_BANDIT = /datum/antagonist/bandit,
 	ROLE_ASPIRANT = /datum/antagonist/aspirant,
 	ROLE_WEREWOLF = /datum/antagonist/werewolf,
-	ROLE_NBEAST = /datum/antagonist/vampirelord,
-	ROLE_LICH = /datum/antagonist/lich
+	ROLE_NBEAST = /datum/antagonist/vampire/lord,
+	ROLE_VAMPIRE = /datum/antagonist/vampire,
+	ROLE_LICH = /datum/antagonist/lich,
+	ROLE_DREAMWALKER = /datum/antagonist/dreamwalker,
+	ROLE_GNOLL = /datum/antagonist/gnoll,
+	ROLE_ASSASSIN = /datum/antagonist/assassin,
+	ROLE_HAG = /datum/antagonist/hag,
 ))
 
 //Job defines for what happens when you fail to qualify for any job during job selection

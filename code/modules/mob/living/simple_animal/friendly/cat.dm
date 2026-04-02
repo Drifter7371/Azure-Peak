@@ -37,13 +37,18 @@
 	response_harm_continuous = "kicks"
 	response_harm_simple = "kick"
 	STASTR = 3
-	STAEND = 4
+	STAWIL = 4
 	STASPD = 3
 	STACON = 3
 	var/turns_since_scan = 0
 	gold_core_spawnable = FRIENDLY_SPAWN
 
 	footstep_type = FOOTSTEP_MOB_CLAW
+
+	//new ai, old ai off
+	AIStatus = AI_OFF
+	can_have_ai = FALSE
+	ai_controller = /datum/ai_controller/generic
 
 /mob/living/simple_animal/pet/cat/Initialize()
 	. = ..()
@@ -89,13 +94,19 @@
 
 /mob/living/simple_animal/pet/cat/rogue/black
 	name = "black cat"
-	desc = "Possessed of lamplike eyes and a meow that sounds like the rattle of bones. Black cats are sacred to Necra, said to bring wandering spirits to the Carriageman."
+	desc = "Possessed of lamplike eyes and a meow that sounds like the rattle of bones. Black cats are sacred to Necra, said to bring wandering spirits to the Ferryman."
 	gender = FEMALE
 	icon = 'icons/roguetown/topadd/takyon/Cat.dmi'
 	icon_state = "cat"
 	icon_living = "cat"
 	icon_dead = "cat_dead"
 
+/mob/living/simple_animal/pet/cat/rogue/black/academy
+    name = "Kalathrax the All Knowing"
+    desc = "Whispers around the Academy say that this cat was once an Associate that decided they had achieved enough knowledge to challenge the Court Wizard for their role and failed. (Or maybe it's just a cat)"
+    STAINT = 20
+    health = 5000
+    maxHealth = 5000
 
 /mob/living/simple_animal/pet/cat/original
 	name = "Batsy"
@@ -274,7 +285,6 @@
 				emote("me", 1, "purrs!")
 				if(flags_1 & HOLOGRAM_1)
 					return
-				SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, src, /datum/mood_event/pet_animal, src)
 		else
 			if(M && stat != DEAD)
 				emote("me", 1, "hisses!")
@@ -291,7 +301,7 @@
 		step(src, dir)
 		personal_space()
 
-	if(M.mind && M.mind.has_antag_datum(/datum/antagonist/vampirelord))
+	if(M.mind && M.mind.has_antag_datum(/datum/antagonist/vampire))
 		visible_message("<span class='notice'>The cat hisses at [M] and recoils in disgust.</span>")
 		icon_state = "[icon_living]"
 		set_resting(FALSE)

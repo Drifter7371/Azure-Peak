@@ -5,6 +5,7 @@
 	persistent_loop = TRUE
 	var/stress2give = /datum/stressevent/music
 	sound_group = /datum/sound_group/instruments //reserves sound channels for up to 10 instruments at a time
+	filter_pref = SOUND_INSTRUMENTS
 
 /obj/item/rogue/instrument
 	name = ""
@@ -60,6 +61,18 @@
 		soundloop.stop()
 		user.remove_status_effect(/datum/status_effect/buff/playing_music)
 
+/obj/item/rogue/instrument/proc/check_file(infile, filename, user)
+	var/file_ext = lowertext(copytext(filename, -4))
+	var/file_size = length(infile)
+
+	if(file_ext != ".ogg")
+		return "SONG MUST BE AN OGG."
+	if(file_size > 4 * 1024 * 1024)
+		return "TOO BIG. 4 MEGS OR LESS."
+
+	message_admins("[ADMIN_LOOKUPFLW(user)] uploaded a song [filename] of size [file_size / 1000000] (~MB).")
+	return null
+
 /obj/item/rogue/instrument/attack_self(mob/living/user)
 	var/stressevent = /datum/stressevent/music
 	. = ..()
@@ -83,14 +96,14 @@
 			var/list/options = song_list.Copy()
 			if(user.mind && user.get_skill_level(/datum/skill/misc/music) >= 4)
 				options["Upload New Song"] = "upload"
-			
+
 			var/choice = input(user, "Which song?", "Music", name) as null|anything in options
 			if(!choice || !user)
 				return
-				
+
 			if(playing || !(src in user.held_items) || user.get_inactive_held_item())
 				return
-				
+
 			if(choice == "Upload New Song")
 				if(lastfilechange && world.time < lastfilechange + 3 MINUTES)
 					say("NOT YET!")
@@ -104,22 +117,20 @@
 					return
 
 				var/filename = "[infile]"
-				var/file_ext = lowertext(copytext(filename, -4))
-				var/file_size = length(infile)
-				message_admins("[ADMIN_LOOKUPFLW(user)] uploaded a song [filename] of size [file_size / 1000000] (~MB).")
-				if(file_ext != ".ogg")
-					to_chat(user, span_warning("SONG MUST BE AN OGG."))
+				var/file_error = check_file(infile, filename, user)
+				if(file_error)
+					to_chat(user, span_warning(file_error))
 					return
-				if(file_size > 6485760)
-					to_chat(user, span_warning("TOO BIG. 6 MEGS OR LESS."))
-					return
+
 				lastfilechange = world.time
 				fcopy(infile,"data/jukeboxuploads/[user.ckey]/[filename]")
 				curfile = file("data/jukeboxuploads/[user.ckey]/[filename]")
+
 				var/songname = input(user, "Name your song:", "Song Name") as text|null
 				if(songname)
 					song_list[songname] = curfile
 				return
+
 			curfile = song_list[choice]
 			if(!user || playing || !(src in user.held_items))
 				return
@@ -163,7 +174,7 @@
 				soundloop.cursound = null
 				soundloop.start()
 				user.apply_status_effect(/datum/status_effect/buff/playing_music, stressevent, note_color)
-				GLOB.azure_round_stats[STATS_SONGS_PLAYED]++
+				record_round_statistic(STATS_SONGS_PLAYED)
 			else
 				playing = FALSE
 				groupplaying = FALSE
@@ -213,9 +224,9 @@
 	"A Reed On the Wind" = 'sound/music/instruments/lute (5).ogg',
 	"Jests On Steel Ears" = 'sound/music/instruments/lute (6).ogg',
 	"Merchant in the Mire" = 'sound/music/instruments/lute (7).ogg',
-	"The Power" = 'modular_azurepeak/sound/music/instruments/lute (8).ogg', //Baldur's Gate 3 Song
-	"Bard Dance" = 'modular_azurepeak/sound/music/instruments/lute (9).ogg', //Baldur's Gate 3 Song
-	"Old Time Battles" = 'modular_azurepeak/sound/music/instruments/lute (10).ogg') //Baldur's Gate 3 Song
+	"The Power" = 'sound/music/instruments/lute (8).ogg', //Baldur's Gate 3 Song
+	"Bard Dance" = 'sound/music/instruments/lute (9).ogg', //Baldur's Gate 3 Song
+	"Old Time Battles" = 'sound/music/instruments/lute (10).ogg') //Baldur's Gate 3 Song
 
 /obj/item/rogue/instrument/accord
 	name = "accordion"
@@ -272,9 +283,9 @@
 	"Moondust Minx" = 'sound/music/instruments/flute (5).ogg',
 	"Quest to the Ends" = 'sound/music/instruments/flute (6).ogg',
 	"Spit Shine" = 'sound/music/instruments/flute (7).ogg',
-	"The Power" = 'modular_azurepeak/sound/music/instruments/flute (8).ogg', //Baldur's Gate 3 Song
-	"Bard Dance" = 'modular_azurepeak/sound/music/instruments/flute (9).ogg', //Baldur's Gate 3 Song
-	"Old Time Battles" = 'modular_azurepeak/sound/music/instruments/flute (10).ogg') //Baldur's Gate 3 Song
+	"The Power" = 'sound/music/instruments/flute (8).ogg', //Baldur's Gate 3 Song
+	"Bard Dance" = 'sound/music/instruments/flute (9).ogg', //Baldur's Gate 3 Song
+	"Old Time Battles" = 'sound/music/instruments/flute (10).ogg') //Baldur's Gate 3 Song
 
 /obj/item/rogue/instrument/drum
 	name = "drum"
@@ -330,3 +341,50 @@
 	"The Power (Whistling)" = 'sound/music/instruments/vocalsx (2).ogg',
 	"Bard Dance (Whistling)" = 'sound/music/instruments/vocalsx (3).ogg',
 	"Old Time Battles (Whistling)" = 'sound/music/instruments/vocalsx (4).ogg')
+
+/obj/item/rogue/instrument/shamisen
+	name = "shamisen"
+	desc = "The shamisen, or simply «three strings», is an kazengunese stringed instrument with a washer, which is usually played with the help of a bachi."
+	icon_state = "shamisen"
+	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
+	song_list = list(
+	"A Rambling Tongue" = 'sound/music/instruments/shamisen A Rambling Tongue.ogg',
+	"Ashitaka" = 'sound/music/instruments/shamisen The Legend of Ashitaka.ogg',
+	"Daimyo Dreamwalker" = 'sound/music/instruments/shamisen Daimyo Dreamwalker.ogg',
+	"Emperor of Flame" = 'sound/music/instruments/shamisen Emperor of Flame.ogg',
+	"Fire Phoenix" = 'sound/music/instruments/shamisen Fire Phoenix.ogg',
+	"Kaiju Islands" = 'sound/music/instruments/shamisen Kaiju Islands.ogg',
+	"Lavender Village" = 'sound/music/instruments/shamisen Lavender Village.ogg',
+	"Morning Is Coming" = 'sound/music/instruments/shamisen Morning Is Coming.ogg',
+	"Pouncing Shadow" = 'sound/music/instruments/shamisen Pouncing Shadow.ogg',
+	"Rising Sun" = 'sound/music/instruments/shamisen Rising Sun.ogg',
+	"Those Who Fight" = 'sound/music/instruments/shamisen Those Who Fight.ogg',
+	"Village in the Mountains" = 'sound/music/instruments/shamisen Village in the Mountains.ogg',
+	"Winning the Soul" = 'sound/music/instruments/shamisen Winning the Soul.ogg',
+	"Cursed Apple" = 'sound/music/instruments/shamisen (1).ogg',
+	"Fire Dance" = 'sound/music/instruments/shamisen (2).ogg',
+	"Lute" = 'sound/music/instruments/shamisen (3).ogg',
+	"Tsugaru Ripple" = 'sound/music/instruments/shamisen (4).ogg',
+	"Tsugaru" = 'sound/music/instruments/shamisen (5).ogg',
+	"Season" = 'sound/music/instruments/shamisen (6).ogg',
+	"Parade" = 'sound/music/instruments/shamisen (7).ogg',
+	"Koshiro" = 'sound/music/instruments/shamisen (8).ogg')
+
+
+
+/obj/item/rogue/instrument/psyaltery
+	name = "psyaltery"
+	desc = "A traditional form of boxed zither or box-harp that may be played plucked, with a plectrum or with hammers. They are particularly associated with divine beings, aasimars and liturgies."
+	icon_state = "psyaltery"
+	song_list = list(
+	"Disciples Tower" = 'sound/music/instruments/psyaltery (1).ogg',
+	"Green Sleeves" = 'sound/music/instruments/psyaltery (2).ogg',
+	"Midyear Melancholy" = 'sound/music/instruments/psyaltery (3).ogg',
+	"Santa Psydonia" = 'sound/music/instruments/psyaltery (4).ogg',
+	"Le Venardine" = 'sound/music/instruments/psyaltery (5).ogg',
+	"Azurea Fair" = 'sound/music/instruments/psyaltery (6).ogg',
+	"Amoroso" = 'sound/music/instruments/psyaltery (7).ogg',
+	"Lupian's Lullaby" = 'sound/music/instruments/psyaltery (8).ogg',
+	"White Wine Before Breakfast" = 'sound/music/instruments/psyaltery (9).ogg',
+	"Chevalier de Naledi" = 'sound/music/instruments/psyaltery (10).ogg')

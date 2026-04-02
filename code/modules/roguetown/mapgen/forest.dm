@@ -8,7 +8,7 @@
 
 
 /datum/mapGenerator/forest
-	modules = list(/datum/mapGeneratorModule/ambushing,/datum/mapGeneratorModule/forestgrassturf,/datum/mapGeneratorModule/forest,/datum/mapGeneratorModule/forestroad,/datum/mapGeneratorModule/forestgrass)
+	modules = list(/datum/mapGeneratorModule/forestgrassturf,/datum/mapGeneratorModule/forest,/datum/mapGeneratorModule/forestroad,/datum/mapGeneratorModule/forestgrass)
 
 
 /datum/mapGeneratorModule/forest
@@ -27,7 +27,8 @@
 							/obj/item/grown/log/tree/stick = 16,
 							/obj/structure/flora/roguetree/stump/log = 3,
 							/obj/structure/flora/roguetree/stump = 4,
-							/obj/structure/closet/dirthole/closed/loot=3,
+							/obj/structure/leyline/normal/grove = 1,
+						/obj/structure/closet/dirthole/closed/loot=3,
 							/obj/structure/flora/roguegrass/maneater/real=3)
 	spawnableTurfs = list(/turf/open/floor/rogue/dirt/road=2,
 						/turf/open/water/swamp=1)
@@ -54,6 +55,7 @@
 							/obj/structure/flora/roguetree/wise=1,
 							/obj/structure/flora/roguegrass/bush = 25,
 							/obj/structure/flora/roguegrass = 200,
+							/obj/structure/flora/roguegrass/pumpkin = 4,
 							/obj/structure/flora/roguegrass/herb/random = 7,
 							/obj/structure/flora/roguegrass/bush/westleach = 7,
 							/obj/structure/flora/roguegrass/maneater = 13,
@@ -61,4 +63,5 @@
 							/obj/item/natural/stone = 6,
 							/obj/item/natural/rock = 1,
 							/obj/item/grown/log/tree/stick = 3,
+							/obj/structure/leyline/normal/grove = 0.25,
 							/obj/structure/flora/roguetree/stump/log = 3)

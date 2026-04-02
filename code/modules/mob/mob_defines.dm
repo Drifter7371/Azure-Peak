@@ -11,7 +11,6 @@
 	density = TRUE
 	layer = MOB_LAYER
 	animate_movement = SLIDE_STEPS
-	flags_1 = HEAR_1
 	hud_possible = list(ANTAG_HUD)
 	mouse_drag_pointer = MOUSE_ACTIVE_POINTER
 	throwforce = 10
@@ -78,8 +77,6 @@
 	/// What is the mobs real name (name is overridden for disguises etc)
 	var/real_name = null
 
-	/// can this mob move freely in space (should be a trait)
-	var/spacewalk = FALSE
 
 	/**
 	  * back up of the real name during admin possession
@@ -121,6 +118,7 @@
 	var/list/possible_offhand_intents = list()//Living
 	var/list/possible_rmb_intents = list()
 	var/list/base_intents = list() //bare hand intents
+	var/datum/special_intent/unarmed_special //fallback special intent when no weapon is held
 	var/l_index = 1
 	var/r_index = 1
 	var/r_ua_index = 1
@@ -172,6 +170,12 @@
 
 	/// A list of factions that this mob is currently in, for hostile mob targetting, amongst other things
 	var/list/faction = list("neutral")
+
+	/// The current client inhabiting this mob. Managed by login/logout
+	/// This exists so we can do cleanup in logout for occasions where a client was transfere rather then destroyed
+	/// We need to do this because the mob on logout never actually has a reference to client
+	/// We also need to clear this var/do other cleanup in client/Destroy, since that happens before logout
+	var/client/canon_client
 
 	/// Can this mob enter shuttles
 	var/move_on_shuttle = 1
@@ -270,10 +274,14 @@
 
 	var/setparrytime = 12
 	var/dodgetime = 12
-	var/magearmor = 0
 
 	var/last_dodge = 0
 	var/last_parry = 0
+
+	var/last_used_double_attack = 0 //Used for Dual Wielder virtue, holds the timer since the double attack was last used
+	var/dualwieldpitythreshhold = 2 //dual attack every 3rd
+	var/dualwieldpitystacks = 0 //used to count dual wield attacks
+
 	var/next_emote = 0
 	var/next_me_emote = 0
 	var/lastpoint = 0
@@ -304,3 +312,11 @@
 	var/typing_indicator_timerid
 	/// Current state of our typing indicator. Used for cut overlay, DO NOT RUNTIME ASSIGN OTHER THAN FROM SHOW/CLEAR. Used to absolutely ensure we do not get stuck overlays.
 	var/mutable_appearance/typing_indicator_current
+
+	// The last tick where we manually moved, or clicked on something in-world. Useful for preventing abuse of mobs with AFK players.
+	var/last_client_interact = 0
+
+	var/datum/weakref/offered_item_ref
+
+	/// cooldown for the next time this person can offer
+	COOLDOWN_DECLARE(offer_cooldown)

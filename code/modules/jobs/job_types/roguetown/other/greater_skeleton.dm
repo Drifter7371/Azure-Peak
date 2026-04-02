@@ -1,7 +1,7 @@
 /datum/job/roguetown/greater_skeleton
 	title = "Greater Skeleton"
 	flag = SKELETON
-	department_flag = SLOP
+	department_flag = ANTAGONIST
 	faction = "Station"
 	total_positions = 0
 	spawn_positions = 0
@@ -33,14 +33,22 @@
 	var/datum/antagonist/new_antag = new /datum/antagonist/skeleton()
 	H.mind.add_antag_datum(new_antag)
 
+	H.grant_language(/datum/language/undead)
+
+	var/datum/language_holder/language_holder = H.get_language_holder()
+	language_holder.selected_default_language = /datum/language/undead
+
 /datum/job/roguetown/greater_skeleton/after_spawn(mob/living/L, mob/M, latejoin = FALSE)
 	..()
 
 	var/mob/living/carbon/human/H = L
+	H.mob_biotypes |= MOB_UNDEAD
+
 	H.advsetup = TRUE
 	H.invisibility = INVISIBILITY_MAXIMUM
 	H.become_blind("advsetup")
-
+	for (var/obj/item/bodypart/B in H.bodyparts)
+		B.skeletonize(FALSE)
 
 /*
 NECRO SKELETONS
@@ -60,6 +68,25 @@ NECRO SKELETONS
 	outfit = /datum/outfit/job/roguetown/greater_skeleton/necro/shambler
 
 	category_tags = list(CTAG_NSKELETON)
+	subclass_skills = list(
+		//light labor skills for skeleton manual labor and some warrior-adventurer skills, equipment is still bad probably
+		/datum/skill/craft/carpentry = SKILL_LEVEL_NOVICE,
+		/datum/skill/craft/masonry = SKILL_LEVEL_NOVICE,
+		/datum/skill/craft/crafting = SKILL_LEVEL_NOVICE,
+		/datum/skill/craft/sewing = SKILL_LEVEL_NOVICE,
+
+		/datum/skill/combat/polearms = SKILL_LEVEL_JOURNEYMAN,
+		/datum/skill/combat/maces = SKILL_LEVEL_JOURNEYMAN,
+		/datum/skill/combat/axes = SKILL_LEVEL_JOURNEYMAN,
+		/datum/skill/combat/wrestling = SKILL_LEVEL_APPRENTICE,
+		/datum/skill/combat/unarmed = SKILL_LEVEL_APPRENTICE,
+		/datum/skill/misc/athletics = SKILL_LEVEL_EXPERT,
+		/datum/skill/combat/swords = SKILL_LEVEL_JOURNEYMAN,
+		/datum/skill/combat/shields = SKILL_LEVEL_APPRENTICE,
+		/datum/skill/combat/knives = SKILL_LEVEL_JOURNEYMAN,
+		/datum/skill/misc/climbing = SKILL_LEVEL_APPRENTICE,
+	)
+	traits_applied = list(TRAIT_CRITICAL_WEAKNESS,  TRAIT_SILVER_WEAK) // You are disposable and SAD.
 
 /datum/outfit/job/roguetown/greater_skeleton/necro/shambler/pre_equip(mob/living/carbon/human/H)
 	..()
@@ -68,25 +95,10 @@ NECRO SKELETONS
 	H.STAPER = rand(10,12)
 	H.STASPD = rand(8,10)
 	H.STACON = rand(9,11)
-	H.STAEND = rand(12,15)
+	H.STAWIL = rand(12,15)
 	H.STAINT = 1
-
-	//light labor skills for skeleton manual labor and some warrior-adventurer skills, equipment is still bad probably
-	H.adjust_skillrank(/datum/skill/craft/carpentry, 1, TRUE)
-	H.adjust_skillrank(/datum/skill/craft/masonry, 1, TRUE)
-	H.adjust_skillrank(/datum/skill/craft/crafting, 1, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/sewing, 1, TRUE)
-
-	H.adjust_skillrank(/datum/skill/combat/polearms, 3, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/maces, 3, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/axes, 3, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/wrestling, 2, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/unarmed, 2, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/athletics, 4, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/swords, 3, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/shields, 2, TRUE)
-	H.adjust_skillrank(/datum/skill/combat/knives, 3, TRUE)
-	H.adjust_skillrank(/datum/skill/misc/climbing, 2, TRUE)
 
 	shirt = prob(50) ? /obj/item/clothing/suit/roguetown/shirt/undershirt/vagrant : /obj/item/clothing/suit/roguetown/shirt/undershirt/vagrant/l
 	r_hand = prob(50) ? /obj/item/rogueweapon/sword : /obj/item/rogueweapon/stoneaxe/woodcut
+
+	H.energy = H.max_energy

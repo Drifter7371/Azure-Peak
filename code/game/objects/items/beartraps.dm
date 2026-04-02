@@ -29,6 +29,11 @@
 	grid_width = 64
 	grid_height = 64
 
+/obj/item/restraints/legcuffs/beartrap/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Activate in your hand to prime it. Depending on its age, this might take multiple attempts to successfully prepare.")
+	. += span_info("Beartraps can be safely disarmed by either left-clicking them with a open hand, or - at the cost of some durability - left-clicking them with a weapon.")
+
 /obj/item/restraints/legcuffs/beartrap/attack_hand(mob/user)
 	if(iscarbon(user) && armed && isturf(loc))
 		var/mob/living/carbon/C = user
@@ -49,17 +54,13 @@
 			BP.update_disabled()
 			C.apply_damage(trap_damage, BRUTE, def_zone)
 			C.update_sneak_invis(TRUE)
-			C.consider_ambush(always = TRUE)
 			return FALSE
 		else
 			var/used_time = 10 SECONDS
 			if(C.mind)
 				used_time -= max((C.get_skill_level(/datum/skill/craft/traps) * 2 SECONDS), 2 SECONDS)
 			if(do_after(user, used_time, target = src))
-				armed = FALSE
-				w_class = initial(w_class)
-				update_icon()
-				alpha = 255
+				close_trap(FALSE)
 				C.visible_message(span_notice("[C] disarms \the [src]."), \
 						span_notice("I disarm \the [src]."))
 				return FALSE
@@ -75,11 +76,14 @@
 				BP.update_disabled()
 				C.apply_damage(trap_damage, BRUTE, def_zone)
 				C.update_sneak_invis(TRUE)
-				C.consider_ambush(always = TRUE)
 				return FALSE
 	..()
 
 /obj/item/restraints/legcuffs/beartrap/attackby(obj/item/W, mob/user)
+	if(istype(W, /obj/item/natural/dirtclod) && armed)
+		var/skill = user.get_skill_level(/datum/skill/craft/traps)
+		alpha = (90 - skill * 5)
+		qdel(W)
 	if(W.force && armed)
 		user.visible_message("<span class='warning'>[user] triggers \the [src] with [W].</span>", \
 				"<span class='danger'>I trigger \the [src] with [W]!</span>")
@@ -88,7 +92,6 @@
 		if(isliving(user))
 			var/mob/living/L = user
 			L.update_sneak_invis(TRUE)
-			L.consider_ambush(always = TRUE)
 		return
 	..()
 
@@ -96,11 +99,15 @@
 	w_class = WEIGHT_CLASS_BULKY
 	armed = TRUE
 	anchored = TRUE // Pre mapped traps (bad mapping btw, don't) start anchored
+	grid_width = 256
+	grid_height = 256
 
 /obj/item/restraints/legcuffs/beartrap/armed/camouflage
 	w_class = WEIGHT_CLASS_BULKY
 	armed = TRUE
 	alpha = 80
+	grid_width = 256
+	grid_height = 256
 
 /obj/item/restraints/legcuffs/beartrap/Initialize()
 	. = ..()
@@ -124,20 +131,27 @@
 				armed = !armed
 				if(armed)
 					w_class = WEIGHT_CLASS_BULKY
+					grid_width = 256
+					grid_height = 256
 				else
-					w_class = initial(w_class)
+					w_class = WEIGHT_CLASS_NORMAL
+					grid_width = 64
+					grid_height = 64
 				update_icon()
 				to_chat(user, span_notice("[src] is now [armed ? "armed" : "disarmed"]"))
 			else
 				user.visible_message(span_warning("You couldn't get the shoddy [src.name] [armed ? "shut close!" : "to open up!"]"))
 
-/obj/item/restraints/legcuffs/beartrap/proc/close_trap()
+/obj/item/restraints/legcuffs/beartrap/proc/close_trap(play_sound = TRUE)
 	armed = FALSE
-	w_class = initial(w_class)
+	w_class = WEIGHT_CLASS_NORMAL
+	grid_width = 64
+	grid_height = 64
 	anchored = FALSE // Take it off the ground
 	alpha = 255
 	update_icon()
-	playsound(src.loc, 'sound/items/beartrap.ogg', 300, TRUE, -1)
+	if(play_sound)
+		playsound(src.loc, 'sound/items/beartrap.ogg', 300, TRUE, -1)
 
 /obj/item/restraints/legcuffs/beartrap/Crossed(AM as mob|obj)
 	if(armed && isturf(loc))
@@ -175,12 +189,48 @@
 					snap = FALSE
 			if(snap)
 				close_trap()
-				L.visible_message("<span class='danger'>[L] triggers \the [src].</span>", \
-						"<span class='danger'>I trigger \the [src]!</span>")
-				if(L.apply_damage(trap_damage, BRUTE, def_zone, L.run_armor_check(def_zone, "stab", damage = trap_damage)))
+				L.visible_message(span_danger("[L] triggers \the [src]."), \
+						span_danger("I trigger \the [src]!"))
+				if(L.apply_damage(trap_damage, BRUTE, def_zone, L.run_armor_check(def_zone, "stab", armor_penetration = PEN_NONE, damage = trap_damage)))
 					L.Stun(80)
-				L.consider_ambush(always = TRUE)
+		if(isitem(AM))
+			var/obj/item/I = AM
+			if(I.w_class >= WEIGHT_CLASS_NORMAL && prob(33))
+				I.take_damage(50, BRUTE, "stab")
+				close_trap()
+				visible_message(span_warning("[AM] triggers \the [src]."))
 	..()
+
+/obj/item/restraints/legcuffs/beartrap/attacked_by(obj/item/I, mob/living/user)
+	. = ..()
+	if(armed && istype(I, /obj/item/rogueweapon) || istype(I, /obj/item/clothing/suit))
+		if(prob(20))
+			var/msg = "[I] triggers \the [src]."
+			if(prob(80))
+				msg += " \the [src] digs into \the [I], damaging it!"
+				I.take_damage(50, BRUTE, "stab")
+			visible_message(span_warning(msg))
+			close_trap()
+		
+	
+
+/obj/item/restraints/legcuffs/beartrap/dropped(mob/living/carbon/human/user)
+	..()
+	if(!armed)
+		return
+	for(var/obj/structure/fluff/traveltile/TT in range(1, src)) // don't allow armed traps to be placed near travel tiles
+		close_trap(FALSE)
+		log_combat(user, src, "armed and dropped [src] near travel tiles")
+		break
+
+/obj/item/restraints/legcuffs/beartrap/after_throw(datum/callback/callback)
+	..()
+	if(!armed)
+		return
+	for(var/obj/structure/fluff/traveltile/TT in range(1, src)) // don't allow armed traps to be placed near travel tiles
+		close_trap()
+		log_combat(src, null, "[src] was kicked towards travel tiles")
+		break
 
 // When craftable beartraps get added, make these the ones crafted.
 /obj/item/restraints/legcuffs/beartrap/crafted

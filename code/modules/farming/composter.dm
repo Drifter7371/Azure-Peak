@@ -12,12 +12,18 @@
 	var/unflipped_compost = 0
 	var/flipped_compost = 0
 	var/ready_compost = 0
+	var/processing = FALSE
 
 /obj/structure/composter/halffull
 	ready_compost = MAXIMUM_TOTAL_COMPOST * 0.5
 
 /obj/structure/composter/full
 	ready_compost = MAXIMUM_TOTAL_COMPOST
+
+/obj/structure/composter/examine()
+	. = ..()
+	. += span_info("Left-click the composter with waste to fill it. Nightsoil, ash, apple cores and other less-than-edible giblings are ideal choices.")
+	. += span_info("Compost needs to be intermittently flipped. This can either be done by right-clicking it with an unoccupied hand, or by right-clicking it with a pitchfork.")
 
 /obj/structure/composter/examine(mob/user)
 	. = ..()
@@ -33,7 +39,6 @@
 	update_overlays()
 
 /obj/structure/composter/Initialize()
-	START_PROCESSING(SSprocessing, src)
 	update_icon()
 	. = ..()
 
@@ -50,6 +55,8 @@
 	flipped_compost -= compost_to_process
 	unflipped_compost += compost_to_process * 0.25
 	ready_compost += compost_to_process * 0.75
+	maybe_stop_processing()
+
 
 /obj/structure/composter/proc/get_total_compost()
 	return unflipped_compost + flipped_compost + ready_compost
@@ -73,6 +80,7 @@
 	var/flip_amount = unflipped_compost
 	unflipped_compost -= flip_amount
 	flipped_compost += flip_amount
+	maybe_start_processing()
 	update_icon()
 
 /obj/structure/composter/proc/try_handle_adding_compost(obj/item/attacking_item, mob/user, batch_process)
@@ -92,7 +100,6 @@
 		if(!batch_process)
 			to_chat(user, span_notice("I add \the [attacking_item] to \the [src]"))
 		qdel(attacking_item)
-		update_icon()
 		return TRUE
 	return FALSE
 
@@ -131,8 +138,10 @@
 			attacking_item.update_icon()
 		else
 			to_chat(user, span_warning("There's nothing in [attacking_item] that can be composted."))
+		update_icon()
 		return TRUE
 	if(try_handle_adding_compost(attacking_item, user, params))
+		update_icon()
 		return
 	. = ..()
 
@@ -178,6 +187,20 @@
 	else if (total_processed >= COMPOST_PER_PRODUCED_ITEM)
 		. += "post_compost_low"
 
+/obj/structure/composter/proc/maybe_start_processing()
+	// Start processing if there is any flipped compost to process
+	if(!processing && flipped_compost > 0)
+		START_PROCESSING(SSprocessing, src)
+		processing = TRUE
+		update_overlays()
+
+/obj/structure/composter/proc/maybe_stop_processing()
+	// Stop processing if there is no flipped compost left
+	if(processing && flipped_compost <= 0)
+		STOP_PROCESSING(SSprocessing, src)
+		processing = FALSE
+		update_overlays()
+
 /obj/item/compost
 	name = "compost"
 	desc = "Decomposed produce ready to give life to plants."
@@ -188,6 +211,10 @@
 	grid_width = 32
 	grid_height = 32
 
+/obj/item/compost/examine()
+	. = ..()
+	. += span_info("Left-click a crop or patch of soil to fertilize it. This improves its health, and improves the chances of a greater harvest.")
+
 /obj/item/fertilizer
 	name = "fertilizer"
 	desc = "A mix of compost, manure, and bone meal."
@@ -196,3 +223,11 @@
 	w_class = WEIGHT_CLASS_SMALL
 	grid_width = 32
 	grid_height = 32
+
+/obj/item/fertilizer/examine()
+	. = ..()
+	. += span_info("Left-click a crop or patch of soil to fertilize it. This improves its health, and improves the chances of a greater harvest.")
+
+#undef MAXIMUM_TOTAL_COMPOST
+#undef COMPOST_PER_PRODUCED_ITEM
+#undef COMPOST_PROCESS_RATE

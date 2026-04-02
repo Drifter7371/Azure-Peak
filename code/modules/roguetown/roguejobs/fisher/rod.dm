@@ -6,7 +6,7 @@
 	icon_state = "rod"
 	icon = 'icons/roguetown/weapons/tools.dmi'
 	sharpness = IS_BLUNT
-	wlength = 33
+	wlength = WLENGTH_NORMAL
 	var/obj/item/baited = null
 	slot_flags = ITEM_SLOT_BACK|ITEM_SLOT_HIP
 	w_class = WEIGHT_CLASS_BULKY
@@ -27,6 +27,12 @@
 	else
 		..()
 
+/obj/item/fishingrod/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Left-clicking a fishing rod with bait will prepare it for a cast. Worms, leeches, and many other wriggling creechers can attract different fishes to catch.")
+	. += span_info("Once baited, left click the water to begin fishing.")
+	. += span_info("The chances of you catching nothing at all, having your bait stolen, or getting a 'biter' depends on how high your Fishing skill is.")
+	. += span_info("Whenever you get a 'biter', interrupt the ensuing timed action before it can complete to successfully catch a fish.")
 
 /obj/item/fishingrod/attackby(obj/item/I, mob/user, params)
 	if(baited)
@@ -64,10 +70,8 @@
 /obj/item/fishingrod/afterattack(obj/target, mob/user, proximity)
 	var/sl = user.get_skill_level(/datum/skill/labor/fishing) // User's skill level
 	var/ft = 120 //Time to get a catch, in ticks
-	var/fpp =  100 - (40 + (sl * 10)) // Fishing power penalty based on fishing skill level
-	var/frwt = list(/turf/open/water/river, /turf/open/water/cleanshallow, /turf/open/water/pond)
-	var/salwt = list(/turf/open/water/ocean, /turf/open/water/ocean/deep)
-	var/mud = list(/turf/open/water/swamp, /turf/open/water/swamp/deep)
+	var/fpp =  60 - (sl * 10) // Fishing power penalty based on fishing skill level
+	var/list/modlist
 	if(user.used_intent.type == SPEAR_BASH)
 		return ..()
 
@@ -96,91 +100,37 @@
 							else
 								fishchance -= bp // Deduct penalties from bait quality, if any
 								fishchance -= fpp // Deduct a penalty the lower our fishing level is (-0 at legendary)
-						var/mob/living/fisherman = user
+						var/mob/living/carbon/human/fisherman = user
+						modlist = baited.fishingMods.Copy()
 						if(prob(fishchance)) // Finally, roll the dice to see if we fish.
-							if(target.type in frwt)
-								var/A = pickweight(baited.freshfishloot)
+							var/A = getfishingloot(user, modlist, target)
+							if(A)
 								var/ow = 30 + (sl * 10) // Opportunity window, in ticks. Longer means you get more time to cancel your bait
 								to_chat(user, "<span class='notice'>Something tugs the line!</span>")
+								target.balloon_alert_to_viewers("Tug!")
 								playsound(src.loc, 'sound/items/fishing_plouf.ogg', 100, TRUE)
-								if(!do_after(user,ow, target = target))
-									if(ismob(A)) // TODO: Baits with mobs on their fishloot lists OR water tiles with their own fish loot pools
+								if(!do_after(user,ow, target = target, same_direction = TRUE))
+									if(A in subtypesof(/mob/living))
 										var/mob/M = A
-										if(M.type in subtypesof(/mob/living/simple_animal/hostile))
-											new M(target)
-										else
-											new M(user.loc)
+										new M(target)
+										if (!(M.type == /mob/living/simple_animal/hostile/retaliate/rogue/mudcrab))
+											user.playsound_local(src, pick('sound/misc/jumpscare (1).ogg','sound/misc/jumpscare (2).ogg','sound/misc/jumpscare (3).ogg','sound/misc/jumpscare (4).ogg'), 100)
 										user.mind.add_sleep_experience(/datum/skill/labor/fishing, fisherman.STAINT*2) // High risk high reward
 									else
 										new A(user.loc)
 										to_chat(user, "<span class='warning'>Reel 'em in!</span>")
-										user.mind.add_sleep_experience(/datum/skill/labor/fishing, round(fisherman.STAINT, 2), FALSE) // Level up!
-									playsound(src.loc, 'sound/items/Fish_out.ogg', 100, TRUE)
-									if(prob(80 - (sl * 10))) // Higher skill levels make you less likely to lose your bait
-										to_chat(user, "<span class='warning'>Damn, it ate my bait.</span>")
-										qdel(baited)
-										baited = null
-								else
-									to_chat(user, "<span class='warning'>Damn, it got away... I should <b>pull away</b> next time.</span>")
-									if(prob(100 - (sl * 10))) // Higher chance for it to flee with your bait.
-										to_chat(user, "<span class='warning'>...And took my bait, too.</span>")
-										qdel(baited)
-										baited = null
-							if(target.type in salwt)
-								var/A = pickweight(baited.seafishloot)
-								var/ow = 30 + (sl * 10) // Opportunity window, in ticks. Longer means you get more time to cancel your bait
-								to_chat(user, "<span class='notice'>Something tugs the line!</span>")
-								playsound(src.loc, 'sound/items/fishing_plouf.ogg', 100, TRUE)
-								if(!do_after(user,ow, target = target))
-									if(ismob(A)) // TODO: Baits with mobs on their fishloot lists OR water tiles with their own fish loot pools
-										var/mob/M = A
-										if(M.type in subtypesof(/mob/living/simple_animal/hostile))
-											new M(target)
-										else
-											new M(user.loc)
-										user.mind.add_sleep_experience(/datum/skill/labor/fishing, fisherman.STAINT*2) // High risk high reward
-									else
-										new A(user.loc)
-										to_chat(user, "<span class='warning'>Reel 'em in!</span>")
-										user.mind.add_sleep_experience(/datum/skill/labor/fishing, round(fisherman.STAINT, 2), FALSE) // Level up!
-									playsound(src.loc, 'sound/items/Fish_out.ogg', 100, TRUE)
-									if(prob(80 - (sl * 10))) // Higher skill levels make you less likely to lose your bait
-										to_chat(user, "<span class='warning'>Damn, it ate my bait.</span>")
-										qdel(baited)
-										baited = null
-								else
-									to_chat(user, "<span class='warning'>Damn, it got away... I should <b>pull away</b> next time.</span>")
-									if(prob(100 - (sl * 10))) // Higher chance for it to flee with your bait.
-										to_chat(user, "<span class='warning'>...And took my bait, too.</span>")
-										qdel(baited)
-										baited = null	
-							if(target.type in mud)
-								var/A = pickweight(baited.mudfishloot)
-								var/ow = 30 + (sl * 10) // Opportunity window, in ticks. Longer means you get more time to cancel your bait
-								to_chat(user, "<span class='notice'>Something tugs the line!</span>")
-								playsound(src.loc, 'sound/items/fishing_plouf.ogg', 100, TRUE)
-								if(!do_after(user,ow, target = target))
-									if(ismob(A)) // TODO: Baits with mobs on their fishloot lists OR water tiles with their own fish loot pools
-										var/mob/M = A
-										if(M.type in subtypesof(/mob/living/simple_animal/hostile))
-											new M(target)
-										else
-											new M(user.loc)
-										user.mind.add_sleep_experience(/datum/skill/labor/fishing, fisherman.STAINT*2) // High risk high reward
-									else
-										new A(user.loc)
-										to_chat(user, "<span class='warning'>Reel 'em in!</span>")
+										teleport_to_dream(user, 10000, 1)
 										user.mind.add_sleep_experience(/datum/skill/labor/fishing, round(fisherman.STAINT, 2), FALSE) // Level up!
 										record_featured_stat(FEATURED_STATS_FISHERS, fisherman)
-										GLOB.azure_round_stats[STATS_FISH_CAUGHT]++
-									playsound(src.loc, 'sound/items/Fish_out.ogg', 100, TRUE)
-									if(prob(80 - (sl * 10))) // Higher skill levels make you less likely to lose your bait
+										record_round_statistic(STATS_FISH_CAUGHT)
+										playsound(src.loc, 'sound/items/Fish_out.ogg', 100, TRUE)
+									if(getbaitlife(sl, baited)) // Higher skill levels make you less likely to lose your bait
 										to_chat(user, "<span class='warning'>Damn, it ate my bait.</span>")
 										qdel(baited)
 										baited = null
 								else
 									to_chat(user, "<span class='warning'>Damn, it got away... I should <b>pull away</b> next time.</span>")
-									if(prob(100 - (sl * 10))) // Higher chance for it to flee with your bait.
+									if(getbaitlife(sl, baited, 100)) // Higher chance for it to flee with your bait.
 										to_chat(user, "<span class='warning'>...And took my bait, too.</span>")
 										qdel(baited)
 										baited = null													
@@ -204,7 +154,15 @@
 		var/mob/M = loc
 		M.update_inv_hands()
 
+/obj/item/fishingrod/bronze
+	name = "bronze fishing rod"
+	desc = "A tool of religious importance, used by wide-brimmed priests who offer wriggling sacrifices to the endless waves beneath."
+	icon_state = "bronzerod"
+	max_integrity = 200
 
 /obj/item/fishingrod/aalloy
 	name = "decrepit fishing rod"
+	desc = "The Comet Syon's impact drowned the world, long ago. The waves've long since receded, but His greatest works remain shrouded far beneath the sea."
 	icon_state = "arod"
+	color = "#bb9696"
+	sellprice = 15

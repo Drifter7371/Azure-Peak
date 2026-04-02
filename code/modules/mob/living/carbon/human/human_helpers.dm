@@ -12,7 +12,7 @@
 		if(istype(wear_neck, /obj/item/clothing/neck/roguetown/talkstone))
 			return TRUE
 	if(!has_language(language))
-		if(has_flaw(/datum/charflaw/paranoid))
+		if(has_flaw(/datum/charflaw/addiction/paranoid))
 			add_stress(/datum/stressevent/paratalk)
 
 
@@ -44,6 +44,12 @@
 		return face_name
 	if(id_name)
 		return id_name
+	var/list/d_list = get_mob_descriptors()
+	var/trait_desc = "[capitalize(build_coalesce_description_nofluff(d_list, src, list(MOB_DESCRIPTOR_SLOT_TRAIT), "%DESC1%"))]"
+	var/stature_desc = "[capitalize(build_coalesce_description_nofluff(d_list, src, list(MOB_DESCRIPTOR_SLOT_STATURE), "%DESC1%"))]"
+	var/descriptor_name = "[trait_desc] [stature_desc]"
+	if(descriptor_name != " ")
+		return descriptor_name
 	return "Unknown"
 
 //Returns "Unknown" if facially disfigured and real_name if not. Useful for setting name when Fluacided or when updating a human's name variable
@@ -57,7 +63,7 @@
 	if( istype(src, /mob/living/carbon/human/species/skeleton)) //SPOOKY BONES
 		return real_name
 	var/obj/item/bodypart/O = get_bodypart(BODY_ZONE_HEAD)
-	if( !O || (HAS_TRAIT(src, TRAIT_DISFIGURED)) || !real_name || (O.skeletonized && !mind?.has_antag_datum(/datum/antagonist/lich)))	//disfigured. use id-name if possible
+	if( !O || (HAS_TRAIT(src, TRAIT_DISFIGURED)) || !real_name || (O.skeletonized && !HAS_TRAIT(src, TRAIT_FACELESS_KNOWN) && !mind?.has_antag_datum(/datum/antagonist/lich)))	//disfigured. use id-name if possible
 		return if_no_face
 	return real_name
 
@@ -88,7 +94,7 @@
 /mob/living/carbon/human/can_use_guns(obj/item/G)
 	. = ..()
 	if(G.trigger_guard == TRIGGER_GUARD_NORMAL)
-		if(HAS_TRAIT(src, TRAIT_CHUNKYFINGERS))
+		if(HAS_TRAIT(src, TRAIT_CHUNKYFINGERS) || HAS_TRAIT(src, TRAIT_GNARLYDIGITS))
 			to_chat(src, span_warning("My meaty finger is much too large for the trigger guard!"))
 			return FALSE
 	if(HAS_TRAIT(src, TRAIT_NOGUNS))
@@ -111,36 +117,101 @@
 		return TRUE
 
 /mob/living/carbon/human/get_punch_dmg()
+	var/damage = UNARMED_DAMAGE_DEFAULT
 
-	var/damage
-	if(STASTR > UNARMED_DAMAGE_DEFAULT || STASTR < 10)
-		damage = STASTR
-	else
-		damage = UNARMED_DAMAGE_DEFAULT
+	if(HAS_TRAIT(src, TRAIT_CIVILIZEDBARBARIAN))
+		damage += UNARMED_DAMAGE_CIVILBARB
 
 	var/used_str = STASTR
-
-	var/obj/G = get_item_by_slot(SLOT_GLOVES)
 	if(domhand)
 		used_str = get_str_arms(used_hand)
 
 	if(used_str >= 11)
-		damage = max(damage + (damage * ((used_str - 10) * 0.3)), 1)
-
-	if(used_str <= 9)
+		var/strmod
+		if(used_str > STRENGTH_SOFTCAP && !HAS_TRAIT(src, TRAIT_STRENGTH_UNCAPPED))
+			strmod = ((STRENGTH_SOFTCAP - 10) * STRENGTH_MULT)
+			strmod += ((used_str - STRENGTH_SOFTCAP) * STRENGTH_CAPPEDMULT)
+		else
+			strmod = ((used_str - 10) * STRENGTH_MULT)
+		damage = damage + (damage * strmod)
+	else if(used_str <= 9)
 		damage = max(damage - (damage * ((10 - used_str) * 0.1)), 1)
 
+	var/obj/G = get_item_by_slot(SLOT_GLOVES)
 	if(istype(G, /obj/item/clothing/gloves/roguetown))
 		var/obj/item/clothing/gloves/roguetown/GL = G
-		damage = (damage * GL.unarmed_bonus)
+		damage += GL.unarmed_bonus
 
 	if(mind)
 		if(mind.has_antag_datum(/datum/antagonist/werewolf))
 			return 50
 
+	damage += dna.species.punch_damage
 	return damage
 
 /mob/living/carbon/human/is_floor_hazard_immune()
 	. = ..()
 	if(dna?.species?.is_floor_hazard_immune(src))
 		return TRUE
+
+
+/mob/living/carbon/human/proc/do_invisibility(timeinvis)
+	animate(src, alpha = 0, time = 0 SECONDS, easing = EASE_IN)
+	src.mob_timers[MT_INVISIBILITY] = world.time + timeinvis
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/mob/living/carbon/human, update_sneak_invis), TRUE), timeinvis)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom/movable, visible_message), span_warning("[src] fades back into view."), span_notice("You become visible again.")), timeinvis)
+
+/mob/living/carbon/human/proc/create_walk_to(duration, mob/living/walk_to)
+	ADD_TRAIT(src, TRAIT_MOVEMENT_BLOCKED, TRAIT_VAMPIRE)
+	walk_to_target = walk_to
+	walk_to_duration = duration
+	walk_to_steps_taken = 0
+	walk_to_last_pos = get_turf(src)
+	walk_to_cached_path = null
+
+	// Start the walking process
+	walk_to_caster()
+	addtimer(CALLBACK(src, PROC_REF(remove_walk_to_trait)), 10 SECONDS)
+
+/mob/living/carbon/human/proc/walk_to_caster()
+	if(!walk_to_target || walk_to_steps_taken >= walk_to_duration)
+		remove_walk_to_trait()
+		return
+
+	if(can_frenzy_move())
+		var/turf/current_pos = get_turf(src)
+		var/turf/target_pos = get_turf(walk_to_target)
+
+		// Only regenerate path if we've moved to a different position or don't have a cached path
+		if(!walk_to_cached_path || walk_to_last_pos != current_pos)
+			walk_to_cached_path = get_path_to(src, target_pos, TYPE_PROC_REF(/turf, Heuristic_cardinal_3d), 33, 250, 1)
+			walk_to_last_pos = current_pos
+
+		var/moved = FALSE
+
+		if(length(walk_to_cached_path))
+			walk(src, 0) // Stop any existing walk
+			set_glide_size(DELAY_TO_GLIDE_SIZE(total_multiplicative_slowdown()))
+			step_to(src, walk_to_cached_path[1], 0)
+			face_atom(walk_to_target)
+
+			walk_to_cached_path.Cut(1, 2)
+			moved = TRUE
+		else
+			walk_towards(src, walk_to_target, 0, total_multiplicative_slowdown())
+			moved = TRUE
+
+		if(moved)
+			walk_to_steps_taken++
+
+	addtimer(CALLBACK(src, PROC_REF(walk_to_caster)), total_multiplicative_slowdown())
+
+/mob/living/carbon/human/proc/remove_walk_to_trait()
+	REMOVE_TRAIT(src, TRAIT_MOVEMENT_BLOCKED, TRAIT_VAMPIRE)
+	walk(src, 0) // Stop any walking
+	walk_to_target = null
+	walk_to_duration = 0
+	walk_to_steps_taken = 0
+	walk_to_last_pos = null
+	walk_to_cached_path = null
+

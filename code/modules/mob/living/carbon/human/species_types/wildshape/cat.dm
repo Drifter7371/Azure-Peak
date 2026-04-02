@@ -4,7 +4,8 @@
 	footstep_type = FOOTSTEP_MOB_CLAW
 	ambushable = FALSE
 	skin_armor = new /obj/item/clothing/suit/roguetown/armor/skin_armor/cat_skin
-	// Someone else balance this, I am here for code, not numbers
+	wildshape_icon = 'icons/mob/pets.dmi'
+	wildshape_icon_state = "cat2"
 
 /mob/living/carbon/human/species/wildshape/cat/gain_inherent_skills()
 	. = ..()
@@ -19,12 +20,13 @@
 
 		src.STASTR = 2
 		src.STACON = 2
-		src.STAEND = 7
+		src.STAWIL = 7
 		src.STAPER = 14
 		src.STASPD = 18 //May be overtuned with dodge expert, but this thing is so fragile
 		src.STALUC = 12 //Xylyx's critters
 
 		AddSpell(new /obj/effect/proc_holder/spell/self/catclaws)
+		AddSpell(new /obj/effect/proc_holder/spell/targeted/woundlick)
 		real_name = "cat" //Stealthy transform, lets give it a try
 
 // CAT SPECIES DATUM //
@@ -39,7 +41,9 @@
 		TRAIT_HARDDISMEMBER, //Decapping wildshapes causes them to bug out, badly, and need admin intervention to fix. Bandaid fix.
 		TRAIT_DODGEEXPERT,
 		TRAIT_BRITTLE,
-		TRAIT_LEAPER
+		TRAIT_LEAPER,
+		TRAIT_ZJUMP, //its a CAT. Cats can jump so high!
+		TRAIT_WOODWALKER
 	)
 	inherent_biotypes = MOB_HUMANOID
 	no_equip = list(SLOT_SHIRT, SLOT_HEAD, SLOT_WEAR_MASK, SLOT_ARMOR, SLOT_GLOVES, SLOT_SHOES, SLOT_PANTS, SLOT_CLOAK, SLOT_BELT, SLOT_BACK_R, SLOT_BACK_L, SLOT_S_STORE)
@@ -100,7 +104,7 @@
 	attack_verb = list("claws", "cuts", "scratches")
 	animname = "cut"
 	hitsound = "genslash"
-	penfactor = 10
+	penfactor = PEN_NONE
 	candodge = TRUE
 	canparry = TRUE
 	miss_text = "slashes the air!"
@@ -113,7 +117,7 @@
 	item_state = null
 	lefthand_file = null
 	righthand_file = null
-	icon = 'icons/roguetown/weapons/32.dmi'
+	icon = 'icons/roguetown/weapons/unarmed32.dmi'
 	max_blade_int = 200
 	max_integrity = 200
 	force = 8 //Pitiful, literally less than a wooden stick or a thrown toy
@@ -177,3 +181,46 @@
 		user.put_in_hands(r, TRUE, FALSE, TRUE)
 		//user.visible_message("Your claws extend.", "You feel your claws extending.", "You hear a sound of claws extending.")
 		extended = TRUE
+
+/obj/effect/proc_holder/spell/targeted/woundlick
+    action_icon = 'icons/mob/actions/roguespells.dmi'
+    name = "Lick the wounds"
+    desc = "Heal the wounds of somebody"
+    overlay_state = "diagnose"
+    range = 1
+    include_user = TRUE
+    sound = 'sound/gore/flesh_eat_03.ogg'
+    associated_skill = /datum/skill/misc/climbing
+    recharge_time = 10 SECONDS
+    ignore_cockblock = TRUE
+
+/obj/effect/proc_holder/spell/targeted/woundlick/cast(list/targets, mob/user)
+    if(iscarbon(targets[1]))
+        var/mob/living/carbon/target = targets[1]
+        if(target.mind)
+            if(target.mind.has_antag_datum(/datum/antagonist/zombie))
+                to_chat(src, span_warning("I shall not lick it..."))
+                return
+            if(target.mind.has_antag_datum(/datum/antagonist/vampire))
+                to_chat(src, span_warning("... What? It's an elder vampire!"))
+                return
+        (!do_after(user, 7 SECONDS, target = target))
+        var/ramount = 20
+        var/rid = /datum/reagent/medicine/healthpot
+        target.reagents.add_reagent(rid, ramount)
+        ramount = 2
+        if(target == user)
+            target.visible_message(span_green("[user] licks their own wounds."), span_notice("I lick my own wounds."))
+            ramount = 20
+            rid = /datum/reagent/water
+            target.reagents.add_reagent(rid, ramount)
+        else if(target.mind.has_antag_datum(/datum/antagonist/werewolf))
+            target.visible_message(span_green("[user] is licking [target]'s wounds with its tongue!"), span_notice("My kin has covered my wounds..."))
+            ramount = 20
+            rid = /datum/reagent/water
+            target.reagents.add_reagent(rid, ramount)
+        else
+            target.visible_message(span_green("[user] is licking [target]'s wounds with its tongue!"), span_notice("That thing... Did it lick my wounds?"))
+            ramount = 20
+            rid = /datum/reagent/water
+            target.reagents.add_reagent(rid, ramount)

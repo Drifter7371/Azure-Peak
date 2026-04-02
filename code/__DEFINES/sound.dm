@@ -12,11 +12,12 @@
 #define CHANNEL_MUSIC 1014
 #define CHANNEL_CMUSIC 1013
 #define CHANNEL_WEATHER 1012
+#define CHANNEL_CHARGED_SPELL 1011
 
 //THIS SHOULD ALWAYS BE THE LOWEST ONE!
 //KEEP IT UPDATED
 
-#define CHANNEL_HIGHEST_AVAILABLE 1011
+#define CHANNEL_HIGHEST_AVAILABLE 1010
 
 
 #define SOUND_MINIMUM_PRESSURE 10
@@ -184,6 +185,11 @@
 						'sound/ambience/noises/birds (6).ogg',\
 						'sound/ambience/noises/birds (7).ogg')
 
+#define LEVEL_UP_SOUNDS list('sound/misc/levelup1.ogg',\
+					'sound/misc/levelup2.ogg',\
+					'sound/misc/levelup3.ogg')
+
+
 #define SFX_CHAIN_STEP "chain_step"
 #define SFX_PLATE_STEP	"plate_step"
 #define SFX_PLATE_COAT_STEP "plate_coat_step"
@@ -195,4 +201,4 @@
 #define PICKUP_SOUND_VOLUME 100
 #define DROP_SOUND_VOLUME 100
 #define YEET_SOUND_VOLUME 100
-#define SHEATHE_SOUND_VOLUME 15
+#define HOLSTER_SOUND_VOLUME 15

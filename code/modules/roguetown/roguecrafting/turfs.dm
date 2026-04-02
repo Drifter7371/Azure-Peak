@@ -11,6 +11,7 @@
 	verbage_simple = "construct"
 	verbage = "constructs"
 	craftdiff = 0
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/wood/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -23,18 +24,49 @@
 	name = "floor (crude wood)"
 	result = /turf/open/floor/rogue/ruinedwood
 	reqs = list(/obj/item/natural/wood/plank = 1)
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/wood/floor
 	name = "floor (wood)"
 	result = /turf/open/floor/rogue/wood
 	reqs = list(/obj/item/natural/wood/plank = 1)
 	craftdiff = 2
+	category = "Floors"
+
+/datum/crafting_recipe/roguetown/turfs/wood/floorhl
+	name = "floor (herringbone light)"
+	result = /turf/open/floor/rogue/ruinedwood/herringbone_clear
+	reqs = list(/obj/item/natural/wood/plank = 1)
+	craftdiff = 4
+	category = "Floors"
+
+/datum/crafting_recipe/roguetown/turfs/wood/floorhw
+	name = "floor (herringbone weathered)"
+	result = /turf/open/floor/rogue/ruinedwood/herringbone
+	reqs = list(/obj/item/natural/wood/plank = 1)
+	craftdiff = 4
+	category = "Floors"
+
+/datum/crafting_recipe/roguetown/turfs/wood/floorhs
+	name = "floor (herringbone stamped)"
+	result = /turf/open/floor/rogue/ruinedwood/chevron
+	reqs = list(/obj/item/natural/wood/plank = 1)
+	craftdiff = 4
+	category = "Floors"
+
+/datum/crafting_recipe/roguetown/turfs/wood/floorslanted
+	name = "floor (slanted)"
+	result = /turf/open/floor/rogue/ruinedwood/spiral
+	reqs = list(/obj/item/natural/wood/plank = 1)
+	craftdiff = 3
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/wood/platform
 	name = "platform (wood)"
 	result = /turf/open/floor/rogue/ruinedwood/platform
 	reqs = list(/obj/item/natural/wood/plank = 2)
 	craftdiff = 2
+	category = "Floors"
 
 //Platform has unique turf-check vs normal turf.
 /datum/crafting_recipe/roguetown/turfs/wood/platform/TurfCheck(mob/user, turf/T)
@@ -50,15 +82,19 @@
 	result = /turf/closed/wall/mineral/rogue/wood
 	reqs = list(/obj/item/grown/log/tree/small = 2)
 	craftdiff = 2
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/wood/wall/alt
+	name = "wall alt(wood)"
 	reqs = list(/obj/item/natural/wood/plank = 2)
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/wood/fancy
 	name = "wall (fancy wood)"
 	result = /turf/closed/wall/mineral/rogue/decowood
 	reqs = list(/obj/item/natural/wood/plank = 2)
 	craftdiff = 3
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/wood/murderhole
 	name = "murder hole (wood)"
@@ -68,9 +104,63 @@
 	verbage_simple = "construct"
 	verbage = "constructs"
 	craftdiff = 2
+	category = "Windows"
 
 /datum/crafting_recipe/roguetown/turfs/wood/murderhole/alt
+	name = "murder hole alt(wood)"
 	reqs = list(/obj/item/natural/wood/plank = 2)
+	category = "Windows"
+
+/// carpet
+/datum/crafting_recipe/roguetown/turfs/carpet
+	name = "carpet(inn)"
+	result = /turf/open/floor/carpet/inn
+	reqs = list(/obj/item/natural/silk= 2)	
+	skillcraft = /datum/skill/craft/carpentry
+	verbage_simple = "construct"
+	verbage = "constructs"
+	craftdiff = 0
+	category = "Carpets"
+
+/datum/crafting_recipe/roguetown/turfs/carpet/purple
+	name = "carpet(purple)"
+	result = /turf/open/floor/carpet/purple
+	reqs = list(/obj/item/natural/silk= 2)	
+	skillcraft = /datum/skill/craft/carpentry
+	verbage_simple = "construct"
+	verbage = "constructs"
+	craftdiff = 2
+	category = "Carpets"
+
+/datum/crafting_recipe/roguetown/turfs/carpet/red
+	name = "carpet(red)"
+	result = /turf/open/floor/carpet/red
+	reqs = list(/obj/item/natural/silk= 2)	
+	skillcraft = /datum/skill/craft/carpentry
+	verbage_simple = "construct"
+	verbage = "constructs"
+	craftdiff = 2
+	category = "Carpets"
+
+/datum/crafting_recipe/roguetown/turfs/carpet/stellar
+	name = "carpet(stellar)"
+	result = /turf/open/floor/carpet/stellar
+	reqs = list(/obj/item/natural/silk= 2)	
+	skillcraft = /datum/skill/craft/carpentry
+	verbage_simple = "construct"
+	verbage = "constructs"
+	craftdiff = 2
+	category = "Carpet"
+
+/datum/crafting_recipe/roguetown/turfs/carpet/royalblack
+	name = "carpet(royal black)"
+	result = /turf/open/floor/carpet/royalblack
+	reqs = list(/obj/item/natural/silk= 2)	
+	skillcraft = /datum/skill/craft/carpentry
+	verbage_simple = "construct"
+	verbage = "constructs"
+	craftdiff = 3
+	category = "Carpets"
 
 /// STONE
 
@@ -79,6 +169,7 @@
 	skillcraft = /datum/skill/craft/masonry
 	verbage_simple = "build"
 	verbage = "builds"
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/stone/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -92,6 +183,7 @@
 	result = /turf/open/floor/rogue/cobblerock
 	reqs = list(/obj/item/natural/stone = 1)
 	craftdiff = 0
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/stone/cobblerock/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -105,32 +197,50 @@
 	result = /turf/open/floor/rogue/cobble
 	reqs = list(/obj/item/natural/stone = 1)
 	craftdiff = 1
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/stone/block
 	name = "floor (stoneblock)"
 	result = /turf/open/floor/rogue/blocks
 	craftdiff = 1
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/stone/newstone
 	name = "floor (newstone)"
 	result = /turf/open/floor/rogue/blocks/newstone/alt
 	craftdiff = 2
+	category = "Floors"
+
+/datum/crafting_recipe/roguetown/turfs/stone/redstone
+	name = "floor (red stone)"
+	result = /turf/open/floor/rogue/blocks/stonered
+	craftdiff = 2
+	category = "Floors"
+
+/datum/crafting_recipe/roguetown/turfs/stone/tinyredstone
+	name = "floor (tiny red stone)"
+	result = /turf/open/floor/rogue/blocks/stonered/tiny
+	craftdiff = 2
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/stone/herringbone
 	name = "floor (herringbone)"
 	result = /turf/open/floor/rogue/herringbone
 	craftdiff = 3
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/stone/hexstone
 	name = "floor (hexstone)"
 	result = /turf/open/floor/rogue/hexstone
 	craftdiff = 4
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/stone/platform
 	name = "platform (stone)"
 	result = /turf/open/floor/rogue/blocks/platform
 	reqs = list(/obj/item/natural/stoneblock = 2)
 	craftdiff = 2
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/stone/platform/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -145,30 +255,35 @@
 	result = /turf/closed/wall/mineral/rogue/stone
 	reqs = list(/obj/item/natural/stone = 2)
 	craftdiff = 2
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/stone/brick
 	name = "wall (stonebrick)"
 	result = /turf/closed/wall/mineral/rogue/stonebrick
 	reqs = list(/obj/item/natural/stoneblock = 2)
 	craftdiff = 3
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/stone/decorated
 	name = "wall (decorated stone)"
 	result = /turf/closed/wall/mineral/rogue/decostone
 	reqs = list(/obj/item/natural/stone = 2)
 	craftdiff = 3
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/stone/craft
 	name = "wall (craftstone)"
 	result = /turf/closed/wall/mineral/rogue/craftstone
 	reqs = list(/obj/item/natural/stoneblock = 3)
 	craftdiff = 4
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/stone/window
 	name = "murder hole (stone)"
 	result = /turf/closed/wall/mineral/rogue/stone/window
 	reqs = list(/obj/item/natural/stoneblock = 2)
 	craftdiff = 2
+	category = "Windows"
 
 
 /// BRICK
@@ -178,6 +293,7 @@
 	skillcraft = /datum/skill/craft/masonry
 	verbage_simple = "build"
 	verbage = "builds"
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/brick/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -192,18 +308,21 @@
 	result = /turf/open/floor/rogue/tile/brick
 	reqs = list(/obj/item/natural/brick = 1)
 	craftdiff = 1
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/brick/wall
 	name = "wall (brick)"
 	result = /turf/closed/wall/mineral/rogue/brick
 	reqs = list(/obj/item/natural/brick = 1)
 	craftdiff = 2
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/brick/window
 	name = "murder hole (brick)"
 	result = /turf/closed/wall/mineral/rogue/brick/window
 	reqs = list(/obj/item/natural/brick = 2)
 	craftdiff = 2
+	category = "Windows"
 
 /datum/crafting_recipe/roguetown/turfs/brick/window/openclose
 	name = "reinforced window (brick)"
@@ -219,6 +338,7 @@
 	verbage_simple = "build"
 	verbage = "builds"
 	craftdiff = 2
+	category = "Windows"
 
 /// WINDOWS
 
@@ -231,6 +351,7 @@
 	verbage_simple = "build"
 	verbage = "builds"
 	craftdiff = 2
+	category = "Windows"
 
 /datum/crafting_recipe/roguetown/turfs/fancywindow/openclose
 	name = "fancy window"
@@ -246,6 +367,7 @@
 	verbage_simple = "build"
 	verbage = "builds"
 	craftdiff = 3
+	category = "Windows"
 
 /datum/crafting_recipe/roguetown/turfs/reinforcedwindow/openclose
 	name = "reinforced window"
@@ -261,6 +383,7 @@
 	verbage_simple = "build"
 	verbage = "builds"
 	craftdiff = 2
+	category = "Windows"
 	
 /// HAY, TWIG AND TENT
 
@@ -272,6 +395,7 @@
 	verbage_simple = "assemble"
 	verbage = "assembles"
 	craftdiff = 0
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/twig
 	name = "floor (twig)"
@@ -282,6 +406,7 @@
 	verbage = "assembles"
 	craftdiff = 0
 	loud = TRUE
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/twig/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -300,6 +425,7 @@
 	verbage = "assembles"
 	craftdiff = 1
 	loud = TRUE
+	category = "Floors"
 
 /datum/crafting_recipe/roguetown/turfs/twigplatform/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -318,6 +444,7 @@
 	verbage_simple = "set up"	
 	verbage = "sets up"
 	craftdiff = 1
+	category = "Walls"
 
 /datum/crafting_recipe/roguetown/turfs/tentwall/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -335,6 +462,7 @@
 	verbage_simple = "set up"
 	verbage = "sets up"
 	craftdiff = 1
+	category = "Doors"
 
 /datum/crafting_recipe/roguetown/turfs/tentdoor/TurfCheck(mob/user, turf/T)
 	if(isclosedturf(T))
@@ -352,6 +480,7 @@
 	verbage_simple = "build"
 	verbage = "builds"
 	craftdiff = 3
+	category = "Windows"
 
 	/*
 	By the way, glass windows needing Masonry and Carpentry instead of Ceramics isn't an oversight.
@@ -372,14 +501,16 @@
 	result = /obj/structure/roguewindow/openclose
 	reqs = list(/obj/item/grown/log/tree/small = 2, /obj/item/natural/glass = 1)
 	craftdiff = 3
+	category = "Windows"
 
 // The 'windows' of the church that almost no one knows exists.
 /datum/crafting_recipe/roguetown/turfs/roguewindow/stone
-	name = "static glass window"
+	name = "static church window"
 	result = /obj/structure/roguewindow/stained/silver
 	reqs = list(/obj/item/natural/stone = 2, /obj/item/natural/glass = 1)
 	skillcraft = /datum/skill/craft/masonry
 	craftdiff = 3
+	category = "Windows"
 
 // Reinfored windows
 /datum/crafting_recipe/roguetown/turfs/roguewindow/reinforced
@@ -387,3 +518,4 @@
 	result = /obj/structure/roguewindow/openclose/reinforced
 	reqs = list(/obj/item/grown/log/tree/small = 2, /obj/item/natural/glass = 1, /obj/item/ingot/iron = 1)
 	craftdiff = 3
+	category = "Windows"

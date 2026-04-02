@@ -126,3 +126,47 @@
 					/obj/item/seeds/tea,
 					/obj/item/seeds/tea,
 				)
+
+/datum/supply_pack/rogue/seeds/sugarcane
+	name = "Sugarcane"
+	cost = 15
+	contains = list(
+					/obj/item/seeds/sugarcane,
+					/obj/item/seeds/sugarcane,
+					/obj/item/seeds/sugarcane,
+				)
+
+/datum/supply_pack/rogue/seeds/fruits
+	name = "Exotic fruit seeds"
+	cost = 60
+	contains = list(
+					/obj/item/seeds/lemon,
+					/obj/item/seeds/lemon,
+					/obj/item/seeds/lime,
+					/obj/item/seeds/lime,
+					/obj/item/seeds/tangerine,
+					/obj/item/seeds/tangerine,
+					/obj/item/seeds/plum,
+					/obj/item/seeds/plum,
+				)
+
+/datum/supply_pack/rogue/seeds/berries
+	name = "Berries seeds"
+	cost = 45
+	contains = list(
+					/obj/item/seeds/raspberry,
+					/obj/item/seeds/raspberry,
+					/obj/item/seeds/blackberry,
+					/obj/item/seeds/blackberry,
+					/obj/item/seeds/strawberry,
+					/obj/item/seeds/strawberry,
+				)
+
+/datum/supply_pack/rogue/seeds/rocknut
+	name = "Rocknut"
+	cost = 15
+	contains = list(
+					/obj/item/seeds/nut,
+					/obj/item/seeds/nut,
+					/obj/item/seeds/nut,
+				)

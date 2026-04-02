@@ -1,7 +1,7 @@
 
 /obj/structure/closet/dirthole
 	name = "hole"
-	desc = "Just a small hole..."
+	desc = "A modest hole dug into the dirt."
 	icon_state = "hole1"
 	icon = 'icons/turf/roguefloor.dmi'
 	var/stage = 1
@@ -64,29 +64,42 @@
 			playsound(src, 'sound/foley/bodyfall (3).ogg', 90, TRUE)
 			user.visible_message(span_warning("[user] emerges from [src]!"),span_alert("I emerge from [src]!"))
 
-/obj/structure/closet/dirthole/closed/loot/Initialize()
-	. = ..()
-	lootroll = rand(1,4)
-
 /obj/structure/closet/dirthole/closed/loot
 	var/looted = FALSE
 	var/lootroll = 0
+
+/obj/structure/closet/dirthole/closed/loot/Initialize()
+	. = ..()
+	lootroll = rand(1,6)
 
 /obj/structure/closet/dirthole/closed/loot/open()
 	if(!looted)
 		looted = TRUE
 		switch(lootroll)
 			if(1)
-				new /mob/living/carbon/human/species/skeleton/npc(mastert)
+				new /mob/living/carbon/human/species/skeleton/npc/easy(mastert) //Let's go gambling
 			if(2)
-				new /obj/structure/closet/crate/chest/lootbox(mastert)
+				new /obj/structure/closet/crate/chest/coffinlootbox(mastert) //How it be
+			if(3)
+				new /mob/living/carbon/human/species/skeleton/npc/medium(mastert) //How it be
+			if(4)
+				new /mob/living/carbon/human/species/skeleton/npc/medium(mastert)
+				new /obj/structure/closet/crate/chest/coffinlootbox_middle(mastert) //Starts locked
+			if(5)
+				new /mob/living/carbon/human/species/skeleton/npc/hard(mastert)
+			if(6)
+				new /mob/living/carbon/human/species/skeleton/npc/hard(mastert) //Starts locked & has a skeleton guard
+				new /obj/structure/closet/crate/chest/coffinlootbox_high(mastert)
 	..()
 
 /obj/structure/closet/dirthole/closed/loot/examine(mob/user)
 	. = ..()
 	if(HAS_TRAIT(user, TRAIT_SOUL_EXAMINE))
-		if(lootroll == 1)
+		if(lootroll % 2)
 			. += span_warning("Better let this one sleep.")
+	if(HAS_TRAIT(user, TRAIT_GRAVEROBBER))
+		if(!(lootroll % 2))
+			. += span_warning("There seem to be some loot for me here.")	
 
 /obj/structure/closet/dirthole/insertion_allowed(atom/movable/AM)
 	if(istype(AM, /obj/structure/closet/crate/coffin) || istype(AM, /obj/structure/closet/burial_shroud))
@@ -102,6 +115,99 @@
 /obj/structure/closet/dirthole/toggle(mob/living/user)
 	return
 
+/obj/structure/closet/dirthole/attack_hand(mob/living/user)
+	. = ..()
+	if(!HAS_TRAIT(user, TRAIT_SOUL_EXAMINE))
+		return
+
+	var/atom/movable/coffin = src
+	var/list/valid_corpses = list()
+	var/has_consecrated = FALSE
+
+	// --- scan + classify ---
+	for(var/mob/living/corpse in coffin)
+		if(!corpse || QDELETED(corpse))
+			continue
+
+		if(corpse.stat != DEAD)
+			to_chat(user, "This grave is restless with lyfe, as if its denizen is not dead.")
+			return
+
+		if(corpse.burialrited)
+			has_consecrated = TRUE
+			continue
+
+		valid_corpses += corpse
+
+	// --- nothing to do ---
+	if(!length(valid_corpses))
+		if(has_consecrated)
+			to_chat(user, "You feel a comforting stillness. All within are already consecrated.")
+		else
+			to_chat(user, "There is nothing here to consecrate.")
+		return
+
+	// --- ritual start ---
+	if(has_consecrated)
+		to_chat(user, "Some within already rest. I shall tend to the remaining souls.")
+	else
+		to_chat(user, "I begin my burial rites...")
+
+	if(!do_after(user, 50))
+		return
+
+	// --- prayer (once) ---
+	var/list/necra_prayers = list(
+		"#Rest thy soul for all aeon within Necra's embrace!",
+		"#May the Undermaiden cradle thee beyond the veil.",
+		"#Let thy weary spirit find stillness in Necra's grasp.",
+		"#From flesh to silence, may she guide thee gently.",
+		"#Sleep now, for the Undermaiden has come.",
+		"#Thy wandering ends; be gathered into her quiet.",
+		"#May thy sins and sorrows fade in her shadow.",
+		"#Be unburdened, child of ash, and pass on.",
+		"#The veil parts for thee—walk without fear.",
+		"#Necra calls, and thou shalt answer in peace.",
+		"#Lay down thy struggle; her hand awaits thee.",
+		"#From dust thou came, to her thou return.",
+		"#Let silence take thee, and be made whole.",
+		"#No longer lost, no longer bound—go softly.",
+		"#Her embrace is cold, yet kinder than the world.",
+		"#Rest now beneath her watchful stillness.",
+		"#Thy echo fades, thy journey ends.",
+		"#Be freed from pain, and carried beyond.",
+		"#The Undermaiden weeps thee into slumber.",
+		"#All things end—may thine end be gentle.",
+		"#Cast off thy burden; Necra gathers thee.",
+		"#Drift now into the hush beyond breath.",
+		"#Thy final step is guided by her hand.",
+		"#Be still, and know the end of suffering.",
+		"#No shadow follows where she leads.",
+		"#The long night welcomes thee home.",
+		"#Fade now, as all must fade, in her grace.",
+		"#Thy name is whispered, then laid to rest.",
+		"#Be neither fearful nor alone—she is with thee.",
+		"#In her silence, thou art made eternal."
+	)
+
+	user.say(pick(necra_prayers))
+
+	var/count = length(valid_corpses)
+
+	to_chat(user, "I have extracted [count] strand\s of luxthread, proof of passing.")
+	playsound(user, 'sound/misc/bellold.ogg', 20)
+
+	// --- apply burial rites ---
+	for(var/mob/living/corpse in valid_corpses)
+		corpse.burialrited = TRUE
+
+	// --- spawn rewards ---
+	for(var/i = 1 to count)
+		new /obj/item/soulthread(get_turf(user))
+
+	SEND_SIGNAL(user, COMSIG_GRAVE_CONSECRATED, src)
+	record_round_statistic(STATS_GRAVES_CONSECRATED)
+
 /obj/structure/closet/dirthole/attackby(obj/item/attacking_item, mob/user, params)
 	if(!istype(attacking_item, /obj/item/rogueweapon/shovel))
 		return ..()
@@ -110,6 +216,10 @@
 		return
 
 	if(attacking_shovel.heldclod)
+		if(stage > 2)
+			visible_message(span_notice("[user] begins filling [src]."))
+			if(!do_after(user, 3 SECONDS, TRUE, src, TRUE))
+				return
 		playsound(loc,'sound/items/empty_shovel.ogg', 100, TRUE)
 		QDEL_NULL(attacking_shovel.heldclod)
 		if(stage == 3) //close grave
@@ -146,15 +256,6 @@
 					playsound(mastert,'sound/items/dig_shovel.ogg', 100, TRUE)
 					mastert.ChangeTurf(/turf/open/transparent/openspace)
 					return
-//					for(var/D in GLOB.cardinals)
-//						var/turf/T = get_step(mastert, D)
-//						if(T)
-//							if(istype(T, /turf/open/water))
-//								attacking_shovel.heldclod = new(attacking_shovel)
-//								attacking_shovel.update_icon()
-//								playsound(mastert,'sound/items/dig_shovel.ogg', 100, TRUE)
-//								mastert.ChangeTurf(T.type, flags = CHANGETURF_INHERIT_AIR)
-//								return
 			to_chat(user, span_warning("I can't dig myself any deeper."))
 			return
 		var/used_str = 10
@@ -178,7 +279,7 @@
 			open()
 			for(var/obj/structure/gravemarker/G in loc)
 				record_featured_stat(FEATURED_STATS_CRIMINALS, user)
-				GLOB.azure_round_stats[STATS_GRAVES_ROBBED]++
+				record_round_statistic(STATS_GRAVES_ROBBED)
 				qdel(G)
 				if(isliving(user))
 					var/mob/living/L = user
@@ -193,7 +294,7 @@
 /datum/status_effect/debuff/cursed
 	id = "cursed"
 	alert_type = /atom/movable/screen/alert/status_effect/debuff/cursed
-	effectedstats = list("fortune" = -3)
+	effectedstats = list(STATKEY_LCK = -3)
 	duration = 10 MINUTES
 
 /atom/movable/screen/alert/status_effect/debuff/cursed
@@ -264,7 +365,7 @@
 
 /obj/structure/closet/dirthole/dump_contents()
 	for(var/mob/A in contents)
-		if((!A.stat) && (istype(A, /mob/living/carbon/human)))
+		if((istype(A, /mob/living/carbon/human)))
 			var/mob/living/carbon/human/B = A
 			B.buried = FALSE
 	..()
@@ -307,23 +408,22 @@
 		mastert = T
 		T.holie = src
 		if(T.muddy)
-			if(!(locate(/obj/item/natural/worms) in T))
-				if(prob(55))
-					if(prob(20))
-						if(prob(5))
-							new /obj/item/natural/worms/grubs(T)
-						else
-							new /obj/item/natural/worms/leech(T)
+			if(prob(55))
+				if(prob(20))
+					if(prob(5))
+						new /obj/item/natural/worms/grubs(T)
 					else
-						new /obj/item/natural/worms(T)
+						new /obj/item/natural/worms/leech(T)
+				else
+					new /obj/item/natural/worms(T)
+			if(!(locate(/obj/item/natural/clay) in T))
+				if(prob(25))
+					new /obj/item/natural/clay(T)
 		else
-			if(!(locate(/obj/item/natural/stone) in T))
-				if(prob(23))
-					new /obj/item/natural/stone(T)
-			else 
-				if(!(locate(/obj/item/natural/clay) in T))
-					if(prob(40))	
-						new /obj/item/natural/clay(T)
+			if(prob(23))
+				new /obj/item/natural/stone(T)
+			if(prob(18))
+				new /obj/item/natural/clay(T)
 	return ..()
 
 /obj/structure/closet/dirthole/Destroy()

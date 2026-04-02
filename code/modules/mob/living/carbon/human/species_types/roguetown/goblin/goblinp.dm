@@ -4,16 +4,35 @@
 /datum/species/goblinp
 	name = "Goblin"
 	id = "goblinp"
+	origin_default = /datum/virtue/origin/gronn
+	origin = "Gronn"
+	base_name = "Godtouched"
+	is_subrace = TRUE
 	desc = "<b>Goblin</b><br>\
-	A clever and stubborn nature are two charitable qualities of a goblin - scheming and selfish are less so. The Fell Gods use them as an avatar of malice, sending out \
-	mindless, enthralled waves of the creatures to attack civilization from lunar portals. It leaves the typical goblinoid to cloister in their hidden away tribes, stealing \
-	from the scraps out of fear of reprisal while shooing away outsiders. The cities of Man typically shun them, but it's not unheard of to see one pushing their luck in a \
-	town square or out on a well-traveled road, as even the most backwater peasant can tell the difference between a sapient one and portal-spawn. Usually.<br>\
-	(+1 Speed)" 
+	Goblins are a short race of humanoids with large ears and typically green skin. \
+	Supposedly formed from the blood spilled by the savage War God Graggar’s conquest, \
+	the prehistory of the Goblin race is spent in mindless servitude to the Conqueror God. \
+	With Graggar’s defeat, Goblins were at last able to exercise free will, \
+	with those farthest from the mindless hordes of fodder creating various tribes and villages across the face of Psydonia \
+	while keeping themselves mostly isolated due to the persecution from other mortal races. \
+	Only recently in the past few centuries have sapient Goblins been moving out of their isolated villages and tribes \
+	and seeking their future in civilised society, \
+	despite the discrimination and persecution from Church, State, and People almost universally across Psydonia. \
+	Having been formed to be fodder for the War God’s armies, Goblins were blessed with extremely rapid adaptability, \
+	with each generation of Goblins being more adapted to its environment than the last. \
+	Most goblins appear as green skinned, but many tribes have adapted to different environments, \
+	resulting in varied colours from gray to blue to bronze and even red - \
+	though this often comes with other environmental adaptations befitting the home of such a tribe. \
+	Goblins are also known to have an instinctual form of tribalism, \
+	wherein a large group of Goblins in an area seem to universally act in more primitive ways, \
+	often resulting in mischief - and sometimes violence.<br>\
+	<span style='color: #6a8cb7;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;'><b>+1 SPD</b></span><br>" 
 	species_traits = list(EYECOLOR,LIPS,STUBBLE)
 	possible_ages = ALL_AGES_LIST
 	use_skintones = TRUE
+	default_features = MANDATORY_FEATURE_LIST
 	skin_tone_wording = "Skin Color"
+	use_skin_tone_wording_for_examine = FALSE
 	limbs_icon_m = 'icons/mob/species/anthro_small_male.dmi'
 	limbs_icon_f = 'icons/roguetown/mob/bodies/f/fd.dmi'
 	dam_icon = 'icons/roguetown/mob/bodies/dam/dam_male.dmi'
@@ -62,6 +81,8 @@
 		/datum/customizer/bodypart_feature/accessory,
 		/datum/customizer/bodypart_feature/face_detail,
 		/datum/customizer/bodypart_feature/underwear,
+		/datum/customizer/bodypart_feature/legwear,
+		/datum/customizer/bodypart_feature/piercing,
 		/datum/customizer/organ/testicles/anthro,
 		/datum/customizer/organ/penis/anthro,
 		/datum/customizer/organ/breasts/human,
@@ -76,6 +97,7 @@
 	stress_examine = TRUE
 	stress_desc = span_red("Horrid little goblin...")
 	descriptor_choices = list(
+		/datum/descriptor_choice/trait,
 		/datum/descriptor_choice/height,
 		/datum/descriptor_choice/body,
 		/datum/descriptor_choice/stature,
@@ -108,7 +130,8 @@
 		"Frost" = SKIN_COLOR_FROST,
 		"Abyss" = SKIN_COLOR_ABYSS,
 		"Teal" = SKIN_COLOR_TEAL,
-		"Hadal" = SKIN_COLOR_HADAL
+		"Hadal" = SKIN_COLOR_HADAL,
+		"Pea" = SKIN_COLOR_PEA,
 	)
 
 /datum/species/goblinp/on_species_gain(mob/living/carbon/C, datum/species/old_species)
